@@ -17,6 +17,5 @@ local.properties
 *.ipr
 *.iws
 /app/build/
-/gradle/
 
 
