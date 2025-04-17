@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="connection_settings_text">Настройки соединения</string>
+    <string name="protocol_text">Протокол</string>
+    <string name="server_text">Сервер</string>
+    <string name="port_text">Порт</string>
+    <string name="publication_name_text">Имя публикации</string>
+    <string name="username_text">Пользователь</string>
+    <string name="passwd_text">Пароль</string>
+    <string name="btn_check_text">Проверить</string>
+    <string name="btn_ready_text">Готово</string>
+</resources>
