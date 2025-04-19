@@ -4,7 +4,7 @@ import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 
-interface AuthApi {
-    @GET("login")
-    suspend fun check(@Body request: LoginRequest): Response<Unit>
+interface Api1C {
+    @GET("ping")
+    suspend fun ping(@Body request: LoginRequest): Response<Unit>
 }
