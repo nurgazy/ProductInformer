@@ -7,6 +7,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.nurgazy_bolushbekov.product_informer.api_1C.ApiClient
+import com.nurgazy_bolushbekov.product_informer.api_1C.ResponseData
 import com.nurgazy_bolushbekov.product_informer.utils.CryptoManager
 import com.nurgazy_bolushbekov.product_informer.utils.ParseInputStringToIntHelper
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -32,6 +34,15 @@ class SettingViewModel(application: Application): ViewModel() {
 
     private val _password = MutableStateFlow("")
     val password: StateFlow<String> = _password.asStateFlow()
+
+    private val _responseData = MutableStateFlow<ResponseData?>(null)
+    val responseData: StateFlow<ResponseData?> = _responseData.asStateFlow()
+
+    var isLoading by mutableStateOf(false)
+        private set
+
+    var error by mutableStateOf<String?>(null)
+        private set
 
     init {
         getSettingsData()
@@ -104,6 +115,27 @@ class SettingViewModel(application: Application): ViewModel() {
         viewModelScope.launch {
             val (encryptedPassword, iv) = CryptoManager.encrypt(_password.value)
             dataStoreManager.saveEncryptedPassword(encryptedPassword, iv)
+        }
+    }
+
+    fun checkPing(username: String, password: String) {
+        val api1C = ApiClient.create(username, password)
+        isLoading = true
+        viewModelScope.launch {
+            try {
+                val response = api1C.ping()
+                if (response.isSuccessful) {
+                    val responseBody = response.body()
+                    _responseData.value = ResponseData(response.code(), responseBody?.message ?: "")
+                    error = null
+                } else {
+                    error = "Ошибка: ${response.code()}"
+                }
+            }catch (e: Exception){
+                error = e.message
+            }finally {
+                isLoading = false
+            }
         }
     }
 

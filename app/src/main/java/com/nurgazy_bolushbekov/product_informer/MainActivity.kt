@@ -79,6 +79,25 @@ fun MainScreen(vm: SettingViewModel){
         UserNameRow(vm)
         PasswdRow(vm)
         ButtonRow(vm)
+
+        Row(
+            Modifier
+                .background(Color.LightGray)
+                .fillMaxWidth()
+                .padding(5.dp),
+            horizontalArrangement = Arrangement.Start,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+
+            Text(
+                text = "",
+                modifier = Modifier
+                    .padding(5.dp)
+                    .weight(1f),
+                textAlign = TextAlign.Center,
+                fontSize = 20.sp
+            )
+        }
     }
 }
 
@@ -306,6 +325,8 @@ private fun PasswdRow(vm: SettingViewModel) {
 @Composable
 private fun ButtonRow(vm: SettingViewModel) {
 
+    val password by vm.password.collectAsState()
+
     Row(
         Modifier
             .fillMaxWidth()
@@ -314,7 +335,7 @@ private fun ButtonRow(vm: SettingViewModel) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Button(
-            onClick = {},
+            onClick = { vm.checkPing(vm.userName, password)},
             modifier = Modifier
                 .padding(5.dp)
                 .weight(1f)
