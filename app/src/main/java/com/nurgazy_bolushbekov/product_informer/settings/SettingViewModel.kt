@@ -1,6 +1,7 @@
 package com.nurgazy_bolushbekov.product_informer.settings
 
 import android.app.Application
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -28,7 +29,7 @@ class SettingViewModel(application: Application): ViewModel() {
 
     var protocol by mutableStateOf(Protocol.HTTP)
     var server by mutableStateOf("")
-    var port by mutableIntStateOf(0)
+    var port by mutableIntStateOf(80)
     var publicationName by mutableStateOf("")
     var userName by mutableStateOf("")
 
@@ -38,11 +39,8 @@ class SettingViewModel(application: Application): ViewModel() {
     private val _responseData = MutableStateFlow<ResponseData?>(null)
     val responseData: StateFlow<ResponseData?> = _responseData.asStateFlow()
 
-    var isLoading by mutableStateOf(false)
-        private set
-
-    var error by mutableStateOf<String?>(null)
-        private set
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading
 
     init {
         getSettingsData()
@@ -119,22 +117,28 @@ class SettingViewModel(application: Application): ViewModel() {
     }
 
     fun checkPing(username: String, password: String) {
-        val api1C = ApiClient.create(username, password)
-        isLoading = true
+        _isLoading.value = true
         viewModelScope.launch {
             try {
-                val response = api1C.ping()
+                val baseUrl = "${protocol.name}://${server}:${port}/"
+                val url = "$baseUrl${publicationName}/hs/BarcodeInfo/Ping/"
+
+                val api1C = ApiClient.create(username, password, baseUrl)
+                val response = api1C.ping(url)
+
                 if (response.isSuccessful) {
-                    val responseBody = response.body()
-                    _responseData.value = ResponseData(response.code(), responseBody?.message ?: "")
-                    error = null
+
+                    _responseData.value = ResponseData(response.code(),
+                        response.body()?.string().toString()
+                    )
+
                 } else {
-                    error = "Ошибка: ${response.code()}"
+                    _responseData.value = ResponseData(response.code(), "", response.message())
                 }
             }catch (e: Exception){
-                error = e.message
+                _responseData.value = ResponseData(0, "", e.message.toString())
             }finally {
-                isLoading = false
+                _isLoading.value = false
             }
         }
     }

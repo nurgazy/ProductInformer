@@ -1,28 +1,26 @@
 package com.nurgazy_bolushbekov.product_informer
 
 import android.annotation.SuppressLint
-import com.nurgazy_bolushbekov.product_informer.settings.SettingViewModel
-import com.nurgazy_bolushbekov.product_informer.settings.SettingsViewModelFactory
-
 import android.app.Application
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -38,12 +36,13 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nurgazy_bolushbekov.product_informer.settings.Protocol
+import com.nurgazy_bolushbekov.product_informer.settings.SettingViewModel
+import com.nurgazy_bolushbekov.product_informer.settings.SettingsViewModelFactory
 
 
 class MainActivity : ComponentActivity() {
@@ -79,25 +78,7 @@ fun MainScreen(vm: SettingViewModel){
         UserNameRow(vm)
         PasswdRow(vm)
         ButtonRow(vm)
-
-        Row(
-            Modifier
-                .background(Color.LightGray)
-                .fillMaxWidth()
-                .padding(5.dp),
-            horizontalArrangement = Arrangement.Start,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-
-            Text(
-                text = "",
-                modifier = Modifier
-                    .padding(5.dp)
-                    .weight(1f),
-                textAlign = TextAlign.Center,
-                fontSize = 20.sp
-            )
-        }
+        PingRow(vm)
     }
 }
 
@@ -199,7 +180,7 @@ private fun ServerRow(vm: SettingViewModel) {
             onValueChange = { vm.changeServer(it) },
             singleLine = true,
             modifier = Modifier
-                .padding(vertical = 5.dp)
+                .padding(5.dp)
                 .weight(2f),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
             textStyle = TextStyle(fontSize = 18.sp),
@@ -351,6 +332,44 @@ private fun ButtonRow(vm: SettingViewModel) {
                 .weight(1f)
         ) {
             Text(stringResource(R.string.btn_ready_text), fontSize = 25.sp)
+        }
+    }
+
+}
+
+@Composable
+private fun PingRow(vm: SettingViewModel) {
+
+    val responseData by vm.responseData.collectAsState()
+    val isLoading by vm.isLoading.collectAsState()
+
+    if (isLoading){
+        Box(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            CircularProgressIndicator(
+                modifier = Modifier.align(Alignment.Center)
+            )
+        }
+    }
+
+    if (responseData != null) {
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .padding(5.dp),
+            horizontalArrangement = Arrangement.Start,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+
+            Text(
+                text = responseData?.message.toString(),
+                modifier = Modifier
+                    .padding(5.dp)
+                    .weight(1f),
+                textAlign = TextAlign.Center,
+                fontSize = 20.sp
+            )
         }
     }
 }
