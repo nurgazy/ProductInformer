@@ -38,7 +38,6 @@ object CryptoManager {
         val iv = cipher.iv
         val encrypted = cipher.doFinal(text.toByteArray(Charsets.UTF_8))
 
-        // Конвертируем в base64 для хранения в строковом формате
         return Base64.encodeToString(encrypted, Base64.DEFAULT) to
                 Base64.encodeToString(iv, Base64.DEFAULT)
     }

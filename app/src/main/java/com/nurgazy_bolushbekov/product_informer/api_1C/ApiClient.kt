@@ -1,11 +1,9 @@
 package com.nurgazy_bolushbekov.product_informer.api_1C
 
 import android.util.Base64
-import okhttp3.Credentials
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.http.Url
 
 object ApiClient {
     fun create(username: String, password: String, baseUrl: String): Api1C {
