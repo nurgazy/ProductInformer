@@ -41,7 +41,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.nurgazy_bolushbekov.product_informer.settings.Protocol
 import com.nurgazy_bolushbekov.product_informer.settings.SettingViewModel
 import com.nurgazy_bolushbekov.product_informer.settings.SettingsViewModelFactory
 
@@ -110,6 +109,7 @@ private fun ConnectionSettingsRow() {
 private fun ProtocolRow(vm: SettingViewModel) {
 
     var expanded by rememberSaveable { mutableStateOf(false) }
+    val protocol by vm.protocol.collectAsState()
 
     Row(
         Modifier
@@ -132,8 +132,8 @@ private fun ProtocolRow(vm: SettingViewModel) {
             onExpandedChange = { expanded = !expanded }
         ) {
             OutlinedTextField(
-                value = vm.protocol.name,
-                onValueChange = { vm.changeProtocol(it) },
+                value = protocol.name,
+                onValueChange = vm::changeProtocol,
                 readOnly = true,
                 singleLine = true,
                 modifier = Modifier
@@ -148,8 +148,7 @@ private fun ProtocolRow(vm: SettingViewModel) {
                 vm.protocolList.forEach { protocol ->
                     DropdownMenuItem(text = { Text(text = protocol.name) },
                         onClick = {
-                            vm.protocol = protocol
-                            vm.changePort(if (vm.protocol == Protocol.HTTP) "80" else "443")
+                            vm.changeProtocol(protocol.name)
                             expanded = false
                         })
                 }
@@ -161,6 +160,8 @@ private fun ProtocolRow(vm: SettingViewModel) {
 
 @Composable
 private fun ServerRow(vm: SettingViewModel) {
+
+    val server by vm.server.collectAsState()
 
     Row(
         Modifier
@@ -177,8 +178,8 @@ private fun ServerRow(vm: SettingViewModel) {
                 .weight(1f)
         )
         OutlinedTextField(
-            value = vm.server,
-            onValueChange = { vm.changeServer(it) },
+            value = server,
+            onValueChange = vm::changeServer,
             singleLine = true,
             modifier = Modifier
                 .padding(5.dp)
@@ -191,6 +192,8 @@ private fun ServerRow(vm: SettingViewModel) {
 
 @Composable
 private fun PortRow(vm: SettingViewModel) {
+
+    val port by vm.port.collectAsState()
 
     Row(
         Modifier
@@ -208,8 +211,8 @@ private fun PortRow(vm: SettingViewModel) {
         )
 
         OutlinedTextField(
-            value = vm.port.toString(),
-            onValueChange = { vm.changePort(it) },
+            value = port.toString(),
+            onValueChange = vm::changePort,
             modifier = Modifier
                 .padding(5.dp)
                 .weight(2f),
@@ -220,6 +223,9 @@ private fun PortRow(vm: SettingViewModel) {
 
 @Composable
 private fun PublicationNameRow(vm: SettingViewModel) {
+
+    val publicationName by vm.publicationName.collectAsState()
+
     Row(
         Modifier
             .fillMaxWidth()
@@ -235,8 +241,8 @@ private fun PublicationNameRow(vm: SettingViewModel) {
                 .weight(1f)
         )
         OutlinedTextField(
-            value = vm.publicationName,
-            onValueChange = { vm.changePublicationName(it) },
+            value = publicationName,
+            onValueChange = vm::changePublicationName,
             modifier = Modifier
                 .padding(5.dp)
                 .weight(2f),
@@ -247,6 +253,9 @@ private fun PublicationNameRow(vm: SettingViewModel) {
 
 @Composable
 private fun UserNameRow(vm: SettingViewModel) {
+
+    val userName by vm.userName.collectAsState()
+
     Row(
         Modifier
             .fillMaxWidth()
@@ -262,8 +271,8 @@ private fun UserNameRow(vm: SettingViewModel) {
                 .weight(1f)
         )
         OutlinedTextField(
-            value = vm.userName,
-            onValueChange = { vm.changeUserName(it) },
+            value = userName,
+            onValueChange = vm::changeUserName,
             modifier = Modifier
                 .padding(5.dp)
                 .weight(2f),
@@ -307,8 +316,6 @@ private fun PasswdRow(vm: SettingViewModel) {
 @Composable
 private fun ButtonRow(vm: SettingViewModel) {
 
-    val password by vm.password.collectAsState()
-
     Row(
         Modifier
             .fillMaxWidth()
@@ -317,7 +324,7 @@ private fun ButtonRow(vm: SettingViewModel) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Button(
-            onClick = { vm.checkPing(vm.userName, password)},
+            onClick = vm::checkPing,
             modifier = Modifier
                 .padding(5.dp)
                 .weight(1f)

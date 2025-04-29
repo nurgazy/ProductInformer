@@ -2,10 +2,6 @@ package com.nurgazy_bolushbekov.product_informer.settings
 
 import android.app.Application
 import android.util.Log
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nurgazy_bolushbekov.product_informer.api_1C.ApiClient
@@ -27,11 +23,20 @@ class SettingViewModel(application: Application): ViewModel() {
 
     val protocolList = Protocol.entries.toTypedArray()
 
-    var protocol by mutableStateOf(Protocol.HTTP)
-    var server by mutableStateOf("")
-    var port by mutableIntStateOf(80)
-    var publicationName by mutableStateOf("")
-    var userName by mutableStateOf("")
+    private val _protocol = MutableStateFlow(Protocol.HTTP)
+    val protocol: StateFlow<Protocol> = _protocol.asStateFlow()
+
+    private val _server = MutableStateFlow("")
+    val server: StateFlow<String> = _server.asStateFlow()
+
+    private val _port = MutableStateFlow(80)
+    val port: StateFlow<Int> = _port.asStateFlow()
+
+    private val _publicationName = MutableStateFlow("")
+    val publicationName: StateFlow<String> = _publicationName
+
+    private val _userName = MutableStateFlow("")
+    val userName: StateFlow<String> = _userName.asStateFlow()
 
     private val _password = MutableStateFlow("")
     val password: StateFlow<String> = _password.asStateFlow()
@@ -40,33 +45,40 @@ class SettingViewModel(application: Application): ViewModel() {
     val responseData: StateFlow<ResponseData?> = _responseData.asStateFlow()
 
     private val _isLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> = _isLoading
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
 
     init {
         getSettingsData()
     }
 
+
     fun changeProtocol(value: String){
-        protocol = Protocol.valueOf(value)
+        _protocol.value = Protocol.valueOf(value)
+        if (_protocol.value == Protocol.HTTP) {
+            _port.value = 80
+        }else{
+            _port.value = 443
+        }
     }
 
     fun changeServer(value: String){
-        server = value
+        _server.value = value
     }
 
     fun changePort(value: String){
         val portValue = ParseInputStringToIntHelper.parseInputStringToInt(value)
         if (portValue != null) {
-            port = portValue
+            _port.value = portValue
         }
     }
 
     fun changePublicationName(value: String){
-        publicationName = value
+        _publicationName.value = value
     }
 
     fun changeUserName(value: String){
-        userName = value
+        _userName.value = value
     }
 
     fun updatePassword(newPassword: String) {
@@ -77,25 +89,25 @@ class SettingViewModel(application: Application): ViewModel() {
         viewModelScope.launch {
             dataStoreManager.getProtocol.collect { value ->
                 if (value != null) {
-                    protocol = if (value.isNotEmpty()) Protocol.valueOf(value.toString()) else Protocol.HTTP
+                    _protocol.value = if (value.isNotEmpty()) Protocol.valueOf(value.toString()) else Protocol.HTTP
                 }
             }
         }
 
         viewModelScope.launch {
-            dataStoreManager.getServerUrl.collect { value -> server = value.toString() }
+            dataStoreManager.getServerUrl.collect { value -> _server.value = value.toString() }
         }
 
         viewModelScope.launch {
-            dataStoreManager.getPort.collect { value -> port = value.toInt() }
+            dataStoreManager.getPort.collect { value -> _port.value = value.toInt() }
         }
 
         viewModelScope.launch {
-            dataStoreManager.getPublicationName.collect { value -> publicationName = value }
+            dataStoreManager.getPublicationName.collect { value -> _publicationName.value = value }
         }
 
         viewModelScope.launch {
-            dataStoreManager.getUserName.collect { value -> userName = value }
+            dataStoreManager.getUserName.collect { value -> _userName.value = value }
         }
 
         viewModelScope.launch {
@@ -105,38 +117,40 @@ class SettingViewModel(application: Application): ViewModel() {
     }
 
     fun saveSettingsData(){
-        viewModelScope.launch { dataStoreManager.saveProtocol(protocol.name) }
-        viewModelScope.launch { dataStoreManager.saveServerUrl(server) }
-        viewModelScope.launch { dataStoreManager.savePort(port) }
-        viewModelScope.launch { dataStoreManager.savePublicationName(publicationName) }
-        viewModelScope.launch { dataStoreManager.saveUserName(userName) }
+        viewModelScope.launch { dataStoreManager.saveProtocol(_protocol.value.name) }
+        viewModelScope.launch { dataStoreManager.saveServerUrl(_server.value) }
+        viewModelScope.launch { dataStoreManager.savePort(_port.value) }
+        viewModelScope.launch { dataStoreManager.savePublicationName(_publicationName.value) }
+        viewModelScope.launch { dataStoreManager.saveUserName(_userName.value) }
         viewModelScope.launch {
             val (encryptedPassword, iv) = CryptoManager.encrypt(_password.value)
             dataStoreManager.saveEncryptedPassword(encryptedPassword, iv)
         }
     }
 
-    fun checkPing(username: String, password: String) {
+    fun checkPing() {
         _isLoading.value = true
         viewModelScope.launch {
             try {
-                val baseUrl = "${protocol.name}://${server}:${port}/"
-                val url = "$baseUrl${publicationName}/hs/BarcodeInfo/Ping/"
+                val baseUrl = "${_protocol.value.name}://${_server.value}:${_port.value}/"
+                val url = "$baseUrl${_publicationName.value}/hs/BarcodeInfo/Ping/"
 
-                val api1C = ApiClient.create(username, password, baseUrl)
+                val api1C = ApiClient.create(_userName.value, _password.value, baseUrl)
                 val response = api1C.ping(url)
 
                 if (response.isSuccessful) {
 
-                    _responseData.value = ResponseData(response.code(),
-                        response.body()?.string().toString()
-                    )
+                    _responseData.value = ResponseData(response.code(), response.body()?.string().toString())
+                    Log.d("ProductInformer", "Loading data is successful. Response code:" +
+                            " ${_responseData.value!!.httpCode}. Response message: ${_responseData.value!!.message}")
 
                 } else {
                     _responseData.value = ResponseData(response.code(), "", response.message())
+                    Log.d("ProductInformer", "Loading data is failed. Error code: ${response.code()}. Error message: ${response.message()}")
                 }
             }catch (e: Exception){
                 _responseData.value = ResponseData(0, "", e.message.toString())
+                Log.d("ProductInformer", "Error loading data. Error code: 0. Error message: ${e.message.toString()}")
             }finally {
                 _isLoading.value = false
             }
