@@ -1,4 +1,4 @@
-package com.nurgazy_bolushbekov.product_informer.settings
+package com.nurgazy_bolushbekov.product_informer.settings_page
 
 import android.content.Context
 import androidx.datastore.core.DataStore

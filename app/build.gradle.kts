@@ -87,4 +87,7 @@ dependencies {
     implementation(libs.com.squareup.okhttp3.okhttp)
 
     implementation(libs.org.jetbrains.kotlinx.kotlinx.coroutines.android)
+
+    //Navigation
+    implementation(libs.androidx.navigation.compose)
 }

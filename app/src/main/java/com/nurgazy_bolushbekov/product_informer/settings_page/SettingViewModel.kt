@@ -1,7 +1,8 @@
-package com.nurgazy_bolushbekov.product_informer.settings
+package com.nurgazy_bolushbekov.product_informer.settings_page
 
 import android.app.Application
 import android.util.Log
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nurgazy_bolushbekov.product_informer.api_1C.ApiClient
@@ -17,7 +18,7 @@ enum class Protocol{
     HTTP, HTTPS
 }
 
-class SettingViewModel(application: Application): ViewModel() {
+class SettingViewModel(application: Application): AndroidViewModel(application) {
 
     private val dataStoreManager = SettingDataStore(application)
 
