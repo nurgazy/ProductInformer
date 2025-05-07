@@ -82,7 +82,6 @@ class SettingDataStore(private val context: Context) {
 
         if (encryptedPassword != null && iv != null) {
             decrypted = CryptoManager.decrypt(encryptedPassword, iv)
-
         }
         return decrypted
     }

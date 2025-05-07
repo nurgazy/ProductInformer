@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
@@ -19,8 +20,8 @@ import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -191,7 +192,7 @@ private fun PortRow(vm: SettingViewModel) {
 
         OutlinedTextField(
             value = port.toString(),
-            onValueChange = vm::changePort,
+            onValueChange = vm::processPort,
             modifier = Modifier
                 .padding(5.dp)
                 .weight(2f),
@@ -282,7 +283,7 @@ private fun PasswdRow(vm: SettingViewModel) {
         )
         OutlinedTextField(
             value = password,
-            onValueChange = vm::updatePassword,
+            onValueChange = vm::changePassword,
             modifier = Modifier
                 .padding(5.dp)
                 .weight(2f),
@@ -303,7 +304,7 @@ private fun ButtonRow(vm: SettingViewModel, navController: NavController) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Button(
-            onClick = vm::checkPing,
+            onClick = { vm.checkPing() },
             modifier = Modifier
                 .padding(5.dp)
                 .weight(1f)
@@ -322,6 +323,8 @@ private fun ButtonRow(vm: SettingViewModel, navController: NavController) {
             Text(stringResource(R.string.btn_ready_text), fontSize = 25.sp)
         }
     }
+
+    showAlertDialog(vm)
 
 }
 
@@ -359,5 +362,35 @@ private fun PingRow(vm: SettingViewModel) {
                 fontSize = 20.sp
             )
         }
+    }
+}
+
+@Composable
+private fun showAlertDialog(vm:SettingViewModel) {
+
+    val showDialog = rememberSaveable { mutableStateOf(false) }
+
+    if (showDialog.value) {
+        AlertDialog(
+            onDismissRequest = {
+                // Вызывается при нажатии за пределами диалога или кнопки "назад"
+                showDialog.value = false
+            },
+            title = {
+                Text("Подтверждение")
+            },
+            text = {
+                Text("Вы уверены, что хотите выполнить это действие?")
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    // Обработка подтверждения
+                    println("Действие подтверждено")
+                    showDialog.value = false
+                }) {
+                    Text("OK")
+                }
+            }
+        )
     }
 }

@@ -3,12 +3,12 @@ package com.nurgazy_bolushbekov.product_informer.settings_page
 import android.app.Application
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nurgazy_bolushbekov.product_informer.api_1C.ApiClient
 import com.nurgazy_bolushbekov.product_informer.api_1C.ResponseData
 import com.nurgazy_bolushbekov.product_informer.utils.CryptoManager
 import com.nurgazy_bolushbekov.product_informer.utils.ParseInputStringToIntHelper
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -50,28 +50,29 @@ class SettingViewModel(application: Application): AndroidViewModel(application) 
 
 
     init {
-        getSettingsData()
+        loadSettingsData()
+        changePort(if (_protocol.value == Protocol.HTTP) 80 else 443)
     }
 
 
     fun changeProtocol(value: String){
-        _protocol.value = Protocol.valueOf(value)
-        if (_protocol.value == Protocol.HTTP) {
-            _port.value = 80
-        }else{
-            _port.value = 443
-        }
+        _protocol.value = if (value.isBlank()) Protocol.HTTP else Protocol.valueOf(value)
+        changePort(if (_protocol.value == Protocol.HTTP) 80 else 443)
     }
 
     fun changeServer(value: String){
         _server.value = value
     }
 
-    fun changePort(value: String){
+    fun processPort(value: String){
         val portValue = ParseInputStringToIntHelper.parseInputStringToInt(value)
         if (portValue != null) {
-            _port.value = portValue
+            changePort(portValue)
         }
+    }
+
+    private fun changePort(value: Int){
+        _port.value = value
     }
 
     fun changePublicationName(value: String){
@@ -82,37 +83,37 @@ class SettingViewModel(application: Application): AndroidViewModel(application) 
         _userName.value = value
     }
 
-    fun updatePassword(newPassword: String) {
+    fun changePassword(newPassword: String) {
         _password.value = newPassword
     }
 
-    private fun getSettingsData() {
+    private fun loadSettingsData() {
         viewModelScope.launch {
             dataStoreManager.getProtocol.collect { value ->
                 if (value != null) {
-                    _protocol.value = if (value.isNotEmpty()) Protocol.valueOf(value.toString()) else Protocol.HTTP
+                    changeProtocol(value.toString())
                 }
             }
         }
 
         viewModelScope.launch {
-            dataStoreManager.getServerUrl.collect { value -> _server.value = value.toString() }
+            dataStoreManager.getServerUrl.collect { value -> changeServer(value.toString()) }
         }
 
         viewModelScope.launch {
-            dataStoreManager.getPort.collect { value -> _port.value = value.toInt() }
+            dataStoreManager.getPort.collect { value -> changePort(value.toInt()) }
         }
 
         viewModelScope.launch {
-            dataStoreManager.getPublicationName.collect { value -> _publicationName.value = value }
+            dataStoreManager.getPublicationName.collect { value -> changePublicationName(value) }
         }
 
         viewModelScope.launch {
-            dataStoreManager.getUserName.collect { value -> _userName.value = value }
+            dataStoreManager.getUserName.collect { value -> changeUserName(value) }
         }
 
         viewModelScope.launch {
-            _password.value = dataStoreManager.loadPassword()
+            changePassword(dataStoreManager.loadPassword())
         }
 
     }
@@ -131,6 +132,7 @@ class SettingViewModel(application: Application): AndroidViewModel(application) 
 
     fun checkPing() {
         _isLoading.value = true
+        var responseText = ""
         viewModelScope.launch {
             try {
                 val baseUrl = "${_protocol.value.name}://${_server.value}:${_port.value}/"
@@ -139,19 +141,36 @@ class SettingViewModel(application: Application): AndroidViewModel(application) 
                 val api1C = ApiClient.create(_userName.value, _password.value, baseUrl)
                 val response = api1C.ping(url)
 
+
                 if (response.isSuccessful) {
 
-                    _responseData.value = ResponseData(response.code(), response.body()?.string().toString())
-                    Log.d("ProductInformer", "Loading data is successful. Response code:" +
-                            " ${_responseData.value!!.httpCode}. Response message: ${_responseData.value!!.message}")
+                    responseText = response.body()?.string().toString()
+                    _responseData.value = ResponseData(response.code(), responseText)
+                    Log.d(
+                        "ProductInformer", "Loading data is successful. Response code:" +
+                                " ${_responseData.value!!.httpCode}. Response message: ${_responseData.value!!.message}"
+                    )
 
                 } else {
-                    _responseData.value = ResponseData(response.code(), "", response.message())
-                    Log.d("ProductInformer", "Loading data is failed. Error code: ${response.code()}. Error message: ${response.message()}")
+
+                    responseText =
+                        "Код ошибки: ${response.code()}. Сообщение об ошибке: ${response.message()}"
+                    _responseData.value = ResponseData(response.code(), responseText)
+                    Log.d(
+                        "ProductInformer",
+                        "Loading data is failed. Error code: ${response.code()}. Error message: ${response.message()}"
+                    )
                 }
-            }catch (e: Exception){
-                _responseData.value = ResponseData(0, "", e.message.toString())
-                Log.d("ProductInformer", "Error loading data. Error code: 0. Error message: ${e.message.toString()}")
+            }catch (e: TimeoutCancellationException){
+                responseText = "Ошибка подключение к серверу: Превышено врем ожидания"
+                _responseData.value = ResponseData(0, responseText)
+                Log.d("ProductInformer", "Error loading data. Error message: $responseText")
+
+            } catch (e: Exception){
+
+                responseText = "Сообщение об ошибке: ${e.message.toString()}"
+                _responseData.value = ResponseData(0, responseText)
+                Log.d("ProductInformer", "Error loading data. Error message: ${e.message.toString()}")
             }finally {
                 _isLoading.value = false
             }
