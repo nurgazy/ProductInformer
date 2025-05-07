@@ -12,6 +12,7 @@ import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 enum class Protocol{
@@ -27,8 +28,14 @@ class SettingViewModel(application: Application): AndroidViewModel(application) 
     private val _protocol = MutableStateFlow(Protocol.HTTP)
     val protocol: StateFlow<Protocol> = _protocol.asStateFlow()
 
+    private val _protocolError = MutableStateFlow<String?>(null)
+    val protocolError: StateFlow<String?> = _protocolError.asStateFlow()
+
     private val _server = MutableStateFlow("")
     val server: StateFlow<String> = _server.asStateFlow()
+
+    private val _serverError = MutableStateFlow<String?>(null)
+    val serverError: StateFlow<String?> = _serverError.asStateFlow()
 
     private val _port = MutableStateFlow(80)
     val port: StateFlow<Int> = _port.asStateFlow()
@@ -48,6 +55,12 @@ class SettingViewModel(application: Application): AndroidViewModel(application) 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
+    private val _showDialog = MutableStateFlow(false)
+    val showDialog: StateFlow<Boolean> = _showDialog.asStateFlow()
+
+    private val _alertText = MutableStateFlow("")
+    val alertText: StateFlow<String> = _alertText.asStateFlow()
+
 
     init {
         loadSettingsData()
@@ -62,9 +75,21 @@ class SettingViewModel(application: Application): AndroidViewModel(application) 
 
     fun changeServer(value: String){
         _server.value = value
+        validateServer()
+
     }
 
-    fun processPort(value: String){
+    private fun validateServer() {
+        _serverError.update {
+            if (_server.value.isBlank()) {
+                "Не заполнен адрес сервера!"
+            } else {
+                null
+            }
+        }
+    }
+
+    fun handlePort(value: String){
         val portValue = ParseInputStringToIntHelper.parseInputStringToInt(value)
         if (portValue != null) {
             changePort(portValue)
@@ -130,7 +155,7 @@ class SettingViewModel(application: Application): AndroidViewModel(application) 
         }
     }
 
-    fun checkPing() {
+    private fun checkPing() {
         _isLoading.value = true
         var responseText = ""
         viewModelScope.launch {
@@ -140,7 +165,6 @@ class SettingViewModel(application: Application): AndroidViewModel(application) 
 
                 val api1C = ApiClient.create(_userName.value, _password.value, baseUrl)
                 val response = api1C.ping(url)
-
 
                 if (response.isSuccessful) {
 
@@ -161,7 +185,9 @@ class SettingViewModel(application: Application): AndroidViewModel(application) 
                         "Loading data is failed. Error code: ${response.code()}. Error message: ${response.message()}"
                     )
                 }
+
             }catch (e: TimeoutCancellationException){
+
                 responseText = "Ошибка подключение к серверу: Превышено врем ожидания"
                 _responseData.value = ResponseData(0, responseText)
                 Log.d("ProductInformer", "Error loading data. Error message: $responseText")
@@ -171,11 +197,57 @@ class SettingViewModel(application: Application): AndroidViewModel(application) 
                 responseText = "Сообщение об ошибке: ${e.message.toString()}"
                 _responseData.value = ResponseData(0, responseText)
                 Log.d("ProductInformer", "Error loading data. Error message: ${e.message.toString()}")
+
             }finally {
                 _isLoading.value = false
             }
         }
     }
 
+    private fun validateForm() {
+        validateServer()
+    }
+
+    fun onCheckBtnPress(){
+        validateForm()
+        if (_serverError.value == null && _protocolError.value == null){
+            _showDialog.value = false
+        }else{
+
+            _showDialog.value = true
+            _alertText.value = ""
+            if (_protocolError.value != null) {
+                _alertText.value += _protocolError.value + "\n"
+            }
+            if(_serverError.value != null){
+                _alertText.value += _serverError.value + "\n"
+            }
+        }
+
+        if (!_showDialog.value){
+            checkPing()
+        }
+    }
+
+    fun changeShowDialog(value: Boolean){
+        _showDialog.value = value
+    }
+
+    fun onReadyBtnPress(){
+        validateForm()
+        if (_serverError.value == null && _protocolError.value == null){
+            _showDialog.value = false
+        }else{
+
+            _showDialog.value = true
+            _alertText.value = ""
+            if (_protocolError.value != null) {
+                _alertText.value += _protocolError.value + "\n"
+            }
+            if(_serverError.value != null){
+                _alertText.value += _serverError.value + "\n"
+            }
+        }
+    }
 }
 

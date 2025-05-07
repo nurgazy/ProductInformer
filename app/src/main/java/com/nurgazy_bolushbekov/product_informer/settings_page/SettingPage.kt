@@ -60,6 +60,7 @@ fun SettingPage(navController: NavController){
         PasswdRow(vm)
         ButtonRow(vm, navController)
         PingRow(vm)
+        ShowAlertDialog(vm)
     }
 }
 
@@ -192,7 +193,7 @@ private fun PortRow(vm: SettingViewModel) {
 
         OutlinedTextField(
             value = port.toString(),
-            onValueChange = vm::processPort,
+            onValueChange = vm::handlePort,
             modifier = Modifier
                 .padding(5.dp)
                 .weight(2f),
@@ -296,6 +297,8 @@ private fun PasswdRow(vm: SettingViewModel) {
 @Composable
 private fun ButtonRow(vm: SettingViewModel, navController: NavController) {
 
+    val showDialog by vm.showDialog.collectAsStateWithLifecycle()
+
     Row(
         Modifier
             .fillMaxWidth()
@@ -304,7 +307,7 @@ private fun ButtonRow(vm: SettingViewModel, navController: NavController) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Button(
-            onClick = { vm.checkPing() },
+            onClick = { vm.onCheckBtnPress() },
             modifier = Modifier
                 .padding(5.dp)
                 .weight(1f)
@@ -313,8 +316,11 @@ private fun ButtonRow(vm: SettingViewModel, navController: NavController) {
         }
         Button(
             onClick = {
-                vm.saveSettingsData()
-                navController.navigate("main_menu")
+                vm.onReadyBtnPress()
+                if (showDialog) {
+                    navController.navigate("main_menu")
+                }
+
             },
             modifier = Modifier
                 .padding(5.dp)
@@ -323,8 +329,6 @@ private fun ButtonRow(vm: SettingViewModel, navController: NavController) {
             Text(stringResource(R.string.btn_ready_text), fontSize = 25.sp)
         }
     }
-
-    showAlertDialog(vm)
 
 }
 
@@ -366,27 +370,22 @@ private fun PingRow(vm: SettingViewModel) {
 }
 
 @Composable
-private fun showAlertDialog(vm:SettingViewModel) {
+private fun ShowAlertDialog(vm:SettingViewModel) {
 
-    val showDialog = rememberSaveable { mutableStateOf(false) }
+    val alertText by vm.alertText.collectAsStateWithLifecycle()
+    val showDialog by vm.showDialog.collectAsStateWithLifecycle()
 
-    if (showDialog.value) {
+    if (showDialog) {
         AlertDialog(
             onDismissRequest = {
-                // Вызывается при нажатии за пределами диалога или кнопки "назад"
-                showDialog.value = false
-            },
-            title = {
-                Text("Подтверждение")
+                vm.changeShowDialog(false)
             },
             text = {
-                Text("Вы уверены, что хотите выполнить это действие?")
+                Text(alertText)
             },
             confirmButton = {
                 TextButton(onClick = {
-                    // Обработка подтверждения
-                    println("Действие подтверждено")
-                    showDialog.value = false
+                    vm.changeShowDialog(false)
                 }) {
                     Text("OK")
                 }
