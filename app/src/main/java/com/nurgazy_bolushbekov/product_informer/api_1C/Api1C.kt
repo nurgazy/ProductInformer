@@ -6,6 +6,6 @@ import retrofit2.http.GET
 import retrofit2.http.Url
 
 interface Api1C {
-    @GET
-    suspend fun ping(@Url url: String): Response<ResponseBody>
+    @GET("hs/BarcodeInfo/Ping/")
+    suspend fun ping(): Response<ResponseBody>
 }

@@ -115,7 +115,7 @@ private fun ProtocolRow(vm: SettingViewModel) {
         ) {
             OutlinedTextField(
                 value = protocol.name,
-                onValueChange = vm::changeProtocol,
+                onValueChange = { vm.onChangeProtocol(it) },
                 readOnly = true,
                 singleLine = true,
                 modifier = Modifier
@@ -130,7 +130,7 @@ private fun ProtocolRow(vm: SettingViewModel) {
                 vm.protocolList.forEach { protocol ->
                     DropdownMenuItem(text = { Text(text = protocol.name) },
                         onClick = {
-                            vm.changeProtocol(protocol.name)
+                            vm.onChangeProtocol(protocol.name)
                             expanded = false
                         })
                 }
@@ -161,7 +161,7 @@ private fun ServerRow(vm: SettingViewModel) {
         )
         OutlinedTextField(
             value = server,
-            onValueChange = vm::changeServer,
+            onValueChange = { vm.onChangeServer(it) },
             singleLine = true,
             modifier = Modifier
                 .padding(5.dp)
@@ -193,7 +193,7 @@ private fun PortRow(vm: SettingViewModel) {
 
         OutlinedTextField(
             value = port.toString(),
-            onValueChange = vm::handlePort,
+            onValueChange = { vm.onChangePort(it) },
             modifier = Modifier
                 .padding(5.dp)
                 .weight(2f),
@@ -223,7 +223,7 @@ private fun PublicationNameRow(vm: SettingViewModel) {
         )
         OutlinedTextField(
             value = publicationName,
-            onValueChange = vm::changePublicationName,
+            onValueChange = { vm.onChangePublicationName(it) },
             modifier = Modifier
                 .padding(5.dp)
                 .weight(2f),
@@ -253,7 +253,7 @@ private fun UserNameRow(vm: SettingViewModel) {
         )
         OutlinedTextField(
             value = userName,
-            onValueChange = vm::changeUserName,
+            onValueChange = vm::onChangeUserName,
             modifier = Modifier
                 .padding(5.dp)
                 .weight(2f),
@@ -284,7 +284,7 @@ private fun PasswdRow(vm: SettingViewModel) {
         )
         OutlinedTextField(
             value = password,
-            onValueChange = vm::changePassword,
+            onValueChange = vm::onChangePassword,
             modifier = Modifier
                 .padding(5.dp)
                 .weight(2f),
@@ -297,7 +297,7 @@ private fun PasswdRow(vm: SettingViewModel) {
 @Composable
 private fun ButtonRow(vm: SettingViewModel, navController: NavController) {
 
-    val showDialog by vm.showDialog.collectAsStateWithLifecycle()
+    val showDialog by vm.isFormValid.collectAsStateWithLifecycle()
 
     Row(
         Modifier
@@ -373,19 +373,24 @@ private fun PingRow(vm: SettingViewModel) {
 private fun ShowAlertDialog(vm:SettingViewModel) {
 
     val alertText by vm.alertText.collectAsStateWithLifecycle()
-    val showDialog by vm.showDialog.collectAsStateWithLifecycle()
+    val isFormValid by vm.isFormValid.collectAsStateWithLifecycle()
 
-    if (showDialog) {
+    var showDialog = rememberSaveable { mutableStateOf(false) }
+    showDialog.value = !isFormValid
+
+    if (showDialog.value) {
         AlertDialog(
             onDismissRequest = {
-                vm.changeShowDialog(false)
+                vm.changeFormValid(false)
+                showDialog.value = false
             },
             text = {
                 Text(alertText)
             },
             confirmButton = {
                 TextButton(onClick = {
-                    vm.changeShowDialog(false)
+                    vm.changeFormValid(false)
+                    showDialog.value = false
                 }) {
                     Text("OK")
                 }
