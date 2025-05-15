@@ -1,20 +1,22 @@
 package com.nurgazy_bolushbekov.product_informer.settings_page
 
-import com.nurgazy_bolushbekov.product_informer.api_1C.ApiClient
+import com.nurgazy_bolushbekov.product_informer.api_1C.RetrofitClient
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.withContext
+import okhttp3.ResponseBody
+import retrofit2.Response
 
 class SettingsRepositoryImpl(username: String, password: String, baseUrl: String) : SettingsRepository {
 
-    private val apiService = ApiClient.create(username, password, baseUrl)
+    private var apiService = RetrofitClient.create(username, password, baseUrl)
 
-    override fun ping(): Flow<String?> = flow{
-        emit(apiService.ping().toString())
-    }.catch {error->
-        emit("Ошибка при получении сообщения: ${error.message}")
-    }.flowOn(Dispatchers.IO)
+    override suspend fun ping(): String = withContext(Dispatchers.IO){
+        val response: Response<ResponseBody> = apiService.ping()
+        if (response.isSuccessful){
+            response.body()!!.string()
+        }else{
+            "Ошибка при получении данных: ${response.code()}. ${response.message()}"
+        }
+    }.toString()
 
 }

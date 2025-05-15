@@ -297,7 +297,7 @@ private fun PasswdRow(vm: SettingViewModel) {
 @Composable
 private fun ButtonRow(vm: SettingViewModel, navController: NavController) {
 
-    val showDialog by vm.isFormValid.collectAsStateWithLifecycle()
+    val isFormValid by vm.isFormValid.collectAsStateWithLifecycle()
 
     Row(
         Modifier
@@ -317,7 +317,7 @@ private fun ButtonRow(vm: SettingViewModel, navController: NavController) {
         Button(
             onClick = {
                 vm.onReadyBtnPress()
-                if (showDialog) {
+                if (isFormValid) {
                     navController.navigate("main_menu")
                 }
 
@@ -335,8 +335,8 @@ private fun ButtonRow(vm: SettingViewModel, navController: NavController) {
 @Composable
 private fun PingRow(vm: SettingViewModel) {
 
-    val responseData by vm.responseData.collectAsStateWithLifecycle()
     val isLoading by vm.isLoading.collectAsStateWithLifecycle()
+    val checkResponse by vm.checkResponse.collectAsStateWithLifecycle()
 
     if (isLoading){
         Box(
@@ -348,7 +348,7 @@ private fun PingRow(vm: SettingViewModel) {
         }
     }
 
-    responseData?.let {
+    if (checkResponse.isNotBlank()){
         Row(
             Modifier
                 .fillMaxWidth()
@@ -358,7 +358,7 @@ private fun PingRow(vm: SettingViewModel) {
         ) {
 
             Text(
-                text = responseData!!.message,
+                text = checkResponse,
                 modifier = Modifier
                     .padding(5.dp)
                     .weight(1f),
@@ -367,6 +367,7 @@ private fun PingRow(vm: SettingViewModel) {
             )
         }
     }
+
 }
 
 @Composable
@@ -375,7 +376,7 @@ private fun ShowAlertDialog(vm:SettingViewModel) {
     val alertText by vm.alertText.collectAsStateWithLifecycle()
     val isFormValid by vm.isFormValid.collectAsStateWithLifecycle()
 
-    var showDialog = rememberSaveable { mutableStateOf(false) }
+    val showDialog = rememberSaveable { mutableStateOf(false) }
     showDialog.value = !isFormValid
 
     if (showDialog.value) {

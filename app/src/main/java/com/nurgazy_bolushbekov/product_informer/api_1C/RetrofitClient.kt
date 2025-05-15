@@ -5,7 +5,8 @@ import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-object ApiClient {
+object RetrofitClient {
+
     fun create(username: String, password: String, baseUrl: String): Api1C {
 
         val credentials = "$username:$password"

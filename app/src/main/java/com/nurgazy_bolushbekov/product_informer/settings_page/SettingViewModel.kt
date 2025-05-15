@@ -4,12 +4,8 @@ import android.app.Application
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.nurgazy_bolushbekov.product_informer.api_1C.ApiClient
-import com.nurgazy_bolushbekov.product_informer.api_1C.ResponseData
 import com.nurgazy_bolushbekov.product_informer.utils.CryptoManager
 import com.nurgazy_bolushbekov.product_informer.utils.ParseInputStringToIntHelper
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -55,11 +51,11 @@ class SettingViewModel(application: Application): AndroidViewModel(application) 
 
     private var baseUrl = MutableStateFlow("")
 
-    private val _responseData = MutableStateFlow<ResponseData?>(null)
-    val responseData: StateFlow<ResponseData?> = _responseData.asStateFlow()
-
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
+    private val _checkResponse = MutableStateFlow("")
+    val checkResponse: StateFlow<String> = _checkResponse.asStateFlow()
 
     private val _isFormValid = MutableStateFlow(true)
     val isFormValid: StateFlow<Boolean> = _isFormValid.asStateFlow()
@@ -107,7 +103,6 @@ class SettingViewModel(application: Application): AndroidViewModel(application) 
 
     private fun initData() {
         changeBaseUrl()
-        settingsRepository = SettingsRepositoryImpl(_userName.value, _password.value, baseUrl.value)
         changePort(if (_protocol.value == Protocol.HTTP) 80 else 443)
     }
 
@@ -166,6 +161,7 @@ class SettingViewModel(application: Application): AndroidViewModel(application) 
         handleAlertData()
 
         if (_isFormValid.value){
+            settingsRepository = SettingsRepositoryImpl(_userName.value, _password.value, baseUrl.value)
             checkPing()
         }
     }
@@ -262,45 +258,12 @@ class SettingViewModel(application: Application): AndroidViewModel(application) 
     //Work with api
     private fun checkPing() {
         _isLoading.value = true
-        var responseText = ""
         viewModelScope.launch {
             try {
-
-                val api1C = ApiClient.create(_userName.value, _password.value, baseUrl.value)
-                val response = api1C.ping()
-
-                if (response.isSuccessful) {
-
-                    responseText = response.body()?.string().toString()
-                    _responseData.value = ResponseData(response.code(), responseText)
-                    Log.d(
-                        "ProductInformer", "Loading data is successful. Response code:" +
-                                " ${_responseData.value!!.httpCode}. Response message: ${_responseData.value!!.message}"
-                    )
-
-                } else {
-
-                    responseText =
-                        "Код ошибки: ${response.code()}. Сообщение об ошибке: ${response.message()}"
-                    _responseData.value = ResponseData(response.code(), responseText)
-                    Log.d(
-                        "ProductInformer",
-                        "Loading data is failed. Error code: ${response.code()}. Error message: ${response.message()}"
-                    )
-                }
-
-            }catch (e: TimeoutCancellationException){
-
-                responseText = "Ошибка подключение к серверу: Превышено врем ожидания"
-                _responseData.value = ResponseData(0, responseText)
-                Log.d("ProductInformer", "Error loading data. Error message: $responseText")
-
+                _checkResponse.value = settingsRepository.ping()
             } catch (e: Exception){
-
-                responseText = "Сообщение об ошибке: ${e.message.toString()}"
-                _responseData.value = ResponseData(0, responseText)
-                Log.d("ProductInformer", "Error loading data. Error message: ${e.message.toString()}")
-
+                _checkResponse.value = "Сообщение об ошибке: ${e.message.toString()}"
+                Log.d("ProductInformer", _checkResponse.value)
             }finally {
                 _isLoading.value = false
             }
