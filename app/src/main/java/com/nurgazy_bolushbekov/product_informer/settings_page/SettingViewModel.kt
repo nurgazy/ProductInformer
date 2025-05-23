@@ -57,7 +57,7 @@ class SettingViewModel(application: Application): AndroidViewModel(application) 
     private val _checkResponse = MutableStateFlow("")
     val checkResponse: StateFlow<String> = _checkResponse.asStateFlow()
 
-    private val _isFormValid = MutableStateFlow(true)
+    private val _isFormValid = MutableStateFlow(false)
     val isFormValid: StateFlow<Boolean> = _isFormValid.asStateFlow()
 
     private val _alertText = MutableStateFlow("")
@@ -234,6 +234,7 @@ class SettingViewModel(application: Application): AndroidViewModel(application) 
     }
 
     private fun generateAlertText() {
+        _alertText.value = ""
         if (_protocolError.value != null) {
             _alertText.value += _protocolError.value + "\n"
         }

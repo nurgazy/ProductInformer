@@ -40,9 +40,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.nurgazy_bolushbekov.product_informer.R
+import com.nurgazy_bolushbekov.product_informer.utils.ScreenNavItem
 
 @Composable
-fun SettingPage(navController: NavController){
+fun SettingScreen(navController: NavController){
 
     val vm: SettingViewModel = viewModel(
         viewModelStoreOwner = LocalContext.current as ComponentActivity,
@@ -318,7 +319,7 @@ private fun ButtonRow(vm: SettingViewModel, navController: NavController) {
             onClick = {
                 vm.onReadyBtnPress()
                 if (isFormValid) {
-                    navController.navigate("main_menu")
+                    navController.navigate(ScreenNavItem.MainMenu.route)
                 }
 
             },
@@ -382,7 +383,7 @@ private fun ShowAlertDialog(vm:SettingViewModel) {
     if (showDialog.value) {
         AlertDialog(
             onDismissRequest = {
-                vm.changeFormValid(false)
+                vm.changeFormValid(true)
                 showDialog.value = false
             },
             text = {
@@ -390,7 +391,7 @@ private fun ShowAlertDialog(vm:SettingViewModel) {
             },
             confirmButton = {
                 TextButton(onClick = {
-                    vm.changeFormValid(false)
+                    vm.changeFormValid(true)
                     showDialog.value = false
                 }) {
                     Text("OK")
