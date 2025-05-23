@@ -104,6 +104,7 @@ class SettingViewModel(application: Application): AndroidViewModel(application) 
     private fun initData() {
         changeBaseUrl()
         changePort(if (_protocol.value == Protocol.HTTP) 80 else 443)
+        validateForm()
     }
 
     private fun changeBaseUrl() {
@@ -122,6 +123,7 @@ class SettingViewModel(application: Application): AndroidViewModel(application) 
     fun onChangeServer(value: String){
         _server.value = value
         validateServer()
+        changeFormValid()
         changeBaseUrl()
     }
 
@@ -130,6 +132,7 @@ class SettingViewModel(application: Application): AndroidViewModel(application) 
         if (portValue != null) {
             changePort(portValue)
             validatePort()
+            changeFormValid()
             changeBaseUrl()
         }
     }
@@ -141,17 +144,20 @@ class SettingViewModel(application: Application): AndroidViewModel(application) 
     fun onChangePublicationName(value: String){
         _publicationName.value = value
         validatePublicationName()
+        changeFormValid()
         changeBaseUrl()
     }
 
     fun onChangeUserName(value: String){
         _userName.value = value
         validateUserName()
+        changeFormValid()
     }
 
     fun onChangePassword(newPassword: String) {
         _password.value = newPassword
         validatePasswd()
+        changeFormValid()
     }
 
 
@@ -159,7 +165,6 @@ class SettingViewModel(application: Application): AndroidViewModel(application) 
     fun onCheckBtnPress(){
         validateForm()
         handleAlertData()
-
         if (_isFormValid.value){
             settingsRepository = SettingsRepositoryImpl(_userName.value, _password.value, baseUrl.value)
             checkPing()
@@ -194,6 +199,7 @@ class SettingViewModel(application: Application): AndroidViewModel(application) 
         validatePublicationName()
         validateUserName()
         validatePasswd()
+        changeFormValid()
     }
 
     private fun validateServer() {
@@ -218,19 +224,14 @@ class SettingViewModel(application: Application): AndroidViewModel(application) 
 
 
     //Handling of alert dialog
-    fun changeFormValid(value: Boolean){
-        _isFormValid.value = value
+    fun changeFormValid(){
+        _isFormValid.value = (_serverError.value == null && _protocolError.value == null && _portError.value == null
+                && _publicationNameError.value == null && _userNameError.value == null && _passwordError.value == null)
     }
 
     private fun handleAlertData() {
-        if (_serverError.value == null && _protocolError.value == null && _portError.value == null
-            && _publicationNameError.value == null && _userNameError.value == null && _passwordError.value == null) {
-            _isFormValid.value = true
-        } else {
-
-            _isFormValid.value = false
+        if (!_isFormValid.value)
             generateAlertText()
-        }
     }
 
     private fun generateAlertText() {
