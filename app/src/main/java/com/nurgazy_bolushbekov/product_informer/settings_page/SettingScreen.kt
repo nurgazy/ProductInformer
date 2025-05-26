@@ -22,7 +22,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -51,8 +50,6 @@ fun SettingScreen(navController: NavController){
         factory = SettingsViewModelFactory(LocalContext.current.applicationContext as Application)
     )
 
-    val showDialog = rememberSaveable { mutableStateOf(false) }
-
     Column(Modifier.fillMaxWidth()) {
         ConnectionSettingsRow()
         ProtocolRow(vm)
@@ -61,9 +58,9 @@ fun SettingScreen(navController: NavController){
         PublicationNameRow(vm)
         UserNameRow(vm)
         PasswdRow(vm)
-        ButtonRow(vm, navController, showDialog)
+        ButtonRow(vm, navController)
         PingRow(vm)
-        ShowAlertDialog(vm, showDialog)
+        ShowAlertDialog(vm)
     }
 }
 
@@ -228,7 +225,9 @@ private fun PublicationNameRow(vm: SettingViewModel) {
         )
         OutlinedTextField(
             value = publicationName,
-            onValueChange = { vm.onChangePublicationName(it) },
+            onValueChange = {
+                vm.onChangePublicationName(it)
+            },
             modifier = Modifier
                 .padding(5.dp)
                 .weight(2f),
@@ -300,7 +299,7 @@ private fun PasswdRow(vm: SettingViewModel) {
 }
 
 @Composable
-private fun ButtonRow(vm: SettingViewModel, navController: NavController, showDialog: MutableState<Boolean>) {
+private fun ButtonRow(vm: SettingViewModel, navController: NavController) {
 
     val isFormValid by vm.isFormValid.collectAsStateWithLifecycle()
 
@@ -313,7 +312,6 @@ private fun ButtonRow(vm: SettingViewModel, navController: NavController, showDi
     ) {
         Button(
             onClick = {
-                showDialog.value = true
                 vm.onCheckBtnPress()
             },
             modifier = Modifier
@@ -324,7 +322,6 @@ private fun ButtonRow(vm: SettingViewModel, navController: NavController, showDi
         }
         Button(
             onClick = {
-                showDialog.value = true
                 vm.onReadyBtnPress()
                 if (isFormValid) {
                     navController.navigate(ScreenNavItem.MainMenu.route)
@@ -380,25 +377,23 @@ private fun PingRow(vm: SettingViewModel) {
 }
 
 @Composable
-private fun ShowAlertDialog(vm:SettingViewModel, showDialog: MutableState<Boolean>) {
+private fun ShowAlertDialog(vm:SettingViewModel) {
 
     val alertText by vm.alertText.collectAsStateWithLifecycle()
     val isFormValid by vm.isFormValid.collectAsStateWithLifecycle()
+    val showDialog by vm.showDialog.collectAsStateWithLifecycle()
 
-//    val showDialog = rememberSaveable { mutableStateOf(false) }
-//    showDialog.value = !isFormValid
-
-    if (showDialog.value && !isFormValid) {
+    if (showDialog && !isFormValid) {
         AlertDialog(
             onDismissRequest = {
-                showDialog.value = false
+                vm.onPressAlertDialogBtn(false)
             },
             text = {
                 Text(alertText)
             },
             confirmButton = {
                 TextButton(onClick = {
-                    showDialog.value = false
+                    vm.onPressAlertDialogBtn(false)
                 }) {
                     Text("OK")
                 }

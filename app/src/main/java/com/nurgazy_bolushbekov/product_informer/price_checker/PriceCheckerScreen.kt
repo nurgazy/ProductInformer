@@ -1,8 +1,11 @@
 package com.nurgazy_bolushbekov.product_informer.price_checker
 
 import android.Manifest
+import android.app.Application
 import android.content.pm.PackageManager
 import android.util.Log
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.OptIn
@@ -13,42 +16,62 @@ import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.google.mlkit.vision.barcode.BarcodeScanner
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
+import com.nurgazy_bolushbekov.product_informer.settings_page.SettingViewModel
+import com.nurgazy_bolushbekov.product_informer.settings_page.SettingsViewModelFactory
 import java.util.concurrent.Executors
 
 @Composable
 fun PriceCheckerScreen(navController: NavController){
-    BarcodeScannerScreen()
+    val settingVM: SettingViewModel = viewModel(
+        viewModelStoreOwner = LocalContext.current as ComponentActivity,
+        factory = SettingsViewModelFactory(LocalContext.current.applicationContext as Application)
+    )
+
+    val priceCheckerVM: PriceCheckerViewModel = viewModel()
+    BarcodeScannerScreen(priceCheckerVM)
 }
 
 
 @Composable
-fun BarcodeScannerScreen(){
+fun BarcodeScannerScreen(priceCheckerVM: PriceCheckerViewModel){
     val context = LocalContext.current
 
     val isCameraPermissionGranted = checkCameraPermission()
     val cameraPermissionGranted = remember { mutableStateOf(isCameraPermissionGranted) }
 
     val isScannerVisible = remember { mutableStateOf(false) }
-    val scannedResult = remember { mutableStateOf<String?>(null) }
+
+    val barcodeText by priceCheckerVM.barcode.collectAsStateWithLifecycle()
 
     val cameraPermissionResultLauncher = rememberLauncherForActivityResult(
         contract =  ActivityResultContracts.RequestPermission(),
@@ -72,9 +95,13 @@ fun BarcodeScannerScreen(){
 
     if (cameraPermissionGranted.value) {
         if (isScannerVisible.value) {
+            BackHandler(enabled = isScannerVisible.value) {
+                // Обработка нажатия "Назад" во время видимости сканера
+                isScannerVisible.value = false
+            }
             BarcodeScannerContent(
                 onBarcodeScanned = { barcode ->
-                    scannedResult.value = barcode
+                    priceCheckerVM.changeBarcode(barcode)
                     isScannerVisible.value = false // Закрываем сканер после получения результата
                 },
                 onCloseScanner = {
@@ -82,12 +109,23 @@ fun BarcodeScannerScreen(){
                 }
             )
         } else {
-            Column {
-                if (scannedResult.value != null) {
-                    Text("Отсканировано: ${scannedResult.value}")
-                }
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(5.dp),
+                verticalArrangement = Arrangement.Bottom,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                TextField(
+                    value = barcodeText,
+                    onValueChange = { priceCheckerVM.changeBarcode(it) },
+                    singleLine = true,
+                    modifier = Modifier
+                        .padding(5.dp),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                )
                 Button(onClick = { isScannerVisible.value = true }) {
-                    Text("Запустить сканер")
+                    Text("Сканировать")
                 }
             }
         }

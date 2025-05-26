@@ -4,6 +4,7 @@ import android.app.Application
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.nurgazy_bolushbekov.product_informer.api_1C.ApiRepository
 import com.nurgazy_bolushbekov.product_informer.utils.CryptoManager
 import com.nurgazy_bolushbekov.product_informer.utils.ParseInputStringToIntHelper
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,7 +18,7 @@ enum class Protocol{
 
 class SettingViewModel(application: Application): AndroidViewModel(application) {
 
-    private lateinit var settingsRepository: SettingsRepository
+    private lateinit var apiRepository: ApiRepository
     private val dataStoreManager = SettingDataStore(application)
 
     val protocolList = Protocol.entries.toTypedArray()
@@ -62,6 +63,9 @@ class SettingViewModel(application: Application): AndroidViewModel(application) 
 
     private val _alertText = MutableStateFlow("")
     val alertText: StateFlow<String> = _alertText.asStateFlow()
+
+    private val _showDialog = MutableStateFlow(false)
+    val showDialog: StateFlow<Boolean> = _showDialog.asStateFlow()
 
 
     // Init data
@@ -165,15 +169,23 @@ class SettingViewModel(application: Application): AndroidViewModel(application) 
     fun onCheckBtnPress(){
         validateForm()
         handleAlertData()
+        changeShowDialog()
         if (_isFormValid.value){
-            settingsRepository = SettingsRepositoryImpl(_userName.value, _password.value, baseUrl.value)
+            apiRepository = SettingRepositoryImpl(_userName.value, _password.value, baseUrl.value)
             checkPing()
         }
+    }
+
+    private fun changeShowDialog() {
+        _showDialog.value =
+            (_serverError.value != null || _protocolError.value != null || _portError.value != null
+                    || _publicationNameError.value != null || _userNameError.value != null || _passwordError.value != null)
     }
 
     fun onReadyBtnPress(){
         validateForm()
         handleAlertData()
+        changeShowDialog()
         if (_isFormValid.value){
             saveSettingsData()
         }
@@ -256,13 +268,17 @@ class SettingViewModel(application: Application): AndroidViewModel(application) 
         }
     }
 
+    fun onPressAlertDialogBtn(value: Boolean){
+        _showDialog.value = value
+    }
+
 
     //Work with api
     private fun checkPing() {
         _isLoading.value = true
         viewModelScope.launch {
             try {
-                _checkResponse.value = settingsRepository.ping()
+                _checkResponse.value = apiRepository.ping()
             } catch (e: Exception){
                 _checkResponse.value = "Сообщение об ошибке: ${e.message.toString()}"
                 Log.d("ProductInformer", _checkResponse.value)

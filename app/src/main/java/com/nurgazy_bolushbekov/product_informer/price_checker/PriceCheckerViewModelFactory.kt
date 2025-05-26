@@ -1,16 +1,16 @@
-package com.nurgazy_bolushbekov.product_informer.settings_page
+package com.nurgazy_bolushbekov.product_informer.price_checker
 
 import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.nurgazy_bolushbekov.product_informer.settings_page.SettingViewModel
 
-
-class SettingsViewModelFactory(private val application: Application) :
+class PriceCheckerViewModelFactory() :
     ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(SettingViewModel::class.java)) {
+        if (modelClass.isAssignableFrom(PriceCheckerViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return SettingViewModel(application) as T
+            return PriceCheckerViewModel() as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }
