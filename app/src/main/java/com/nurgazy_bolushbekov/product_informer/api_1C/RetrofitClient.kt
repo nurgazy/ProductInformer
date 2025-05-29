@@ -21,11 +21,13 @@ object RetrofitClient {
             }
             .build()
 
-        return Retrofit.Builder()
-            .baseUrl(baseUrl)
-            .client(client)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-            .create(Api1C::class.java)
+        val instance: Retrofit by lazy {
+            Retrofit.Builder()
+                .baseUrl(baseUrl)
+                .client(client)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build()
+        }
+        return instance.create(Api1C::class.java)
     }
 }

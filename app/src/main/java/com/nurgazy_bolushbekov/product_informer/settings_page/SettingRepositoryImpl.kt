@@ -7,6 +7,7 @@ import kotlinx.coroutines.withContext
 import okhttp3.ResponseBody
 import retrofit2.Response
 
+
 class SettingRepositoryImpl(username: String, password: String, baseUrl: String) :
     ApiRepository {
 
@@ -20,5 +21,9 @@ class SettingRepositoryImpl(username: String, password: String, baseUrl: String)
             "Ошибка при получении данных: ${response.code()}. ${response.message()}"
         }
     }.toString()
+
+    override suspend fun info(barcode: String): String {
+        throw NotImplementedError("Not yet implemented")
+    }
 
 }

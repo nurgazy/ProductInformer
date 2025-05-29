@@ -49,8 +49,8 @@ class SettingViewModel(application: Application): AndroidViewModel(application) 
     private val _userNameError = MutableStateFlow<String?>(null)
     private val _passwordError = MutableStateFlow<String?>(null)
 
-
-    private var baseUrl = MutableStateFlow("")
+    private val _baseUrl = MutableStateFlow("")
+    var baseUrl: StateFlow<String> = _baseUrl.asStateFlow()
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
@@ -112,7 +112,7 @@ class SettingViewModel(application: Application): AndroidViewModel(application) 
     }
 
     private fun changeBaseUrl() {
-        baseUrl.value =
+        _baseUrl.value =
             "${_protocol.value.name}://${_server.value}:${_port.value}/${_publicationName.value}/"
     }
 
@@ -171,7 +171,7 @@ class SettingViewModel(application: Application): AndroidViewModel(application) 
         handleAlertData()
         changeShowDialog()
         if (_isFormValid.value){
-            apiRepository = SettingRepositoryImpl(_userName.value, _password.value, baseUrl.value)
+            apiRepository = SettingRepositoryImpl(_userName.value, _password.value, _baseUrl.value)
             checkPing()
         }
     }
