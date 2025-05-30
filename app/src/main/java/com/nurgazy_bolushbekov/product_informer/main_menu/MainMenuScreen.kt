@@ -1,4 +1,4 @@
-package com.nurgazy_bolushbekov.product_informer.main_menu_page
+package com.nurgazy_bolushbekov.product_informer.main_menu
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

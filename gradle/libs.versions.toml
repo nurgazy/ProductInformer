@@ -21,6 +21,7 @@ navigationCompose = "2.8.9"
 cameraX = "1.4.2"
 mlkitBarcode = "17.3.0"
 cameraMlkitVision = "1.4.2"
+serializationJson = "1.6.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -61,6 +62,9 @@ androidx-camera-camera-lifecycle = {module = "androidx.camera:camera-lifecycle",
 androidx-camera-camera-view = {module = "androidx.camera:camera-view", version.ref = "cameraX"}
 com-google-mlkit-barcode-scanning = {module="com.google.mlkit:barcode-scanning", version.ref = "mlkitBarcode"}
 androidx-camera-mlkit-vision = { group = "androidx.camera", name = "camera-mlkit-vision", version.ref = "cameraMlkitVision" }
+
+kotlinx-serialization-json = {group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "serializationJson"}
+kotlinx-serialization-core = {group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-core", version.ref = "serializationJson"}
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

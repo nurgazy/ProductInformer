@@ -1,6 +1,10 @@
 package com.nurgazy_bolushbekov.product_informer.api_1C
 
+import com.nurgazy_bolushbekov.product_informer.data_classes.Product
+import com.nurgazy_bolushbekov.product_informer.utils.ResultFetchData
+import kotlinx.coroutines.flow.Flow
+
 interface ApiRepository {
     suspend fun ping(): String
-    suspend fun info(barcode: String): String
+    suspend fun info(barcode: String): Flow<ResultFetchData<Product>>
 }
