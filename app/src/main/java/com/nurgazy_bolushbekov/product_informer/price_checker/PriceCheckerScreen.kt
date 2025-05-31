@@ -15,6 +15,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -24,15 +25,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.nurgazy_bolushbekov.product_informer.api_1C.RetrofitClient
 import com.nurgazy_bolushbekov.product_informer.settings_page.SettingViewModel
 import com.nurgazy_bolushbekov.product_informer.settings_page.SettingsViewModelFactory
 import com.nurgazy_bolushbekov.product_informer.utils.ResultFetchData
+import com.nurgazy_bolushbekov.product_informer.utils.ScreenNavItem
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 @Composable
-fun PriceCheckerScreen(){
+fun PriceCheckerScreen(navController: NavController){
     val settingVM: SettingViewModel = viewModel(
         viewModelStoreOwner = LocalContext.current as ComponentActivity,
         factory = SettingsViewModelFactory(LocalContext.current.applicationContext as Application)
@@ -47,17 +51,27 @@ fun PriceCheckerScreen(){
     val factory = remember(apiRepository) { PriceCheckerViewModelFactory(apiRepository) }
     val priceCheckerVM: PriceCheckerViewModel = viewModel(factory=factory)
 
-    BarcodeScannerScreen(priceCheckerVM)
+    BarcodeScannerScreen(priceCheckerVM, navController)
 }
 
 @Composable
 fun PriceCheckerContent(
     priceCheckerVM: PriceCheckerViewModel,
-    isScannerVisible: MutableState<Boolean>
+    isScannerVisible: MutableState<Boolean>,
+    navController: NavController
 ) {
 
-    val barcodeText by priceCheckerVM.barcode.collectAsStateWithLifecycle()
-    val productResult by priceCheckerVM.product.collectAsStateWithLifecycle()
+    val barcodeText by priceCheckerVM.barcode.collectAsState()
+    val productResult by priceCheckerVM.product.collectAsState()
+    val navigateDetailScreen by priceCheckerVM.navigateDetailScreen.collectAsState()
+
+    LaunchedEffect(navigateDetailScreen) {
+        if (navigateDetailScreen) {
+            val product = (productResult as ResultFetchData.Success).data
+            navController.navigate(ScreenNavItem.ProductDetail.route+"/${Json.encodeToString(product)}")
+            priceCheckerVM.resetNavigationDetailScreen() // Сбрасываем флаг после навигации
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -105,15 +119,13 @@ fun PriceCheckerContent(
                 Text(text = "Ошибка: ${error.message}")
             }
             ResultFetchData.Loading -> {
-                Box() {
+                Box {
                     CircularProgressIndicator(
                         modifier = Modifier.align(Alignment.Center)
                     )
                 }
             }
-            is ResultFetchData.Success -> {
-
-            }
+            is ResultFetchData.Success -> {}
         }
     }
 }

@@ -26,6 +26,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.navigation.NavController
 import com.google.mlkit.vision.barcode.BarcodeScanner
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
@@ -33,7 +34,7 @@ import com.google.mlkit.vision.common.InputImage
 import java.util.concurrent.Executors
 
 @Composable
-fun BarcodeScannerScreen(priceCheckerVM: PriceCheckerViewModel){
+fun BarcodeScannerScreen(priceCheckerVM: PriceCheckerViewModel, navController: NavController){
     val context = LocalContext.current
 
     val isCameraPermissionGranted = checkCameraPermission()
@@ -78,7 +79,7 @@ fun BarcodeScannerScreen(priceCheckerVM: PriceCheckerViewModel){
                 }
             )
         } else {
-            PriceCheckerContent(priceCheckerVM, isScannerVisible)
+            PriceCheckerContent(priceCheckerVM, isScannerVisible, navController)
         }
     } else {
         PermissionDeniedScreen()

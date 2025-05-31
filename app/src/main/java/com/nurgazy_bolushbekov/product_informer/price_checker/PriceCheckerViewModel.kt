@@ -1,6 +1,5 @@
 package com.nurgazy_bolushbekov.product_informer.price_checker
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nurgazy_bolushbekov.product_informer.api_1C.ApiRepository
@@ -19,8 +18,15 @@ class PriceCheckerViewModel(private val apiRepository: ApiRepository): ViewModel
     private val _product = MutableStateFlow<ResultFetchData<Product>?>(null)
     val product: StateFlow<ResultFetchData<Product>?> = _product.asStateFlow()
 
+    private val _navigateDetailScreen = MutableStateFlow(false)
+    val navigateDetailScreen: StateFlow<Boolean> = _navigateDetailScreen.asStateFlow()
+
     fun onChangeBarcode(newBarcode: String) {
         _barcode.value = newBarcode
+    }
+
+    fun resetNavigationDetailScreen(){
+        _navigateDetailScreen.value = false
     }
 
     fun getInfo() {
@@ -28,6 +34,7 @@ class PriceCheckerViewModel(private val apiRepository: ApiRepository): ViewModel
             _product.value = ResultFetchData.Loading
             if (_barcode.value.isEmpty()) {
                 _product.value = ResultFetchData.Error(Exception("Штрихкод не может быть пустым"))
+                _navigateDetailScreen.value = false
                 return@launch
             }
             apiRepository.info(_barcode.value).collectLatest { result ->
@@ -35,19 +42,20 @@ class PriceCheckerViewModel(private val apiRepository: ApiRepository): ViewModel
                     is ResultFetchData.Success -> {
                         try {
                             _product.value = result
-                            Log.d("ProductInformer", _product.value.toString())
+                            _navigateDetailScreen.value = true
                         }catch (e: Exception){
                             _product.value = ResultFetchData.Error(e)
-                            Log.d("ProductInformer", "Сообщение об ошибке: ${e.message.toString()}")
+                            _navigateDetailScreen.value = false
                         }
                     }
                     is ResultFetchData.Error -> {
                         _product.value = result
-                        Log.d("ProductInformer", "Ошибка при загрузке: ${result.exception.message}")
+                        _navigateDetailScreen.value = false
                     }
 
                     ResultFetchData.Loading -> {
-                        _product.value = ResultFetchData.Loading
+                        _product.value = result
+                        _navigateDetailScreen.value = false
                     }
                 }
 
