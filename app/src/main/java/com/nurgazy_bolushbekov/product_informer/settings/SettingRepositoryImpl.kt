@@ -8,8 +8,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.withContext
-import okhttp3.ResponseBody
-import retrofit2.Response
 
 
 class SettingRepositoryImpl(username: String, password: String, baseUrl: String) :
@@ -17,14 +15,20 @@ class SettingRepositoryImpl(username: String, password: String, baseUrl: String)
 
     private var apiService = RetrofitClient.create(username, password, baseUrl)
 
-    override suspend fun ping(): String = withContext(Dispatchers.IO){
-        val response: Response<ResponseBody> = apiService.ping()
-        if (response.isSuccessful){
-            response.body()!!.string()
-        }else{
-            "Ошибка при получении данных: ${response.code()}. ${response.message()}"
+    override suspend fun ping(): ResultFetchData<String> {
+        return withContext(Dispatchers.IO){
+            try {
+                val response = apiService.ping()
+                if (response.isSuccessful){
+                    ResultFetchData.Success(response.body()!!.string())
+                }else{
+                    ResultFetchData.Error(Exception("Ошибка при получении данных: ${response.code()}. ${response.message()}"))
+                }
+            }catch (e: Exception) {
+                ResultFetchData.Error(Exception("Ошибка при получении данных: ${e.message}"))
+            }
         }
-    }.toString()
+    }
 
     override suspend fun info(barcode: String): Flow<ResultFetchData<Product>> {
         return emptyFlow()

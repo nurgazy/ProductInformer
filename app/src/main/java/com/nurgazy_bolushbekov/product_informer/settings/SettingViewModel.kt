@@ -1,13 +1,13 @@
 package com.nurgazy_bolushbekov.product_informer.settings
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.nurgazy_bolushbekov.product_informer.api_1C.ApiRepository
 import com.nurgazy_bolushbekov.product_informer.application.App
 import com.nurgazy_bolushbekov.product_informer.utils.CryptoManager
 import com.nurgazy_bolushbekov.product_informer.utils.ParseInputStringToIntHelper
+import com.nurgazy_bolushbekov.product_informer.utils.ResultFetchData
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -40,10 +40,9 @@ class SettingViewModel(application: Application): AndroidViewModel(application) 
     private val _passwordError = MutableStateFlow<String?>(null)
 
     private val _isLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
-    private val _checkResponse = MutableStateFlow("")
-    val checkResponse: StateFlow<String> = _checkResponse.asStateFlow()
+    private val _pingResult = MutableStateFlow<ResultFetchData<String>?>(null)
+    val pingResult: StateFlow<ResultFetchData<String>?> = _pingResult.asStateFlow()
 
     private val _isFormValid = MutableStateFlow(false)
     val isFormValid: StateFlow<Boolean> = _isFormValid.asStateFlow()
@@ -114,25 +113,23 @@ class SettingViewModel(application: Application): AndroidViewModel(application) 
     fun onCheckBtnPress(){
         validateForm()
         handleAlertData()
-        changeShowDialog()
         if (_isFormValid.value){
+            closeAlertDialog()
             apiRepository = SettingRepositoryImpl(userName.value, password.value, baseUrl.value)
             checkPing()
+        }else{
+            openAlertDialog()
         }
-    }
-
-    private fun changeShowDialog() {
-        _showDialog.value =
-            (_serverError.value != null || _protocolError.value != null || _portError.value != null
-                    || _publicationNameError.value != null || _userNameError.value != null || _passwordError.value != null)
     }
 
     fun onReadyBtnPress(){
         validateForm()
         handleAlertData()
-        changeShowDialog()
         if (_isFormValid.value){
+            closeAlertDialog()
             saveSettingsData()
+        }else{
+            openAlertDialog()
         }
     }
 
@@ -223,22 +220,33 @@ class SettingViewModel(application: Application): AndroidViewModel(application) 
         }
     }
 
-    fun onPressAlertDialogBtn(value: Boolean){
-        _showDialog.value = value
+    private fun openAlertDialog(){
+        _showDialog.value = true
+    }
+
+    fun closeAlertDialog(){
+        _showDialog.value = false
     }
 
 
     //Work with api
     private fun checkPing() {
-        _isLoading.value = true
         viewModelScope.launch {
-            try {
-                _checkResponse.value = apiRepository.ping()
-            } catch (e: Exception){
-                _checkResponse.value = "Сообщение об ошибке: ${e.message.toString()}"
-                Log.d("ProductInformer", _checkResponse.value)
-            }finally {
-                _isLoading.value = false
+            _pingResult.value = ResultFetchData.Loading
+            when(val result = apiRepository.ping()){
+                is ResultFetchData.Error -> {
+                    _pingResult.value = result
+                    _alertText.value = result.exception.message.toString()
+                    openAlertDialog()
+                    _isLoading.value = false
+                }
+                ResultFetchData.Loading -> { _isLoading.value = true }
+                is ResultFetchData.Success -> {
+                    _pingResult.value = result
+                    _alertText.value = "Соединение установлено, приложение готово к работе!"
+                    openAlertDialog()
+                    _isLoading.value = false
+                }
             }
         }
     }

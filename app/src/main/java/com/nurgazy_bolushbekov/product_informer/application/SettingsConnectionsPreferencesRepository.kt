@@ -12,7 +12,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -44,31 +43,45 @@ class SettingsConnectionsPreferencesRepository(private val context: Context) {
 
     init {
         repositoryScope.launch {
-            getProtocol.collect { value ->
+            context.dataStore.data.map {
+                preferences -> preferences[PROTOCOL_KEY] ?: Protocol.HTTP
+            }.
+            collect { value ->
                 protocol.value = Protocol.valueOf(value.toString())
             }
         }
 
         repositoryScope.launch {
-            getServerUrl.collect { value ->
-                serverUrl.value = value.toString()
+            context.dataStore.data.map {
+                preferences -> preferences[SERVER_URL_KEY] ?: ""
+            }
+            .collect { value ->
+                serverUrl.value = value
             }
         }
 
         repositoryScope.launch {
-            getPort.collect { value ->
+            context.dataStore.data.map {
+                preferences -> preferences[PORT_KEY] ?: "0"
+            }
+            .collect { value ->
                 port.value = value.toInt()
             }
         }
 
         repositoryScope.launch {
-            getPublicationName.collect{ value ->
+            context.dataStore.data.map {
+                preferences -> preferences[PUBLICATION_NAME_KEY] ?: ""
+            }
+            .collect{ value ->
                 publicationName.value = value
             }
         }
 
         repositoryScope.launch {
-            getUserName.collect{ value ->
+            context.dataStore.data.map {
+                preferences -> preferences[USER_NAME_KEY] ?: ""
+            }.collect{ value ->
                 userName.value = value
             }
         }
@@ -77,15 +90,12 @@ class SettingsConnectionsPreferencesRepository(private val context: Context) {
             password.value = loadPassword()
         }
 
+        changePort(if (protocol.value == Protocol.HTTP) 80 else 443)
         changeBaseUrl()
     }
 
     fun cancelScope() {
         repositoryScope.cancel()
-    }
-
-    private val getProtocol: Flow<String?> = context.dataStore.data.map {
-            preferences -> preferences[PROTOCOL_KEY] ?: ""
     }
 
     suspend fun saveProtocol(protocol: String) {
@@ -99,10 +109,6 @@ class SettingsConnectionsPreferencesRepository(private val context: Context) {
         changeBaseUrl()
     }
 
-    private val getServerUrl: Flow<String?> = context.dataStore.data.map {
-            preferences -> preferences[SERVER_URL_KEY] ?: ""
-    }
-
     suspend fun saveServerUrl(url: String) {
         context.dataStore.edit { preferences ->
             preferences[SERVER_URL_KEY] = url
@@ -112,10 +118,6 @@ class SettingsConnectionsPreferencesRepository(private val context: Context) {
     fun changeServerUrl(value: String){
         serverUrl.value = value
         changeBaseUrl()
-    }
-
-    private val getPort: Flow<String> = context.dataStore.data.map {
-            preferences -> preferences[PORT_KEY] ?: "0"
     }
 
     suspend fun savePort(port: Int) {
@@ -129,10 +131,6 @@ class SettingsConnectionsPreferencesRepository(private val context: Context) {
         changeBaseUrl()
     }
 
-    private val getPublicationName: Flow<String> = context.dataStore.data.map {
-            preferences -> preferences[PUBLICATION_NAME_KEY] ?: ""
-    }
-
     suspend fun savePublicationName(publicationName: String) {
         context.dataStore.edit { preferences ->
             preferences[PUBLICATION_NAME_KEY] = publicationName
@@ -142,10 +140,6 @@ class SettingsConnectionsPreferencesRepository(private val context: Context) {
     fun changePublicationName(value: String){
         publicationName.value = value
         changeBaseUrl()
-    }
-
-    private val getUserName: Flow<String> = context.dataStore.data.map {
-            preferences -> preferences[USER_NAME_KEY] ?: ""
     }
 
     suspend fun saveUserName(userName: String) {

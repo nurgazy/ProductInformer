@@ -1,6 +1,5 @@
 package com.nurgazy_bolushbekov.product_informer.product_information
 
-import com.nurgazy_bolushbekov.product_informer.api_1C.Api1C
 import com.nurgazy_bolushbekov.product_informer.api_1C.ApiRepository
 import com.nurgazy_bolushbekov.product_informer.api_1C.RetrofitClient
 import com.nurgazy_bolushbekov.product_informer.data_classes.Product
@@ -19,7 +18,7 @@ class ProductInformationRepositoryImp(username:String, password:String, baseUrl:
 
     private var apiService = RetrofitClient.create(username, password, baseUrl)
 
-    override suspend fun ping(): String {
+    override suspend fun ping(): ResultFetchData<String> {
         throw NotImplementedError("Not yet implemented")
     }
 
@@ -32,16 +31,16 @@ class ProductInformationRepositoryImp(username:String, password:String, baseUrl:
 
         if (response.isSuccessful){
             val responseString = response.body()!!.string()
-            val _jsonObj = Json { ignoreUnknownKeys = true }
-            val _jsonString = _jsonObj.parseToJsonElement(responseString)
+            val jsonObj = Json { ignoreUnknownKeys = true }
+            val jsonString = jsonObj.parseToJsonElement(responseString)
 
-            val productFound: Boolean = _jsonString.jsonObject["Результат"].toString().toBoolean()
+            val productFound: Boolean = jsonString.jsonObject["Результат"].toString().toBoolean()
             if (!productFound){
                 emit(ResultFetchData.Error(Exception("Товар не найден")))
                 return@flow
             }
-            val product: Product = _jsonObj.decodeFromString(_jsonString.jsonObject["Номенклатура"].toString())
-            product.productSpecifications = _jsonObj.decodeFromString(_jsonString.jsonObject["Характеристики"].toString())
+            val product: Product = jsonObj.decodeFromString(jsonString.jsonObject["Номенклатура"].toString())
+            product.productSpecifications = jsonObj.decodeFromString(jsonString.jsonObject["Характеристики"].toString())
 
             emit(ResultFetchData.Success(product))
         }

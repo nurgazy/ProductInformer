@@ -5,6 +5,6 @@ import com.nurgazy_bolushbekov.product_informer.utils.ResultFetchData
 import kotlinx.coroutines.flow.Flow
 
 interface ApiRepository {
-    suspend fun ping(): String
+    suspend fun ping(): ResultFetchData<String>
     suspend fun info(barcode: String): Flow<ResultFetchData<Product>>
 }

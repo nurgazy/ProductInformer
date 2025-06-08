@@ -1,7 +1,6 @@
 package com.nurgazy_bolushbekov.product_informer.product_information
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.nurgazy_bolushbekov.product_informer.api_1C.ApiRepository
@@ -19,7 +18,6 @@ class ProductInformationViewModel(application: Application): AndroidViewModel(ap
     private lateinit var apiRepository: ApiRepository
     private val connectionSettingsPrefRep = (application as App).connectionSettingsPrefRep
 
-    private val server: StateFlow<String> = connectionSettingsPrefRep.serverUrl.asStateFlow()
     private val userName: StateFlow<String> = connectionSettingsPrefRep.userName.asStateFlow()
     private val password: StateFlow<String> = connectionSettingsPrefRep.password.asStateFlow()
     private val baseUrl = connectionSettingsPrefRep.baseUrl.asStateFlow()
@@ -32,12 +30,6 @@ class ProductInformationViewModel(application: Application): AndroidViewModel(ap
 
     private val _navigateDetailScreen = MutableStateFlow(false)
     val navigateDetailScreen: StateFlow<Boolean> = _navigateDetailScreen.asStateFlow()
-
-
-    init {
-        Log.d("ProductInformer", "connectionSettingsPrefRep: $connectionSettingsPrefRep")
-        Log.d("ProductInformer", "server: ${server.value}")
-    }
 
     fun onChangeBarcode(newBarcode: String) {
         _barcode.value = newBarcode

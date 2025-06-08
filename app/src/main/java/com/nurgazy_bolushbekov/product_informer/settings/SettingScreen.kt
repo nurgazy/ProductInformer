@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.nurgazy_bolushbekov.product_informer.R
+import com.nurgazy_bolushbekov.product_informer.utils.ResultFetchData
 import com.nurgazy_bolushbekov.product_informer.utils.ScreenNavItem
 
 @Composable
@@ -344,37 +345,56 @@ private fun ButtonRow(vm: SettingViewModel, navController: NavController) {
 @Composable
 private fun PingRow(vm: SettingViewModel) {
 
-    val isLoading by vm.isLoading.collectAsState()
-    val checkResponse by vm.checkResponse.collectAsState()
+    val pingResult by vm.pingResult.collectAsState()
 
-    if (isLoading){
-        Box(
-            modifier = Modifier.fillMaxSize()
-        ) {
-            CircularProgressIndicator(
-                modifier = Modifier.align(Alignment.Center)
-            )
+    when(pingResult){
+
+        is ResultFetchData.Error -> {
+            val errorData = (pingResult as ResultFetchData.Error).exception.message
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(5.dp),
+                horizontalArrangement = Arrangement.Start,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(text = errorData.toString(),
+                    modifier = Modifier
+                        .padding(5.dp)
+                        .weight(1f),
+                    textAlign = TextAlign.Center,
+                    fontSize = 20.sp
+                )
+            }
         }
-    }
-
-    if (checkResponse.isNotBlank()){
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .padding(5.dp),
-            horizontalArrangement = Arrangement.Start,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-
-            Text(
-                text = checkResponse,
-                modifier = Modifier
-                    .padding(5.dp)
-                    .weight(1f),
-                textAlign = TextAlign.Center,
-                fontSize = 20.sp
-            )
+        ResultFetchData.Loading -> {
+            Box(modifier = Modifier.fillMaxSize())
+            {
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center)
+                )
+            }
         }
+        is ResultFetchData.Success -> {
+            val succesData = (pingResult as ResultFetchData.Success).data
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(5.dp),
+                horizontalArrangement = Arrangement.Start,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(text = succesData,
+                    modifier = Modifier
+                        .padding(5.dp)
+                        .weight(1f),
+                    textAlign = TextAlign.Center,
+                    fontSize = 20.sp
+                )
+            }
+        }
+
+        null -> {}
     }
 
 }
@@ -383,20 +403,19 @@ private fun PingRow(vm: SettingViewModel) {
 private fun ShowAlertDialog(vm:SettingViewModel) {
 
     val alertText by vm.alertText.collectAsState()
-    val isFormValid by vm.isFormValid.collectAsState()
     val showDialog by vm.showDialog.collectAsState()
 
-    if (showDialog && !isFormValid) {
+    if (showDialog) {
         AlertDialog(
             onDismissRequest = {
-                vm.onPressAlertDialogBtn(false)
+                vm.closeAlertDialog()
             },
             text = {
                 Text(alertText)
             },
             confirmButton = {
                 TextButton(onClick = {
-                    vm.onPressAlertDialogBtn(false)
+                    vm.closeAlertDialog()
                 }) {
                     Text("OK")
                 }
