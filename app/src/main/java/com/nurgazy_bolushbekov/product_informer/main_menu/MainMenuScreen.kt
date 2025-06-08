@@ -23,7 +23,7 @@ fun MainMenuScreen(navController: NavController){
     ) {
         Button(
             modifier = Modifier.fillMaxWidth(),
-            onClick = { navController.navigate(ScreenNavItem.PriceChecker.route) }
+            onClick = { navController.navigate(ScreenNavItem.ProductInformation.route) }
         ) {
             Text(text = "Чек прайс", fontSize = 25.sp)
         }

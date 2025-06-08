@@ -6,5 +6,11 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class ProductSpecification(
     @SerialName("Наименование")
-    val name: String
+    val name: String,
+
+    @SerialName("Остатки")
+    val balance: List<Balance>?=null,
+
+    @SerialName("Цены")
+    val price: List<Price>?=null
 )

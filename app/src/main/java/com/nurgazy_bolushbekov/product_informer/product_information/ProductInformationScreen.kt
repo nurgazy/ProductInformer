@@ -1,7 +1,6 @@
-package com.nurgazy_bolushbekov.product_informer.price_checker
+package com.nurgazy_bolushbekov.product_informer.product_information
 
 import android.app.Application
-import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,7 +18,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -27,49 +25,37 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.nurgazy_bolushbekov.product_informer.api_1C.RetrofitClient
-import com.nurgazy_bolushbekov.product_informer.settings_page.SettingViewModel
-import com.nurgazy_bolushbekov.product_informer.settings_page.SettingsViewModelFactory
 import com.nurgazy_bolushbekov.product_informer.utils.ResultFetchData
 import com.nurgazy_bolushbekov.product_informer.utils.ScreenNavItem
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 @Composable
-fun PriceCheckerScreen(navController: NavController){
-    val settingVM: SettingViewModel = viewModel(
-        viewModelStoreOwner = LocalContext.current as ComponentActivity,
-        factory = SettingsViewModelFactory(LocalContext.current.applicationContext as Application)
+fun ProductInformationScreen(navController: NavController){
+
+    val vm: ProductInformationViewModel = viewModel(
+        factory = ProductInformationViewModelFactory(LocalContext.current.applicationContext as Application)
     )
 
-    val apiService = RetrofitClient.create(
-        settingVM.userName.collectAsState().value,
-        settingVM.password.collectAsState().value,
-        settingVM.baseUrl.collectAsState().value)
-
-    val apiRepository = remember { PriceCheckerRepositoryImp(apiService) }
-    val factory = remember(apiRepository) { PriceCheckerViewModelFactory(apiRepository) }
-    val priceCheckerVM: PriceCheckerViewModel = viewModel(factory=factory)
-
-    BarcodeScannerScreen(priceCheckerVM, navController)
+    BarcodeScannerScreen(vm, navController)
 }
 
 @Composable
-fun PriceCheckerContent(
-    priceCheckerVM: PriceCheckerViewModel,
+fun ProductInformationContent(
+    vm: ProductInformationViewModel,
     isScannerVisible: MutableState<Boolean>,
     navController: NavController
 ) {
 
-    val barcodeText by priceCheckerVM.barcode.collectAsState()
-    val productResult by priceCheckerVM.product.collectAsState()
-    val navigateDetailScreen by priceCheckerVM.navigateDetailScreen.collectAsState()
+    val barcodeText by vm.barcode.collectAsState()
+    val productResult by vm.product.collectAsState()
+    val navigateDetailScreen by vm.navigateDetailScreen.collectAsState()
 
     LaunchedEffect(navigateDetailScreen) {
         if (navigateDetailScreen) {
             val product = (productResult as ResultFetchData.Success).data
             navController.navigate(ScreenNavItem.ProductDetail.route+"/${Json.encodeToString(product)}")
-            priceCheckerVM.resetNavigationDetailScreen() // Сбрасываем флаг после навигации
+            vm.resetNavigationDetailScreen() // Сбрасываем флаг после навигации
         }
     }
 
@@ -82,7 +68,7 @@ fun PriceCheckerContent(
     ) {
         TextField(
             value = barcodeText,
-            onValueChange = { priceCheckerVM.onChangeBarcode(it) },
+            onValueChange = { vm.onChangeBarcode(it) },
             singleLine = true,
             modifier = Modifier
                 .padding(5.dp),
@@ -103,7 +89,7 @@ fun PriceCheckerContent(
                 Text("Сканировать")
             }
             Button(
-                onClick = { priceCheckerVM.getInfo() },
+                onClick = { vm.getInfo() },
                 modifier = Modifier
                     .padding(5.dp)
                     .weight(1f)

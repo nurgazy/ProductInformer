@@ -1,8 +1,11 @@
-package com.nurgazy_bolushbekov.product_informer.price_checker
+package com.nurgazy_bolushbekov.product_informer.product_information
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import android.util.Log
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.nurgazy_bolushbekov.product_informer.api_1C.ApiRepository
+import com.nurgazy_bolushbekov.product_informer.application.App
 import com.nurgazy_bolushbekov.product_informer.data_classes.Product
 import com.nurgazy_bolushbekov.product_informer.utils.ResultFetchData
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -11,7 +14,16 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
-class PriceCheckerViewModel(private val apiRepository: ApiRepository): ViewModel() {
+class ProductInformationViewModel(application: Application): AndroidViewModel(application) {
+
+    private lateinit var apiRepository: ApiRepository
+    private val connectionSettingsPrefRep = (application as App).connectionSettingsPrefRep
+
+    private val server: StateFlow<String> = connectionSettingsPrefRep.serverUrl.asStateFlow()
+    private val userName: StateFlow<String> = connectionSettingsPrefRep.userName.asStateFlow()
+    private val password: StateFlow<String> = connectionSettingsPrefRep.password.asStateFlow()
+    private val baseUrl = connectionSettingsPrefRep.baseUrl.asStateFlow()
+
     private val _barcode = MutableStateFlow("")
     val barcode: StateFlow<String> = _barcode.asStateFlow()
 
@@ -20,6 +32,12 @@ class PriceCheckerViewModel(private val apiRepository: ApiRepository): ViewModel
 
     private val _navigateDetailScreen = MutableStateFlow(false)
     val navigateDetailScreen: StateFlow<Boolean> = _navigateDetailScreen.asStateFlow()
+
+
+    init {
+        Log.d("ProductInformer", "connectionSettingsPrefRep: $connectionSettingsPrefRep")
+        Log.d("ProductInformer", "server: ${server.value}")
+    }
 
     fun onChangeBarcode(newBarcode: String) {
         _barcode.value = newBarcode
@@ -30,6 +48,7 @@ class PriceCheckerViewModel(private val apiRepository: ApiRepository): ViewModel
     }
 
     fun getInfo() {
+        apiRepository = ProductInformationRepositoryImp(userName.value, password.value, baseUrl.value)
         viewModelScope.launch {
             _product.value = ResultFetchData.Loading
             if (_barcode.value.isEmpty()) {

@@ -1,4 +1,4 @@
-package com.nurgazy_bolushbekov.product_informer.settings_page
+package com.nurgazy_bolushbekov.product_informer.settings
 
 import android.app.Application
 import androidx.activity.ComponentActivity
@@ -22,6 +22,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -36,7 +37,6 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.nurgazy_bolushbekov.product_informer.R
@@ -91,7 +91,7 @@ private fun ConnectionSettingsRow() {
 private fun ProtocolRow(vm: SettingViewModel) {
 
     var expanded by rememberSaveable { mutableStateOf(false) }
-    val protocol by vm.protocol.collectAsStateWithLifecycle()
+    val protocol by vm.protocol.collectAsState()
 
     Row(
         Modifier
@@ -143,7 +143,7 @@ private fun ProtocolRow(vm: SettingViewModel) {
 @Composable
 private fun ServerRow(vm: SettingViewModel) {
 
-    val server by vm.server.collectAsStateWithLifecycle()
+    val server by vm.server.collectAsState()
 
     Row(
         Modifier
@@ -174,7 +174,7 @@ private fun ServerRow(vm: SettingViewModel) {
 @Composable
 private fun PortRow(vm: SettingViewModel) {
 
-    val port by vm.port.collectAsStateWithLifecycle()
+    val port by vm.port.collectAsState()
 
     Row(
         Modifier
@@ -207,7 +207,7 @@ private fun PortRow(vm: SettingViewModel) {
 @Composable
 private fun PublicationNameRow(vm: SettingViewModel) {
 
-    val publicationName by vm.publicationName.collectAsStateWithLifecycle()
+    val publicationName by vm.publicationName.collectAsState()
 
     Row(
         Modifier
@@ -232,6 +232,7 @@ private fun PublicationNameRow(vm: SettingViewModel) {
                 .padding(5.dp)
                 .weight(2f),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+            singleLine = true
         )
     }
 }
@@ -239,7 +240,7 @@ private fun PublicationNameRow(vm: SettingViewModel) {
 @Composable
 private fun UserNameRow(vm: SettingViewModel) {
 
-    val userName by vm.userName.collectAsStateWithLifecycle()
+    val userName by vm.userName.collectAsState()
 
     Row(
         Modifier
@@ -262,6 +263,7 @@ private fun UserNameRow(vm: SettingViewModel) {
                 .padding(5.dp)
                 .weight(2f),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+            singleLine = true
         )
 
     }
@@ -270,7 +272,7 @@ private fun UserNameRow(vm: SettingViewModel) {
 @Composable
 private fun PasswdRow(vm: SettingViewModel) {
 
-    val password by vm.password.collectAsStateWithLifecycle()
+    val password by vm.password.collectAsState()
 
     Row(
         Modifier
@@ -293,7 +295,8 @@ private fun PasswdRow(vm: SettingViewModel) {
                 .padding(5.dp)
                 .weight(2f),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-            visualTransformation = PasswordVisualTransformation()
+            visualTransformation = PasswordVisualTransformation(),
+            singleLine = true
         )
     }
 }
@@ -301,7 +304,7 @@ private fun PasswdRow(vm: SettingViewModel) {
 @Composable
 private fun ButtonRow(vm: SettingViewModel, navController: NavController) {
 
-    val isFormValid by vm.isFormValid.collectAsStateWithLifecycle()
+    val isFormValid by vm.isFormValid.collectAsState()
 
     Row(
         Modifier
@@ -341,8 +344,8 @@ private fun ButtonRow(vm: SettingViewModel, navController: NavController) {
 @Composable
 private fun PingRow(vm: SettingViewModel) {
 
-    val isLoading by vm.isLoading.collectAsStateWithLifecycle()
-    val checkResponse by vm.checkResponse.collectAsStateWithLifecycle()
+    val isLoading by vm.isLoading.collectAsState()
+    val checkResponse by vm.checkResponse.collectAsState()
 
     if (isLoading){
         Box(
@@ -379,9 +382,9 @@ private fun PingRow(vm: SettingViewModel) {
 @Composable
 private fun ShowAlertDialog(vm:SettingViewModel) {
 
-    val alertText by vm.alertText.collectAsStateWithLifecycle()
-    val isFormValid by vm.isFormValid.collectAsStateWithLifecycle()
-    val showDialog by vm.showDialog.collectAsStateWithLifecycle()
+    val alertText by vm.alertText.collectAsState()
+    val isFormValid by vm.isFormValid.collectAsState()
+    val showDialog by vm.showDialog.collectAsState()
 
     if (showDialog && !isFormValid) {
         AlertDialog(

@@ -1,4 +1,4 @@
-package com.nurgazy_bolushbekov.product_informer.settings_page
+package com.nurgazy_bolushbekov.product_informer.settings
 
 import android.app.Application
 import androidx.lifecycle.ViewModel

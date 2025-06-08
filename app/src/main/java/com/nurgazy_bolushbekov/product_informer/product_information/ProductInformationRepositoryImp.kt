@@ -1,7 +1,8 @@
-package com.nurgazy_bolushbekov.product_informer.price_checker
+package com.nurgazy_bolushbekov.product_informer.product_information
 
 import com.nurgazy_bolushbekov.product_informer.api_1C.Api1C
 import com.nurgazy_bolushbekov.product_informer.api_1C.ApiRepository
+import com.nurgazy_bolushbekov.product_informer.api_1C.RetrofitClient
 import com.nurgazy_bolushbekov.product_informer.data_classes.Product
 import com.nurgazy_bolushbekov.product_informer.utils.ResultFetchData
 import kotlinx.coroutines.Dispatchers
@@ -14,7 +15,10 @@ import kotlinx.serialization.json.jsonObject
 import okhttp3.ResponseBody
 import retrofit2.Response
 
-class PriceCheckerRepositoryImp(private val apiService: Api1C): ApiRepository {
+class ProductInformationRepositoryImp(username:String, password:String, baseUrl:String): ApiRepository {
+
+    private var apiService = RetrofitClient.create(username, password, baseUrl)
+
     override suspend fun ping(): String {
         throw NotImplementedError("Not yet implemented")
     }

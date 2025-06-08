@@ -1,4 +1,4 @@
-package com.nurgazy_bolushbekov.product_informer.price_checker
+package com.nurgazy_bolushbekov.product_informer.product_information
 
 import android.Manifest
 import android.content.pm.PackageManager
@@ -34,7 +34,7 @@ import com.google.mlkit.vision.common.InputImage
 import java.util.concurrent.Executors
 
 @Composable
-fun BarcodeScannerScreen(priceCheckerVM: PriceCheckerViewModel, navController: NavController){
+fun BarcodeScannerScreen(vm: ProductInformationViewModel, navController: NavController){
     val context = LocalContext.current
 
     val isCameraPermissionGranted = checkCameraPermission()
@@ -71,15 +71,15 @@ fun BarcodeScannerScreen(priceCheckerVM: PriceCheckerViewModel, navController: N
             BarcodeScannerContent(
                 onBarcodeScanned = { barcode ->
                     isScannerVisible.value = false // Закрываем сканер после получения результата
-                    priceCheckerVM.onChangeBarcode(barcode)
-                    priceCheckerVM.getInfo()
+                    vm.onChangeBarcode(barcode)
+                    vm.getInfo()
                 },
                 onCloseScanner = {
                     isScannerVisible.value = false // Обработка случая, если сканер закрывается без сканирования
                 }
             )
         } else {
-            PriceCheckerContent(priceCheckerVM, isScannerVisible, navController)
+            ProductInformationContent(vm, isScannerVisible, navController)
         }
     } else {
         PermissionDeniedScreen()
@@ -204,5 +204,4 @@ fun processImageProxy(
 @Composable
 fun PermissionDeniedScreen() {
     Text(text = "Для сканирования штрихкодов необходимо разрешение на использование камеры.")
-    Log.d("ProductInformer", "Для сканирования штрихкодов необходимо разрешение на использование камеры.")
 }

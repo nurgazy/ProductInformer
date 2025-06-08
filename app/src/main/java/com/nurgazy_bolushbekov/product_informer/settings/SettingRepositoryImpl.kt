@@ -1,4 +1,4 @@
-package com.nurgazy_bolushbekov.product_informer.settings_page
+package com.nurgazy_bolushbekov.product_informer.settings
 
 import com.nurgazy_bolushbekov.product_informer.api_1C.ApiRepository
 import com.nurgazy_bolushbekov.product_informer.api_1C.RetrofitClient

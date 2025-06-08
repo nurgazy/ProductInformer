@@ -1,10 +1,11 @@
-package com.nurgazy_bolushbekov.product_informer.settings_page
+package com.nurgazy_bolushbekov.product_informer.settings
 
 import android.app.Application
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.nurgazy_bolushbekov.product_informer.api_1C.ApiRepository
+import com.nurgazy_bolushbekov.product_informer.application.App
 import com.nurgazy_bolushbekov.product_informer.utils.CryptoManager
 import com.nurgazy_bolushbekov.product_informer.utils.ParseInputStringToIntHelper
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,28 +20,17 @@ enum class Protocol{
 class SettingViewModel(application: Application): AndroidViewModel(application) {
 
     private lateinit var apiRepository: ApiRepository
-    private val dataStoreManager = SettingDataStore(application)
+    private val connectSettingsPrefRep = (application as App).connectionSettingsPrefRep
 
     val protocolList = Protocol.entries.toTypedArray()
 
-    private val _protocol = MutableStateFlow(Protocol.HTTP)
-    val protocol: StateFlow<Protocol> = _protocol.asStateFlow()
-
-    private val _server = MutableStateFlow("")
-    val server: StateFlow<String> = _server.asStateFlow()
-
-    private val _port = MutableStateFlow(80)
-    val port: StateFlow<Int> = _port.asStateFlow()
-
-    private val _publicationName = MutableStateFlow("")
-    val publicationName: StateFlow<String> = _publicationName
-
-    private val _userName = MutableStateFlow("")
-    val userName: StateFlow<String> = _userName.asStateFlow()
-
-    private val _password = MutableStateFlow("")
-    val password: StateFlow<String> = _password.asStateFlow()
-
+    val protocol: StateFlow<Protocol> = connectSettingsPrefRep.protocol.asStateFlow()
+    val server: StateFlow<String> = connectSettingsPrefRep.serverUrl.asStateFlow()
+    val port: StateFlow<Int> = connectSettingsPrefRep.port.asStateFlow()
+    val publicationName: StateFlow<String> = connectSettingsPrefRep.publicationName.asStateFlow()
+    val userName: StateFlow<String> = connectSettingsPrefRep.userName.asStateFlow()
+    val password: StateFlow<String> = connectSettingsPrefRep.password.asStateFlow()
+    private val baseUrl = connectSettingsPrefRep.baseUrl.asStateFlow()
 
     private val _protocolError = MutableStateFlow<String?>(null)
     private val _serverError = MutableStateFlow<String?>(null)
@@ -48,9 +38,6 @@ class SettingViewModel(application: Application): AndroidViewModel(application) 
     private val _publicationNameError = MutableStateFlow<String?>(null)
     private val _userNameError = MutableStateFlow<String?>(null)
     private val _passwordError = MutableStateFlow<String?>(null)
-
-    private val _baseUrl = MutableStateFlow("")
-    var baseUrl: StateFlow<String> = _baseUrl.asStateFlow()
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
@@ -70,65 +57,25 @@ class SettingViewModel(application: Application): AndroidViewModel(application) 
 
     // Init data
     init {
-        loadSettingsData()
         initData()
     }
 
-    private fun loadSettingsData() {
-        viewModelScope.launch {
-            dataStoreManager.getProtocol.collect { value ->
-                if (value != null) {
-                    onChangeProtocol(value.toString())
-                }
-            }
-        }
-
-        viewModelScope.launch {
-            dataStoreManager.getServerUrl.collect { value -> onChangeServer(value.toString()) }
-        }
-
-        viewModelScope.launch {
-            dataStoreManager.getPort.collect { value -> changePort(value.toInt()) }
-        }
-
-        viewModelScope.launch {
-            dataStoreManager.getPublicationName.collect { value -> onChangePublicationName(value) }
-        }
-
-        viewModelScope.launch {
-            dataStoreManager.getUserName.collect { value -> onChangeUserName(value) }
-        }
-
-        viewModelScope.launch {
-            onChangePassword(dataStoreManager.loadPassword())
-        }
-
-    }
-
     private fun initData() {
-        changeBaseUrl()
-        changePort(if (_protocol.value == Protocol.HTTP) 80 else 443)
+        changePort(if (protocol.value == Protocol.HTTP) 80 else 443)
         validateForm()
-    }
-
-    private fun changeBaseUrl() {
-        _baseUrl.value =
-            "${_protocol.value.name}://${_server.value}:${_port.value}/${_publicationName.value}/"
     }
 
 
     //Change form data
     fun onChangeProtocol(value: String){
-        _protocol.value = if (value.isBlank()) Protocol.HTTP else Protocol.valueOf(value)
-        changePort(if (_protocol.value == Protocol.HTTP) 80 else 443)
-        changeBaseUrl()
+        connectSettingsPrefRep.changeProtocol(value)
+        changePort(if (protocol.value == Protocol.HTTP) 80 else 443)
     }
 
     fun onChangeServer(value: String){
-        _server.value = value
+        connectSettingsPrefRep.changeServerUrl(value)
         validateServer()
         changeFormValid()
-        changeBaseUrl()
     }
 
     fun onChangePort(value: String){
@@ -137,29 +84,27 @@ class SettingViewModel(application: Application): AndroidViewModel(application) 
             changePort(portValue)
             validatePort()
             changeFormValid()
-            changeBaseUrl()
         }
     }
 
     private fun changePort(value: Int){
-        _port.value = value
+        connectSettingsPrefRep.changePort(value)
     }
 
     fun onChangePublicationName(value: String){
-        _publicationName.value = value
+        connectSettingsPrefRep.changePublicationName(value)
         validatePublicationName()
         changeFormValid()
-        changeBaseUrl()
     }
 
     fun onChangeUserName(value: String){
-        _userName.value = value
+       connectSettingsPrefRep.changeUserName(value)
         validateUserName()
         changeFormValid()
     }
 
     fun onChangePassword(newPassword: String) {
-        _password.value = newPassword
+        connectSettingsPrefRep.changePassword(newPassword)
         validatePasswd()
         changeFormValid()
     }
@@ -171,7 +116,7 @@ class SettingViewModel(application: Application): AndroidViewModel(application) 
         handleAlertData()
         changeShowDialog()
         if (_isFormValid.value){
-            apiRepository = SettingRepositoryImpl(_userName.value, _password.value, _baseUrl.value)
+            apiRepository = SettingRepositoryImpl(userName.value, password.value, baseUrl.value)
             checkPing()
         }
     }
@@ -192,14 +137,24 @@ class SettingViewModel(application: Application): AndroidViewModel(application) 
     }
 
     private fun saveSettingsData(){
-        viewModelScope.launch { dataStoreManager.saveProtocol(_protocol.value.name) }
-        viewModelScope.launch { dataStoreManager.saveServerUrl(_server.value) }
-        viewModelScope.launch { dataStoreManager.savePort(_port.value) }
-        viewModelScope.launch { dataStoreManager.savePublicationName(_publicationName.value) }
-        viewModelScope.launch { dataStoreManager.saveUserName(_userName.value) }
         viewModelScope.launch {
-            val (encryptedPassword, iv) = CryptoManager.encrypt(_password.value)
-            dataStoreManager.saveEncryptedPassword(encryptedPassword, iv)
+            connectSettingsPrefRep.saveProtocol(protocol.value.name)
+        }
+        viewModelScope.launch {
+            connectSettingsPrefRep.saveServerUrl(server.value)
+        }
+        viewModelScope.launch {
+            connectSettingsPrefRep.savePort(port.value)
+        }
+        viewModelScope.launch {
+            connectSettingsPrefRep.savePublicationName(publicationName.value)
+        }
+        viewModelScope.launch {
+            connectSettingsPrefRep.saveUserName(userName.value)
+        }
+        viewModelScope.launch {
+            val (encryptedPassword, iv) = CryptoManager.encrypt(password.value)
+            connectSettingsPrefRep.saveEncryptedPassword(encryptedPassword, iv)
         }
     }
 
@@ -215,28 +170,28 @@ class SettingViewModel(application: Application): AndroidViewModel(application) 
     }
 
     private fun validateServer() {
-        _serverError.value = if (_server.value.isBlank()) "Не заполнен адрес сервера!" else null
+        _serverError.value = if (server.value.isBlank()) "Не заполнен адрес сервера!" else null
     }
 
     private fun validatePort() {
-        _portError.value = if (_port.value == 0) "Не заполнен порт!" else null
+        _portError.value = if (port.value == 0) "Не заполнен порт!" else null
     }
 
     private fun validatePublicationName() {
-        _publicationNameError.value = if (_publicationName.value.isBlank()) "Не заполнено имя публикации!" else null
+        _publicationNameError.value = if (publicationName.value.isBlank()) "Не заполнено имя публикации!" else null
     }
 
     private fun validateUserName() {
-        _userNameError.value = if (_userName.value.isBlank()) "Не заполнен имя пользователя!" else null
+        _userNameError.value = if (userName.value.isBlank()) "Не заполнен имя пользователя!" else null
     }
 
     private fun validatePasswd() {
-        _passwordError.value = if (_password.value.isBlank()) "Не заполнен пароль!" else null
+        _passwordError.value = if (password.value.isBlank()) "Не заполнен пароль!" else null
     }
 
 
     //Handling of alert dialog
-    fun changeFormValid(){
+    private fun changeFormValid(){
         _isFormValid.value = (_serverError.value == null && _protocolError.value == null && _portError.value == null
                 && _publicationNameError.value == null && _userNameError.value == null && _passwordError.value == null)
     }
