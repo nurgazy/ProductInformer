@@ -45,6 +45,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import androidx.navigation.toRoute
 import com.nurgazy_bolushbekov.product_informer.main_menu.MainMenuScreen
 import com.nurgazy_bolushbekov.product_informer.product_information.ProductInformationScreen
 import com.nurgazy_bolushbekov.product_informer.product.ProductDetailScreen
@@ -96,10 +97,12 @@ fun SideNavigationMenu() {
     var selectedItem by rememberSaveable { mutableStateOf(ScreenNavItem.Settings.route) }
 
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentScreen: ScreenNavItem? = currentBackStackEntry?.toRoute<ScreenNavItem>()
     val currentRoute = currentBackStackEntry?.destination?.route
+    var currentScreenTitle by rememberSaveable { mutableStateOf("") }
 
     LaunchedEffect(currentRoute) {
-        selectedItem = currentRoute ?: ScreenNavItem.Settings.route
+        currentScreenTitle = currentScreen?.title?: ""
     }
 
     ModalNavigationDrawer(
@@ -135,7 +138,7 @@ fun SideNavigationMenu() {
             Scaffold(
                 topBar = {
                     TopAppBar(
-                        title = { Text(selectedItem) },
+                        title = { Text(currentScreenTitle) },
                         navigationIcon = {
                             IconButton(onClick = { scope.launch { drawerState.open() } }) {
                                 Icon(Icons.Filled.Menu, contentDescription = "Открыть меню")
