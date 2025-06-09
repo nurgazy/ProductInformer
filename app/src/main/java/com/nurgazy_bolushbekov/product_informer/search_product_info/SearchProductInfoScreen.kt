@@ -1,4 +1,4 @@
-package com.nurgazy_bolushbekov.product_informer.product_information
+package com.nurgazy_bolushbekov.product_informer.search_product_info
 
 import android.app.Application
 import androidx.compose.foundation.layout.Arrangement
@@ -31,10 +31,10 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 @Composable
-fun ProductInformationScreen(navController: NavController){
+fun SearchProductInfoScreen(navController: NavController){
 
-    val vm: ProductInformationViewModel = viewModel(
-        factory = ProductInformationViewModelFactory(LocalContext.current.applicationContext as Application)
+    val vm: SearchProductInfoViewModel = viewModel(
+        factory = SearchProductInfoViewModelFactory(LocalContext.current.applicationContext as Application)
     )
 
     BarcodeScannerScreen(vm, navController)
@@ -42,7 +42,7 @@ fun ProductInformationScreen(navController: NavController){
 
 @Composable
 fun ProductInformationContent(
-    vm: ProductInformationViewModel,
+    vm: SearchProductInfoViewModel,
     isScannerVisible: MutableState<Boolean>,
     navController: NavController
 ) {

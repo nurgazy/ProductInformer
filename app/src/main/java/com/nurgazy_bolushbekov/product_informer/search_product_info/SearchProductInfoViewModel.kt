@@ -1,4 +1,4 @@
-package com.nurgazy_bolushbekov.product_informer.product_information
+package com.nurgazy_bolushbekov.product_informer.search_product_info
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
-class ProductInformationViewModel(application: Application): AndroidViewModel(application) {
+class SearchProductInfoViewModel(application: Application): AndroidViewModel(application) {
 
     private lateinit var apiRepository: ApiRepository
     private val connectionSettingsPrefRep = (application as App).connectionSettingsPrefRep
@@ -40,7 +40,7 @@ class ProductInformationViewModel(application: Application): AndroidViewModel(ap
     }
 
     fun getInfo() {
-        apiRepository = ProductInformationRepositoryImp(userName.value, password.value, baseUrl.value)
+        apiRepository = SearchProductInfoRepositoryImp(userName.value, password.value, baseUrl.value)
         viewModelScope.launch {
             _product.value = ResultFetchData.Loading
             if (_barcode.value.isEmpty()) {

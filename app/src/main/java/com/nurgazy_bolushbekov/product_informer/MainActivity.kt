@@ -47,7 +47,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.toRoute
 import com.nurgazy_bolushbekov.product_informer.main_menu.MainMenuScreen
-import com.nurgazy_bolushbekov.product_informer.product_information.ProductInformationScreen
+import com.nurgazy_bolushbekov.product_informer.search_product_info.SearchProductInfoScreen
 import com.nurgazy_bolushbekov.product_informer.product.ProductDetailScreen
 import com.nurgazy_bolushbekov.product_informer.settings.SettingScreen
 import com.nurgazy_bolushbekov.product_informer.utils.ScreenNavItem
@@ -73,7 +73,7 @@ fun MainScreen(paddingValues: PaddingValues, navController: NavHostController){
     ) {
         composable(ScreenNavItem.Settings.route) { SettingScreen(navController) }
         composable(ScreenNavItem.MainMenu.route) { MainMenuScreen(navController) }
-        composable(ScreenNavItem.ProductInformation.route) { ProductInformationScreen(navController) }
+        composable(ScreenNavItem.SearchProductInfo.route) { SearchProductInfoScreen(navController) }
         composable(
             route = ScreenNavItem.ProductDetail.route+"/{productJson}",
             arguments = listOf(navArgument("productJson"){type = NavType.StringType})

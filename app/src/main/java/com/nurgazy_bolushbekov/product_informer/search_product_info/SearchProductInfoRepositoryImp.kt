@@ -1,4 +1,4 @@
-package com.nurgazy_bolushbekov.product_informer.product_information
+package com.nurgazy_bolushbekov.product_informer.search_product_info
 
 import com.nurgazy_bolushbekov.product_informer.api_1C.ApiRepository
 import com.nurgazy_bolushbekov.product_informer.api_1C.RetrofitClient
@@ -14,7 +14,7 @@ import kotlinx.serialization.json.jsonObject
 import okhttp3.ResponseBody
 import retrofit2.Response
 
-class ProductInformationRepositoryImp(username:String, password:String, baseUrl:String): ApiRepository {
+class SearchProductInfoRepositoryImp(username:String, password:String, baseUrl:String): ApiRepository {
 
     private var apiService = RetrofitClient.create(username, password, baseUrl)
 

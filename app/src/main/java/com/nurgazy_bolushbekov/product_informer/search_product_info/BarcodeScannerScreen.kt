@@ -1,4 +1,4 @@
-package com.nurgazy_bolushbekov.product_informer.product_information
+package com.nurgazy_bolushbekov.product_informer.search_product_info
 
 import android.Manifest
 import android.content.pm.PackageManager
@@ -34,7 +34,7 @@ import com.google.mlkit.vision.common.InputImage
 import java.util.concurrent.Executors
 
 @Composable
-fun BarcodeScannerScreen(vm: ProductInformationViewModel, navController: NavController){
+fun BarcodeScannerScreen(vm: SearchProductInfoViewModel, navController: NavController){
     val context = LocalContext.current
 
     val isCameraPermissionGranted = checkCameraPermission()
