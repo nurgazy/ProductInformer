@@ -45,10 +45,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import androidx.navigation.toRoute
+import com.nurgazy_bolushbekov.product_informer.data_classes.Product
 import com.nurgazy_bolushbekov.product_informer.main_menu.MainMenuScreen
-import com.nurgazy_bolushbekov.product_informer.search_product_info.SearchProductInfoScreen
 import com.nurgazy_bolushbekov.product_informer.product.ProductDetailScreen
+import com.nurgazy_bolushbekov.product_informer.search_product_info.SearchProductInfoScreen
 import com.nurgazy_bolushbekov.product_informer.settings.SettingScreen
 import com.nurgazy_bolushbekov.product_informer.utils.ScreenNavItem
 import kotlinx.coroutines.launch
@@ -76,11 +76,11 @@ fun MainScreen(paddingValues: PaddingValues, navController: NavHostController){
         composable(ScreenNavItem.SearchProductInfo.route) { SearchProductInfoScreen(navController) }
         composable(
             route = ScreenNavItem.ProductDetail.route+"/{productJson}",
-            arguments = listOf(navArgument("productJson"){type = NavType.StringType})
+            arguments = listOf(navArgument("productJson"){type = NavType.SerializableType(Product::class.java)})
         ) { backStackEntry ->
-            val productJson = backStackEntry.arguments?.getString("productJson")
-            if (productJson != null) {
-                ProductDetailScreen(productJson)
+            val productData = backStackEntry.arguments?.getSerializable("productJson") as Product?
+            if (productData != null) {
+                ProductDetailScreen(productData)
             }
         }
     }
@@ -97,13 +97,17 @@ fun SideNavigationMenu() {
     var selectedItem by rememberSaveable { mutableStateOf(ScreenNavItem.Settings.route) }
 
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentScreen: ScreenNavItem? = currentBackStackEntry?.toRoute<ScreenNavItem>()
     val currentRoute = currentBackStackEntry?.destination?.route
     var currentScreenTitle by rememberSaveable { mutableStateOf("") }
-
     LaunchedEffect(currentRoute) {
-        currentScreenTitle = currentScreen?.title?: ""
+        currentScreenTitle = when (currentRoute) {
+            ScreenNavItem.Settings.route -> ScreenNavItem.Settings.title
+            ScreenNavItem.ProductDetail.route -> ScreenNavItem.ProductDetail.title
+            ScreenNavItem.SearchProductInfo.route -> ScreenNavItem.SearchProductInfo.title
+            else -> ScreenNavItem.MainMenu.title
+        }
     }
+
 
     ModalNavigationDrawer(
         drawerState = drawerState,

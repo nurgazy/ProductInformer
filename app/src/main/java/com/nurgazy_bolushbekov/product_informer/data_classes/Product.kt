@@ -17,6 +17,7 @@ data class Product(
     val brand: String,
     @SerialName("ТоварнаяКатегория")
     val productCategory: String,
+    var savedImagePath: String? = null,
 
     var productSpecifications: List<ProductSpecification>? = null
-)
+) : java.io.Serializable

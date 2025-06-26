@@ -1,6 +1,5 @@
 package com.nurgazy_bolushbekov.product_informer.product
 
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
@@ -31,11 +30,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.nurgazy_bolushbekov.product_informer.data_classes.Product
-import kotlinx.serialization.json.Json
 
 @Composable
-fun ProductDetailScreen(productJson: String) {
-    val product: Product = remember { Json.decodeFromString<Product>(productJson) }
+fun ProductDetailScreen(product: Product) {
+
+    val savedImageUri = remember { mutableStateOf(product.savedImagePath) }
 
     Column(Modifier.fillMaxWidth()) {
         //Наименование
@@ -236,3 +235,4 @@ fun CollapsibleItem(
         }
     }
 }
+

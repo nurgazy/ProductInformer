@@ -9,9 +9,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -50,6 +52,8 @@ fun ProductInformationContent(
     val barcodeText by vm.barcode.collectAsState()
     val productResult by vm.product.collectAsState()
     val navigateDetailScreen by vm.navigateDetailScreen.collectAsState()
+    val showDialog by vm.showDialog.collectAsState()
+    val alertText by vm.alertText.collectAsState()
 
     LaunchedEffect(navigateDetailScreen) {
         if (navigateDetailScreen) {
@@ -113,5 +117,19 @@ fun ProductInformationContent(
             }
             is ResultFetchData.Success -> {}
         }
+    }
+
+    if (showDialog){
+        AlertDialog(
+            onDismissRequest = { vm.resetShowAlertDialog() },
+            text = { Text(text = alertText) },
+            confirmButton = {
+                TextButton(onClick = {
+                    vm.resetShowAlertDialog()
+                }) {
+                    Text("OK")
+                }
+            }
+        )
     }
 }

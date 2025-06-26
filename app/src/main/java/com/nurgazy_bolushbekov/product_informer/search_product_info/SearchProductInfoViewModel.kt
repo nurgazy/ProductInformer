@@ -17,6 +17,7 @@ class SearchProductInfoViewModel(application: Application): AndroidViewModel(app
 
     private lateinit var apiRepository: ApiRepository
     private val connectionSettingsPrefRep = (application as App).connectionSettingsPrefRep
+    private val curApplication = application
 
     private val userName: StateFlow<String> = connectionSettingsPrefRep.userName.asStateFlow()
     private val password: StateFlow<String> = connectionSettingsPrefRep.password.asStateFlow()
@@ -31,8 +32,26 @@ class SearchProductInfoViewModel(application: Application): AndroidViewModel(app
     private val _navigateDetailScreen = MutableStateFlow(false)
     val navigateDetailScreen: StateFlow<Boolean> = _navigateDetailScreen.asStateFlow()
 
+    private val _showDialog = MutableStateFlow(false)
+    val showDialog: StateFlow<Boolean> = _showDialog.asStateFlow()
+
+    private val _alertText = MutableStateFlow("")
+    val alertText: StateFlow<String> = _alertText.asStateFlow()
+
     fun onChangeBarcode(newBarcode: String) {
         _barcode.value = newBarcode
+    }
+
+    private fun setShowAlertDialog(){
+        _showDialog.value = true
+    }
+
+    fun resetShowAlertDialog(){
+        _showDialog.value = false
+    }
+
+    private fun setNavigationDetailScreen(){
+        _navigateDetailScreen.value = true
     }
 
     fun resetNavigationDetailScreen(){
@@ -40,12 +59,16 @@ class SearchProductInfoViewModel(application: Application): AndroidViewModel(app
     }
 
     fun getInfo() {
-        apiRepository = SearchProductInfoRepositoryImp(userName.value, password.value, baseUrl.value)
+        apiRepository = SearchProductInfoRepositoryImp(userName.value, password.value, baseUrl.value,
+            curApplication
+        )
         viewModelScope.launch {
             _product.value = ResultFetchData.Loading
             if (_barcode.value.isEmpty()) {
                 _product.value = ResultFetchData.Error(Exception("Штрихкод не может быть пустым"))
-                _navigateDetailScreen.value = false
+                _alertText.value = "Штрихкод не может быть пустым"
+                setShowAlertDialog()
+                resetNavigationDetailScreen()
                 return@launch
             }
             apiRepository.info(_barcode.value).collectLatest { result ->
@@ -53,20 +76,24 @@ class SearchProductInfoViewModel(application: Application): AndroidViewModel(app
                     is ResultFetchData.Success -> {
                         try {
                             _product.value = result
-                            _navigateDetailScreen.value = true
+                            setNavigationDetailScreen()
                         }catch (e: Exception){
                             _product.value = ResultFetchData.Error(e)
-                            _navigateDetailScreen.value = false
+                            _alertText.value = e.message.toString()
+                            setShowAlertDialog()
+                            resetNavigationDetailScreen()
                         }
                     }
                     is ResultFetchData.Error -> {
                         _product.value = result
-                        _navigateDetailScreen.value = false
+                        _alertText.value = result.exception.message.toString()
+                        setShowAlertDialog()
+                        resetNavigationDetailScreen()
                     }
 
                     ResultFetchData.Loading -> {
                         _product.value = result
-                        _navigateDetailScreen.value = false
+                        resetNavigationDetailScreen()
                     }
                 }
 
