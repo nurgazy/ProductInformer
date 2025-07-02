@@ -2,7 +2,6 @@ package com.nurgazy_bolushbekov.product_informer.settings
 
 import android.app.Application
 import androidx.activity.ComponentActivity
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,13 +9,18 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -29,11 +33,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -51,8 +56,13 @@ fun SettingScreen(navController: NavController){
         factory = SettingsViewModelFactory(LocalContext.current.applicationContext as Application)
     )
 
-    Column(Modifier.fillMaxWidth()) {
-//        ConnectionSettingsRow()
+    val scrollState = rememberScrollState()
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .verticalScroll(scrollState)
+    ) {
         ProtocolRow(vm)
         ServerRow(vm)
         PortRow(vm)
@@ -62,28 +72,6 @@ fun SettingScreen(navController: NavController){
         ButtonRow(vm, navController)
         PingRow(vm)
         ShowAlertDialog(vm)
-    }
-}
-
-@Composable
-private fun ConnectionSettingsRow() {
-    Row(
-        Modifier
-            .background(Color.LightGray)
-            .fillMaxWidth()
-            .padding(5.dp),
-        horizontalArrangement = Arrangement.Start,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-
-        Text(
-            text = stringResource(R.string.connection_settings_text),
-            modifier = Modifier
-                .padding(5.dp)
-                .weight(1f),
-            textAlign = TextAlign.Center,
-            fontSize = 20.sp
-        )
     }
 }
 
@@ -122,6 +110,7 @@ private fun ProtocolRow(vm: SettingViewModel) {
                 modifier = Modifier
                     .padding(5.dp)
                     .menuAnchor(MenuAnchorType.PrimaryEditable)
+                    .fillMaxWidth()
             )
 
             ExposedDropdownMenu(
@@ -274,6 +263,7 @@ private fun UserNameRow(vm: SettingViewModel) {
 private fun PasswdRow(vm: SettingViewModel) {
 
     val password by vm.password.collectAsState()
+    var isPasswdVisible by rememberSaveable { mutableStateOf(false) }
 
     Row(
         Modifier
@@ -296,7 +286,16 @@ private fun PasswdRow(vm: SettingViewModel) {
                 .padding(5.dp)
                 .weight(2f),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-            visualTransformation = PasswordVisualTransformation(),
+            visualTransformation = if (isPasswdVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            trailingIcon = {
+                IconButton(onClick = { isPasswdVisible = !isPasswdVisible }) {
+                    Icon(
+                        painter = if (isPasswdVisible) painterResource(R.drawable.passwd_show) else painterResource(R.drawable.passwd_hide),
+                        contentDescription = if (isPasswdVisible) "Скрыть пароль" else "Показать пароль",
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            },
             singleLine = true
         )
     }

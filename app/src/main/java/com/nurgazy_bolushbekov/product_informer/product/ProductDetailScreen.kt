@@ -1,7 +1,6 @@
 package com.nurgazy_bolushbekov.product_informer.product
 
 import android.content.Context
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
@@ -15,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
@@ -26,9 +24,6 @@ import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
@@ -65,7 +60,6 @@ fun ProductDetailScreen(product: Product?) {
     val tabs = ProductDetailTab.entries.toTypedArray()
     val pagerState = rememberPagerState (pageCount = { tabs.size })
     val coroutineScope = rememberCoroutineScope()
-    var selectedOption by remember { mutableStateOf(tabs[0]) }
 
     if (product == null) {
         Column(Modifier.fillMaxWidth()) {
@@ -79,30 +73,6 @@ fun ProductDetailScreen(product: Product?) {
             .padding(5.dp)
             .fillMaxSize()
     ) {
-//        SingleChoiceSegmentedButtonRow(
-//            modifier = Modifier.fillMaxWidth()
-//        ) {
-//            tabs.forEachIndexed { index, tab ->
-//                SegmentedButton(
-//                    selected = pagerState.currentPage == index,
-//                    onClick = { coroutineScope.launch {
-//                        selectedOption = tabs[index]
-//                        pagerState.animateScrollToPage(index)
-//                    } },
-//                    shape = SegmentedButtonDefaults.itemShape(index = index, count = tabs.size)
-//                ) {
-//                    Text(tab.title)
-//                }
-//            }
-//        }
-//
-//        Spacer(modifier = Modifier.height(16.dp))
-//
-//        // 2. Условное отображение контента
-//        when (selectedOption) {
-//            ProductDetailTab.PRODUCT_DETAIL -> DetailScreenContent(product)
-//            ProductDetailTab.PRODUCT_IMAGE -> ImageScreenContent(product)
-//        }
 
         TabRow(
             selectedTabIndex = pagerState.currentPage,
@@ -132,9 +102,7 @@ fun ProductDetailScreen(product: Product?) {
         }
 
     }
-
-
-    }
+}
 
 @Composable
 fun DetailScreenContent(product: Product) {
