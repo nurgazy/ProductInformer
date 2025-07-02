@@ -52,7 +52,7 @@ fun SettingScreen(navController: NavController){
     )
 
     Column(Modifier.fillMaxWidth()) {
-        ConnectionSettingsRow()
+//        ConnectionSettingsRow()
         ProtocolRow(vm)
         ServerRow(vm)
         PortRow(vm)
@@ -322,13 +322,13 @@ private fun ButtonRow(vm: SettingViewModel, navController: NavController) {
                 .padding(5.dp)
                 .weight(1f)
         ) {
-            Text(stringResource(R.string.btn_check_text), fontSize = 25.sp)
+            Text(stringResource(R.string.btn_check_text))
         }
         Button(
             onClick = {
                 vm.onReadyBtnPress()
                 if (isFormValid) {
-                    navController.navigate(ScreenNavItem.MainMenu.route)
+                    navController.navigate(ScreenNavItem.SearchProductInfo.route)
                 }
 
             },
@@ -336,7 +336,7 @@ private fun ButtonRow(vm: SettingViewModel, navController: NavController) {
                 .padding(5.dp)
                 .weight(1f)
         ) {
-            Text(stringResource(R.string.btn_ready_text), fontSize = 25.sp)
+            Text(stringResource(R.string.btn_ready_text))
         }
     }
 

@@ -1,8 +1,11 @@
 package com.nurgazy_bolushbekov.product_informer.data_classes
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+@Parcelize
 @Serializable
 data class Product(
     @SerialName("Наименование")
@@ -20,4 +23,4 @@ data class Product(
     var savedImagePath: String? = null,
 
     var productSpecifications: List<ProductSpecification>? = null
-) : java.io.Serializable
+) : Parcelable, java.io.Serializable

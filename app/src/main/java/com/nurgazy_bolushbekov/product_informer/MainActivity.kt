@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.DrawerValue
@@ -27,6 +26,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
@@ -38,16 +38,15 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
-import com.nurgazy_bolushbekov.product_informer.data_classes.Product
 import com.nurgazy_bolushbekov.product_informer.main_menu.MainMenuScreen
 import com.nurgazy_bolushbekov.product_informer.product.ProductDetailScreen
+import com.nurgazy_bolushbekov.product_informer.product.ProductSharedViewModel
 import com.nurgazy_bolushbekov.product_informer.search_product_info.SearchProductInfoScreen
 import com.nurgazy_bolushbekov.product_informer.settings.SettingScreen
 import com.nurgazy_bolushbekov.product_informer.utils.ScreenNavItem
@@ -68,21 +67,21 @@ fun MainScreen(paddingValues: PaddingValues, navController: NavHostController){
 
     NavHost(
         navController = navController,
-        startDestination = ScreenNavItem.Settings.route,
+        startDestination = ScreenNavItem.SearchProductInfo.route,
         modifier = Modifier.padding(paddingValues)
     ) {
         composable(ScreenNavItem.Settings.route) { SettingScreen(navController) }
         composable(ScreenNavItem.MainMenu.route) { MainMenuScreen(navController) }
-        composable(ScreenNavItem.SearchProductInfo.route) { SearchProductInfoScreen(navController) }
-        composable(
-            route = ScreenNavItem.ProductDetail.route+"/{productJson}",
-            arguments = listOf(navArgument("productJson"){type = NavType.SerializableType(Product::class.java)})
-        ) { backStackEntry ->
-            val productData = backStackEntry.arguments?.getSerializable("productJson") as Product?
-            if (productData != null) {
-                ProductDetailScreen(productData)
-            }
+        composable(ScreenNavItem.SearchProductInfo.route) {
+            val sharedViewModel: ProductSharedViewModel = viewModel(navController.getBackStackEntry(ScreenNavItem.SearchProductInfo.route))
+            SearchProductInfoScreen(navController, sharedViewModel)
         }
+        composable(ScreenNavItem.ProductDetail.route) {
+            val sharedViewModel: ProductSharedViewModel = viewModel(navController.getBackStackEntry(ScreenNavItem.SearchProductInfo.route))
+            val productData by sharedViewModel.currentProduct.collectAsState()
+            ProductDetailScreen(productData)
+        }
+
     }
 }
 
@@ -114,17 +113,17 @@ fun SideNavigationMenu() {
         gesturesEnabled = true, // Разрешить открытие/закрытие жестами
         drawerContent = {
             ModalDrawerSheet {
-                DrawerItem(
-                    label = "Меню",
-                    icon = Icons.Filled.Home,
-                    selected = selectedItem == ScreenNavItem.MainMenu.route,
-                    onClick = {
-                        selectedItem = ScreenNavItem.MainMenu.route
-                        navController.navigate(ScreenNavItem.MainMenu.route)
-                        scope.launch { drawerState.close() }
-                        // Обработка перехода на экран "Меню"
-                    }
-                )
+//                DrawerItem(
+//                    label = "Меню",
+//                    icon = Icons.Filled.Home,
+//                    selected = selectedItem == ScreenNavItem.MainMenu.route,
+//                    onClick = {
+//                        selectedItem = ScreenNavItem.MainMenu.route
+//                        navController.navigate(ScreenNavItem.MainMenu.route)
+//                        scope.launch { drawerState.close() }
+//                        // Обработка перехода на экран "Меню"
+//                    }
+//                )
                 DrawerItem(
                     label = "Настройки",
                     icon = Icons.Filled.Settings,

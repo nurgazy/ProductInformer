@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.devtoolsKsp)
     kotlin("plugin.serialization") version "1.8.0"
+    kotlin("plugin.parcelize")
 }
 
 android {
@@ -104,4 +105,7 @@ dependencies {
     implementation(libs.kotlinx.serialization.core)
 
     implementation(libs.coil.compose)
+
+    implementation (libs.androidx.runtime)
+    implementation (libs.androidx.foundation)
 }

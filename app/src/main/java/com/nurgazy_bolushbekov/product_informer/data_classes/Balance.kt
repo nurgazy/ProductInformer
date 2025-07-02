@@ -1,8 +1,11 @@
 package com.nurgazy_bolushbekov.product_informer.data_classes
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+@Parcelize
 @Serializable
 data class Balance(
     @SerialName("Склад")
@@ -12,5 +15,7 @@ data class Balance(
     @SerialName("Доступно")
     val available: Double,
     @SerialName("Единица")
-    val unit: String
-)
+    val unit: String,
+    @SerialName("Ячейки")
+    val cellStock: List<CellStock>?=null
+) : Parcelable, java.io.Serializable

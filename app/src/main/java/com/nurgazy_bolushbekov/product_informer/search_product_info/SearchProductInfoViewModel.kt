@@ -1,11 +1,13 @@
 package com.nurgazy_bolushbekov.product_informer.search_product_info
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.nurgazy_bolushbekov.product_informer.api_1C.ApiRepository
 import com.nurgazy_bolushbekov.product_informer.application.App
 import com.nurgazy_bolushbekov.product_informer.data_classes.Product
+import com.nurgazy_bolushbekov.product_informer.settings.Protocol
 import com.nurgazy_bolushbekov.product_informer.utils.ResultFetchData
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,12 +18,12 @@ import kotlinx.coroutines.launch
 class SearchProductInfoViewModel(application: Application): AndroidViewModel(application) {
 
     private lateinit var apiRepository: ApiRepository
-    private val connectionSettingsPrefRep = (application as App).connectionSettingsPrefRep
+    private val connectSettingsPrefRep = (application as App).connectionSettingsPrefRep
     private val curApplication = application
 
-    private val userName: StateFlow<String> = connectionSettingsPrefRep.userName.asStateFlow()
-    private val password: StateFlow<String> = connectionSettingsPrefRep.password.asStateFlow()
-    private val baseUrl = connectionSettingsPrefRep.baseUrl.asStateFlow()
+    private val userName: StateFlow<String> = connectSettingsPrefRep.userName.asStateFlow()
+    private val password: StateFlow<String> = connectSettingsPrefRep.password.asStateFlow()
+    private val baseUrl: StateFlow<String> = connectSettingsPrefRep.baseUrl.asStateFlow()
 
     private val _barcode = MutableStateFlow("")
     val barcode: StateFlow<String> = _barcode.asStateFlow()

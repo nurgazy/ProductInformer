@@ -1,6 +1,7 @@
 package com.nurgazy_bolushbekov.product_informer.settings
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.nurgazy_bolushbekov.product_informer.api_1C.ApiRepository
@@ -30,7 +31,7 @@ class SettingViewModel(application: Application): AndroidViewModel(application) 
     val publicationName: StateFlow<String> = connectSettingsPrefRep.publicationName.asStateFlow()
     val userName: StateFlow<String> = connectSettingsPrefRep.userName.asStateFlow()
     val password: StateFlow<String> = connectSettingsPrefRep.password.asStateFlow()
-    private val baseUrl = connectSettingsPrefRep.baseUrl.asStateFlow()
+    private val baseUrl: StateFlow<String> = connectSettingsPrefRep.baseUrl.asStateFlow()
 
     private val _protocolError = MutableStateFlow<String?>(null)
     private val _serverError = MutableStateFlow<String?>(null)

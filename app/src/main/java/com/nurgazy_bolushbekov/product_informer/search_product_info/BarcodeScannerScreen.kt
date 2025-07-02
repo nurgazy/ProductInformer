@@ -31,10 +31,11 @@ import com.google.mlkit.vision.barcode.BarcodeScanner
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
+import com.nurgazy_bolushbekov.product_informer.product.ProductSharedViewModel
 import java.util.concurrent.Executors
 
 @Composable
-fun BarcodeScannerScreen(vm: SearchProductInfoViewModel, navController: NavController){
+fun BarcodeScannerScreen(vm: SearchProductInfoViewModel, navController: NavController, sharedViewModel: ProductSharedViewModel){
     val context = LocalContext.current
 
     val isCameraPermissionGranted = checkCameraPermission()
@@ -79,7 +80,7 @@ fun BarcodeScannerScreen(vm: SearchProductInfoViewModel, navController: NavContr
                 }
             )
         } else {
-            ProductInformationContent(vm, isScannerVisible, navController)
+            ProductInformationContent(vm, isScannerVisible, navController, sharedViewModel)
         }
     } else {
         PermissionDeniedScreen()

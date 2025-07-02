@@ -48,6 +48,7 @@ class SettingsConnectionsPreferencesRepository(private val context: Context) {
             }.
             collect { value ->
                 protocol.value = Protocol.valueOf(value.toString())
+                changeBaseUrl()
             }
         }
 
@@ -57,6 +58,7 @@ class SettingsConnectionsPreferencesRepository(private val context: Context) {
             }
             .collect { value ->
                 serverUrl.value = value
+                changeBaseUrl()
             }
         }
 
@@ -66,6 +68,7 @@ class SettingsConnectionsPreferencesRepository(private val context: Context) {
             }
             .collect { value ->
                 port.value = value.toInt()
+                changeBaseUrl()
             }
         }
 
@@ -75,6 +78,7 @@ class SettingsConnectionsPreferencesRepository(private val context: Context) {
             }
             .collect{ value ->
                 publicationName.value = value
+                changeBaseUrl()
             }
         }
 
@@ -83,6 +87,7 @@ class SettingsConnectionsPreferencesRepository(private val context: Context) {
                 preferences -> preferences[USER_NAME_KEY] ?: ""
             }.collect{ value ->
                 userName.value = value
+                changeBaseUrl()
             }
         }
 

@@ -1,6 +1,7 @@
 package com.nurgazy_bolushbekov.product_informer.search_product_info
 
 import android.app.Application
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,26 +28,26 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.nurgazy_bolushbekov.product_informer.product.ProductSharedViewModel
 import com.nurgazy_bolushbekov.product_informer.utils.ResultFetchData
 import com.nurgazy_bolushbekov.product_informer.utils.ScreenNavItem
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 
 @Composable
-fun SearchProductInfoScreen(navController: NavController){
+fun SearchProductInfoScreen(navController: NavController, sharedViewModel: ProductSharedViewModel){
 
     val vm: SearchProductInfoViewModel = viewModel(
         factory = SearchProductInfoViewModelFactory(LocalContext.current.applicationContext as Application)
     )
 
-    BarcodeScannerScreen(vm, navController)
+    BarcodeScannerScreen(vm, navController, sharedViewModel)
 }
 
 @Composable
 fun ProductInformationContent(
     vm: SearchProductInfoViewModel,
     isScannerVisible: MutableState<Boolean>,
-    navController: NavController
+    navController: NavController,
+    sharedViewModel: ProductSharedViewModel
 ) {
 
     val barcodeText by vm.barcode.collectAsState()
@@ -58,7 +59,8 @@ fun ProductInformationContent(
     LaunchedEffect(navigateDetailScreen) {
         if (navigateDetailScreen) {
             val product = (productResult as ResultFetchData.Success).data
-            navController.navigate(ScreenNavItem.ProductDetail.route+"/${Json.encodeToString(product)}")
+            sharedViewModel.setProduct(product)
+            navController.navigate(ScreenNavItem.ProductDetail.route)
             vm.resetNavigationDetailScreen() // Сбрасываем флаг после навигации
         }
     }
