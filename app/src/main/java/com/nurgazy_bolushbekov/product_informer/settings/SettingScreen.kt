@@ -2,6 +2,7 @@ package com.nurgazy_bolushbekov.product_informer.settings
 
 import android.app.Application
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -51,6 +52,9 @@ import com.nurgazy_bolushbekov.product_informer.utils.ScreenNavItem
 @Composable
 fun SettingScreen(navController: NavController){
 
+    BackHandler {
+        navController.popBackStack(ScreenNavItem.SearchProductInfo.route, false)
+    }
     val vm: SettingViewModel = viewModel(
         viewModelStoreOwner = LocalContext.current as ComponentActivity,
         factory = SettingsViewModelFactory(LocalContext.current.applicationContext as Application)

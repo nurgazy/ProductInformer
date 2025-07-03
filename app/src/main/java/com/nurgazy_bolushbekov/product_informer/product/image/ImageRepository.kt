@@ -1,4 +1,4 @@
-package com.nurgazy_bolushbekov.product_informer.search_product_info
+package com.nurgazy_bolushbekov.product_informer.product.image
 
 import android.graphics.Bitmap
 import java.io.File

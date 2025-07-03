@@ -8,6 +8,8 @@ import android.util.Log
 import com.nurgazy_bolushbekov.product_informer.api_1C.ApiRepository
 import com.nurgazy_bolushbekov.product_informer.api_1C.RetrofitClient
 import com.nurgazy_bolushbekov.product_informer.data_classes.Product
+import com.nurgazy_bolushbekov.product_informer.product.image.ImageRepository
+import com.nurgazy_bolushbekov.product_informer.product.image.ImageRepositoryImpl
 import com.nurgazy_bolushbekov.product_informer.utils.ResultFetchData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -61,6 +63,7 @@ class SearchProductInfoRepositoryImp(username:String, password:String, baseUrl:S
                 }
 
                 if (bitmap != null) {
+//                    val imgExtension = jsonString.jsonObject["Расширение"].toString().lowercase()
                     withContext(Dispatchers.IO){
                         val resultSaveImage = imageRepository.saveImageToCache(
                             bitmap,

@@ -1,5 +1,6 @@
 package com.nurgazy_bolushbekov.product_informer
 
+import android.app.Application
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -34,6 +35,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.style.TextDecoration
@@ -47,6 +49,7 @@ import androidx.navigation.compose.rememberNavController
 import com.nurgazy_bolushbekov.product_informer.main_menu.MainMenuScreen
 import com.nurgazy_bolushbekov.product_informer.product.ProductDetailScreen
 import com.nurgazy_bolushbekov.product_informer.product.ProductSharedViewModel
+import com.nurgazy_bolushbekov.product_informer.product.ProductSharedViewModelFactory
 import com.nurgazy_bolushbekov.product_informer.search_product_info.SearchProductInfoScreen
 import com.nurgazy_bolushbekov.product_informer.settings.SettingScreen
 import com.nurgazy_bolushbekov.product_informer.utils.ScreenNavItem
@@ -73,13 +76,18 @@ fun MainScreen(paddingValues: PaddingValues, navController: NavHostController){
         composable(ScreenNavItem.Settings.route) { SettingScreen(navController) }
         composable(ScreenNavItem.MainMenu.route) { MainMenuScreen(navController) }
         composable(ScreenNavItem.SearchProductInfo.route) {
-            val sharedViewModel: ProductSharedViewModel = viewModel(navController.getBackStackEntry(ScreenNavItem.SearchProductInfo.route))
+            val sharedViewModel: ProductSharedViewModel = viewModel(
+                navController.getBackStackEntry(ScreenNavItem.SearchProductInfo.route),
+                factory = ProductSharedViewModelFactory(LocalContext.current.applicationContext as Application)
+            )
             SearchProductInfoScreen(navController, sharedViewModel)
         }
         composable(ScreenNavItem.ProductDetail.route) {
-            val sharedViewModel: ProductSharedViewModel = viewModel(navController.getBackStackEntry(ScreenNavItem.SearchProductInfo.route))
-            val productData by sharedViewModel.currentProduct.collectAsState()
-            ProductDetailScreen(productData)
+            val sharedViewModel: ProductSharedViewModel = viewModel(
+                navController.getBackStackEntry(ScreenNavItem.SearchProductInfo.route),
+                factory = ProductSharedViewModelFactory(LocalContext.current.applicationContext as Application)
+            )
+            ProductDetailScreen(sharedViewModel, navController)
         }
 
     }
@@ -113,17 +121,6 @@ fun SideNavigationMenu() {
         gesturesEnabled = true, // Разрешить открытие/закрытие жестами
         drawerContent = {
             ModalDrawerSheet {
-//                DrawerItem(
-//                    label = "Меню",
-//                    icon = Icons.Filled.Home,
-//                    selected = selectedItem == ScreenNavItem.MainMenu.route,
-//                    onClick = {
-//                        selectedItem = ScreenNavItem.MainMenu.route
-//                        navController.navigate(ScreenNavItem.MainMenu.route)
-//                        scope.launch { drawerState.close() }
-//                        // Обработка перехода на экран "Меню"
-//                    }
-//                )
                 DrawerItem(
                     label = "Настройки",
                     icon = Icons.Filled.Settings,
@@ -132,7 +129,6 @@ fun SideNavigationMenu() {
                         selectedItem = ScreenNavItem.Settings.route
                         navController.navigate(ScreenNavItem.Settings.route)
                         scope.launch { drawerState.close() }
-                        // Обработка перехода на экран "Настройки"
                     }
                 )
             }

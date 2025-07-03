@@ -1,12 +1,21 @@
 package com.nurgazy_bolushbekov.product_informer.product
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
 import com.nurgazy_bolushbekov.product_informer.data_classes.Product
+import com.nurgazy_bolushbekov.product_informer.product.image.ImageRepository
+import com.nurgazy_bolushbekov.product_informer.product.image.ImageRepositoryImpl
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
-class ProductSharedViewModel: ViewModel() {
+class ProductSharedViewModel(application: Application): AndroidViewModel(application) {
+
+    private val imageRepository: ImageRepository = ImageRepositoryImpl(application)
+
     private val _currentProduct = MutableStateFlow<Product?>(null)
     val currentProduct: StateFlow<Product?> = _currentProduct.asStateFlow()
 
@@ -16,5 +25,11 @@ class ProductSharedViewModel: ViewModel() {
 
     fun clearProduct() {
         _currentProduct.value = null
+    }
+
+    fun deleteImage(){
+        viewModelScope.launch(Dispatchers.IO) {
+            imageRepository.deleteImageFromCache(_currentProduct.value!!.savedImagePath!!)
+        }
     }
 }

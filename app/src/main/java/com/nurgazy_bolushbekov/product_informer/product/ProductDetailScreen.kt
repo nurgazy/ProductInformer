@@ -1,6 +1,7 @@
 package com.nurgazy_bolushbekov.product_informer.product
 
 import android.content.Context
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
@@ -28,6 +29,7 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,10 +42,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import coil.size.Size
 import com.nurgazy_bolushbekov.product_informer.data_classes.Product
+import com.nurgazy_bolushbekov.product_informer.utils.ScreenNavItem
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -54,12 +58,17 @@ enum class ProductDetailTab(val title: String) {
 }
 
 @Composable
-fun ProductDetailScreen(product: Product?) {
+fun ProductDetailScreen(sharedViewModel: ProductSharedViewModel, navController: NavHostController) {
 
-
+    val product by sharedViewModel.currentProduct.collectAsState()
     val tabs = ProductDetailTab.entries.toTypedArray()
     val pagerState = rememberPagerState (pageCount = { tabs.size })
     val coroutineScope = rememberCoroutineScope()
+
+    BackHandler {
+        sharedViewModel.deleteImage()
+        navController.popBackStack(ScreenNavItem.SearchProductInfo.route, false)
+    }
 
     if (product == null) {
         Column(Modifier.fillMaxWidth()) {
@@ -96,8 +105,8 @@ fun ProductDetailScreen(product: Product?) {
                 .weight(1f)
         ) { page ->
             when (tabs[page]) {
-                ProductDetailTab.PRODUCT_DETAIL -> DetailScreenContent(product)
-                ProductDetailTab.PRODUCT_IMAGE -> ImageScreenContent(product)
+                ProductDetailTab.PRODUCT_DETAIL -> DetailScreenContent(product!!)
+                ProductDetailTab.PRODUCT_IMAGE -> ImageScreenContent(product!!)
             }
         }
 
@@ -318,7 +327,7 @@ fun ImageScreenContent(product: Product) {
             contentScale = ContentScale.Fit
         )
     } else {
-        Text("Файл изображения не найден в кэше.")
+        Text("Файл изображения не найден.")
     }
 
 }
