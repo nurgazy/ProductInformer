@@ -21,6 +21,7 @@ class SearchProductInfoViewModel(application: Application): AndroidViewModel(app
     private val connectSettingsPrefRep = (application as App).connectionSettingsPrefRep
     private val curApplication = application
 
+    val serverUrl: StateFlow<String> = connectSettingsPrefRep.serverUrl.asStateFlow()
     private val userName: StateFlow<String> = connectSettingsPrefRep.userName.asStateFlow()
     private val password: StateFlow<String> = connectSettingsPrefRep.password.asStateFlow()
     private val baseUrl: StateFlow<String> = connectSettingsPrefRep.baseUrl.asStateFlow()

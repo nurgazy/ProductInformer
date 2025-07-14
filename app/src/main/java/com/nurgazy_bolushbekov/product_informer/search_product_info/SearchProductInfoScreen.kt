@@ -55,6 +55,7 @@ fun ProductInformationContent(
     val navigateDetailScreen by vm.navigateDetailScreen.collectAsState()
     val showDialog by vm.showDialog.collectAsState()
     val alertText by vm.alertText.collectAsState()
+    val serverUrl by vm.serverUrl.collectAsState()
 
     LaunchedEffect(navigateDetailScreen) {
         if (navigateDetailScreen) {
@@ -87,7 +88,13 @@ fun ProductInformationContent(
             verticalAlignment = Alignment.CenterVertically
         ){
             Button(
-                onClick = { isScannerVisible.value = true },
+                onClick = {
+                    if (serverUrl.isEmpty()){
+                        navController.navigate(ScreenNavItem.Settings.route)
+                    }else {
+                        isScannerVisible.value = true
+                    }
+                },
                 modifier = Modifier
                     .padding(5.dp)
                     .weight(1f)
@@ -95,7 +102,13 @@ fun ProductInformationContent(
                 Text("Сканировать")
             }
             Button(
-                onClick = { vm.getInfo() },
+                onClick = {
+                    if (serverUrl.isEmpty()){
+                        navController.navigate(ScreenNavItem.Settings.route)
+                    }else {
+                        vm.getInfo()
+                    }
+                },
                 modifier = Modifier
                     .padding(5.dp)
                     .weight(1f)

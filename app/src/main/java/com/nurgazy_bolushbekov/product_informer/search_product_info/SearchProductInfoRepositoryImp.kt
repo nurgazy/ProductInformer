@@ -63,7 +63,6 @@ class SearchProductInfoRepositoryImp(username:String, password:String, baseUrl:S
                 }
 
                 if (bitmap != null) {
-//                    val imgExtension = jsonString.jsonObject["Расширение"].toString().lowercase()
                     withContext(Dispatchers.IO){
                         val resultSaveImage = imageRepository.saveImageToCache(
                             bitmap,
@@ -86,6 +85,8 @@ class SearchProductInfoRepositoryImp(username:String, password:String, baseUrl:S
             }
 
             emit(ResultFetchData.Success(product))
+        }else{
+            emit(ResultFetchData.Error(Exception("Ошибка. Код: ${response.code()}. ${response.message()}")))
         }
     }.catch { e ->
         emit(ResultFetchData.Error(e))
