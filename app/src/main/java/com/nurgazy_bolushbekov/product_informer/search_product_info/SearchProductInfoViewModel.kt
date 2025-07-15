@@ -1,13 +1,11 @@
 package com.nurgazy_bolushbekov.product_informer.search_product_info
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.nurgazy_bolushbekov.product_informer.api_1C.ApiRepository
 import com.nurgazy_bolushbekov.product_informer.application.App
 import com.nurgazy_bolushbekov.product_informer.data_classes.Product
-import com.nurgazy_bolushbekov.product_informer.settings.Protocol
 import com.nurgazy_bolushbekov.product_informer.utils.ResultFetchData
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
