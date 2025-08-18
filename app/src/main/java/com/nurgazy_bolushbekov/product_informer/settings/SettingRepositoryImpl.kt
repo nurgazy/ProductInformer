@@ -30,7 +30,7 @@ class SettingRepositoryImpl(username: String, password: String, baseUrl: String)
         }
     }
 
-    override suspend fun info(barcode: String): Flow<ResultFetchData<Product>> {
+    override suspend fun info(barcode: String, fullSpecifications: Boolean?): Flow<ResultFetchData<Product>> {
         return emptyFlow()
     }
 }

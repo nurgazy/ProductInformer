@@ -6,5 +6,5 @@ import kotlinx.coroutines.flow.Flow
 
 interface ApiRepository {
     suspend fun ping(): ResultFetchData<String>
-    suspend fun info(barcode: String): Flow<ResultFetchData<Product>>
+    suspend fun info(barcode: String, fullSpecifications: Boolean? = null): Flow<ResultFetchData<Product>>
 }

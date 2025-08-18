@@ -1,7 +1,6 @@
 package com.nurgazy_bolushbekov.product_informer.settings
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.nurgazy_bolushbekov.product_informer.api_1C.ApiRepository
@@ -32,6 +31,8 @@ class SettingViewModel(application: Application): AndroidViewModel(application) 
     val userName: StateFlow<String> = connectSettingsPrefRep.userName.asStateFlow()
     val password: StateFlow<String> = connectSettingsPrefRep.password.asStateFlow()
     private val baseUrl: StateFlow<String> = connectSettingsPrefRep.baseUrl.asStateFlow()
+
+    val isAllSpecifications: StateFlow<Boolean> = connectSettingsPrefRep.isAllSpecifications.asStateFlow()
 
     private val _protocolError = MutableStateFlow<String?>(null)
     private val _serverError = MutableStateFlow<String?>(null)
@@ -109,6 +110,10 @@ class SettingViewModel(application: Application): AndroidViewModel(application) 
         changeFormValid()
     }
 
+    fun onChangeIsAllSpecifications(value: Boolean){
+        connectSettingsPrefRep.changeIsAllSpecifications(value)
+    }
+
 
     // Handling of button presses
     fun onCheckBtnPress(){
@@ -153,6 +158,9 @@ class SettingViewModel(application: Application): AndroidViewModel(application) 
         viewModelScope.launch {
             val (encryptedPassword, iv) = CryptoManager.encrypt(password.value)
             connectSettingsPrefRep.saveEncryptedPassword(encryptedPassword, iv)
+        }
+        viewModelScope.launch {
+            connectSettingsPrefRep.saveIsAllSpecifications(isAllSpecifications.value)
         }
     }
 

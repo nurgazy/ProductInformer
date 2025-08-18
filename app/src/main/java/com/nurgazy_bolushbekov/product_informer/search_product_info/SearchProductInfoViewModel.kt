@@ -1,6 +1,7 @@
 package com.nurgazy_bolushbekov.product_informer.search_product_info
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.nurgazy_bolushbekov.product_informer.api_1C.ApiRepository
@@ -23,6 +24,7 @@ class SearchProductInfoViewModel(application: Application): AndroidViewModel(app
     private val userName: StateFlow<String> = connectSettingsPrefRep.userName.asStateFlow()
     private val password: StateFlow<String> = connectSettingsPrefRep.password.asStateFlow()
     private val baseUrl: StateFlow<String> = connectSettingsPrefRep.baseUrl.asStateFlow()
+    private val isFullSpecifications: StateFlow<Boolean> = connectSettingsPrefRep.isAllSpecifications.asStateFlow()
 
     private val _barcode = MutableStateFlow("")
     val barcode: StateFlow<String> = _barcode.asStateFlow()
@@ -60,6 +62,8 @@ class SearchProductInfoViewModel(application: Application): AndroidViewModel(app
     }
 
     fun getInfo() {
+        Log.d("ProductInformer", "SearchProductInfoViewModel.getInfo barcode: ${_barcode.value}," +
+                " isAllSpecifications: ${isFullSpecifications.value}")
         apiRepository = SearchProductInfoRepositoryImp(userName.value, password.value, baseUrl.value,
             curApplication
         )
@@ -72,7 +76,7 @@ class SearchProductInfoViewModel(application: Application): AndroidViewModel(app
                 resetNavigationDetailScreen()
                 return@launch
             }
-            apiRepository.info(_barcode.value).collectLatest { result ->
+            apiRepository.info(_barcode.value, isFullSpecifications.value).collectLatest { result ->
                 when (result) {
                     is ResultFetchData.Success -> {
                         try {

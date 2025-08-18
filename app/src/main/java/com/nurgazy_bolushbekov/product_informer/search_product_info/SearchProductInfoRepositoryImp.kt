@@ -32,11 +32,11 @@ class SearchProductInfoRepositoryImp(username:String, password:String, baseUrl:S
         throw NotImplementedError("Not yet implemented")
     }
 
-    override suspend fun info(barcode: String): Flow<ResultFetchData<Product>> = flow{
+    override suspend fun info(barcode: String, fullSpecifications: Boolean?): Flow<ResultFetchData<Product>> = flow{
         emit(ResultFetchData.Loading)
 
         val response: Response<ResponseBody> = withContext(Dispatchers.IO){
-            apiService.info(barcode)
+            apiService.info(barcode, fullSpecifications)
         }
 
         if (response.isSuccessful){

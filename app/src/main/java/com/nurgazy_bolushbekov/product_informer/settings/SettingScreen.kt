@@ -7,10 +7,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -24,12 +28,16 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -48,18 +56,56 @@ import androidx.navigation.NavController
 import com.nurgazy_bolushbekov.product_informer.R
 import com.nurgazy_bolushbekov.product_informer.utils.ResultFetchData
 import com.nurgazy_bolushbekov.product_informer.utils.ScreenNavItem
+import kotlinx.coroutines.launch
+
+enum class SettingScreenTab(val title: String) {
+    SETTING_GENERAL("Основные"),
+    SETTING_ADDITTIONAL("Дополнительные"),
+}
 
 @Composable
 fun SettingScreen(navController: NavController){
 
-    BackHandler {
-        navController.popBackStack(ScreenNavItem.SearchProductInfo.route, false)
-    }
     val vm: SettingViewModel = viewModel(
         viewModelStoreOwner = LocalContext.current as ComponentActivity,
         factory = SettingsViewModelFactory(LocalContext.current.applicationContext as Application)
     )
 
+    BackHandler {
+        navController.popBackStack(ScreenNavItem.SearchProductInfo.route, false)
+    }
+
+    val tabs = SettingScreenTab.entries.toTypedArray()
+    val pagerState = rememberPagerState(pageCount = { tabs.size })
+    val coroutineScope = rememberCoroutineScope()
+
+    Column {
+        TabRow(selectedTabIndex = pagerState.currentPage) {
+            tabs.forEachIndexed{ index, tab ->
+                Tab(
+                    selected = pagerState.currentPage == index,
+                    onClick = {
+                        coroutineScope.launch {
+                            pagerState.animateScrollToPage(index)
+                        }
+                    },
+                    text = { Text(tab.title) }
+                )
+            }
+        }
+        HorizontalPager(
+            state = pagerState
+        ) { page ->
+            when (page) {
+                0 -> GeneralTab(vm = vm, navController = navController)
+                1 -> AdditionalTab(vm = vm)
+            }
+        }
+    }
+}
+
+@Composable
+fun GeneralTab(vm: SettingViewModel, navController: NavController){
     val scrollState = rememberScrollState()
 
     Column(
@@ -77,6 +123,32 @@ fun SettingScreen(navController: NavController){
         PingRow(vm)
         ShowAlertDialog(vm)
     }
+}
+
+@Composable
+fun AdditionalTab(vm: SettingViewModel){
+
+    val forAllSpecifications by vm.isAllSpecifications.collectAsState()
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(5.dp)
+        ) {
+            Switch(
+                checked = forAllSpecifications,
+                onCheckedChange = { vm.onChangeIsAllSpecifications(it) }
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Text(
+                text = "Получать остатки и цены по всем характеристикам склада",
+            )
+        }
+    }
+
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

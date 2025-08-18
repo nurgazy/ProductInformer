@@ -10,5 +10,8 @@ interface Api1C {
     suspend fun ping(): Response<ResponseBody>
 
     @GET("hs/ProductInformation/Info/")
-    suspend fun info(@Query("barcode") barcode: String): Response<ResponseBody>
+    suspend fun info(
+        @Query("barcode") barcode: String,
+        @Query("full") fullSpecifications: Boolean? = null
+    ): Response<ResponseBody>
 }

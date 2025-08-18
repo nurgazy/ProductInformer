@@ -29,6 +29,7 @@ class SettingsConnectionsPreferencesRepository(private val context: Context) {
         val USER_NAME_KEY = stringPreferencesKey("user_name_key")
         val ENCRYPTED_PASSWORD_KEY = stringPreferencesKey("encrypted_password")
         val ENCRYPTED_IV_KEY = stringPreferencesKey("encrypted_iv")
+        val IS_ALL_SPECIFICATIONS_KEY = stringPreferencesKey("is_all_specifications")
     }
 
     val protocol = MutableStateFlow(Protocol.HTTP)
@@ -38,6 +39,8 @@ class SettingsConnectionsPreferencesRepository(private val context: Context) {
     val userName = MutableStateFlow("")
     val password = MutableStateFlow("")
     val baseUrl = MutableStateFlow("")
+
+    val isAllSpecifications = MutableStateFlow(false)
 
     private val repositoryScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
@@ -97,6 +100,14 @@ class SettingsConnectionsPreferencesRepository(private val context: Context) {
 
         changePort(if (protocol.value == Protocol.HTTP) 80 else 443)
         changeBaseUrl()
+
+        repositoryScope.launch {
+            context.dataStore.data.map { preferences ->
+                preferences[IS_ALL_SPECIFICATIONS_KEY] ?: "false"
+            }.collect{ value->
+                isAllSpecifications.value = value.toBoolean()
+            }
+        }
     }
 
     fun cancelScope() {
@@ -183,5 +194,15 @@ class SettingsConnectionsPreferencesRepository(private val context: Context) {
     private fun changeBaseUrl(){
         baseUrl.value =
             "${protocol.value.name}://${serverUrl.value}:${port.value}/${publicationName.value}/"
+    }
+
+    fun changeIsAllSpecifications(value: Boolean){
+        isAllSpecifications.value = value
+    }
+
+    suspend fun saveIsAllSpecifications(value: Boolean){
+        context.dataStore.edit { preferences ->
+            preferences[IS_ALL_SPECIFICATIONS_KEY] = value.toString()
+        }
     }
 }

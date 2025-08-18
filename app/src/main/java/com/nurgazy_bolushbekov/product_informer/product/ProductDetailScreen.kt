@@ -6,8 +6,10 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -15,28 +17,30 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -48,13 +52,12 @@ import coil.request.ImageRequest
 import coil.size.Size
 import com.nurgazy_bolushbekov.product_informer.data_classes.Product
 import com.nurgazy_bolushbekov.product_informer.utils.ScreenNavItem
-import kotlinx.coroutines.launch
 import java.io.File
 
 
-enum class ProductDetailTab(val title: String) {
-    PRODUCT_DETAIL("Детали"),
-    PRODUCT_IMAGE("Картинка"),
+enum class ProductDetailTab {
+    PRODUCT_DETAIL,
+    PRODUCT_IMAGE,
 }
 
 @Composable
@@ -63,7 +66,6 @@ fun ProductDetailScreen(sharedViewModel: ProductSharedViewModel, navController: 
     val product by sharedViewModel.currentProduct.collectAsState()
     val tabs = ProductDetailTab.entries.toTypedArray()
     val pagerState = rememberPagerState (pageCount = { tabs.size })
-    val coroutineScope = rememberCoroutineScope()
 
     BackHandler {
         sharedViewModel.deleteImage()
@@ -83,25 +85,9 @@ fun ProductDetailScreen(sharedViewModel: ProductSharedViewModel, navController: 
             .fillMaxSize()
     ) {
 
-        TabRow(
-            selectedTabIndex = pagerState.currentPage,
-            modifier = Modifier.fillMaxWidth()
-        ){
-            tabs.forEachIndexed { index, tab ->
-                Tab(selected = pagerState.currentPage == index,
-                    onClick = {
-                        coroutineScope.launch {
-                            pagerState.animateScrollToPage(index)
-                        }
-                    },
-                    text = { Text(tab.title) }
-                )
-            }
-        }
         HorizontalPager(
             state = pagerState,
             modifier = Modifier
-                .fillMaxWidth()
                 .weight(1f)
         ) { page ->
             when (tabs[page]) {
@@ -109,7 +95,33 @@ fun ProductDetailScreen(sharedViewModel: ProductSharedViewModel, navController: 
                 ProductDetailTab.PRODUCT_IMAGE -> ImageScreenContent(product!!)
             }
         }
+        Spacer(Modifier.height(16.dp))
+        PagerIndicator(pagerState = pagerState, modifier = Modifier.align(Alignment.CenterHorizontally))
+    }
+}
 
+@Composable
+fun PagerIndicator(
+    pagerState: PagerState,
+    modifier: Modifier = Modifier,
+    activeColor: Color = MaterialTheme.colorScheme.primary,
+    inactiveColor: Color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
+) {
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        repeat(pagerState.pageCount) { iteration ->
+            val color = if (pagerState.currentPage == iteration) activeColor else inactiveColor
+            Box(
+                modifier = Modifier
+                    .padding(horizontal = 4.dp)
+                    .clip(CircleShape)
+                    .size(8.dp)
+                    .background(color)
+            )
+        }
     }
 }
 
