@@ -4,6 +4,8 @@ plugins {
     alias(libs.plugins.devtoolsKsp)
     kotlin("plugin.serialization") version "1.8.0"
     kotlin("plugin.parcelize")
+    id("kotlin-kapt")
+    id("com.google.dagger.hilt.android")
 }
 
 android {
@@ -108,4 +110,11 @@ dependencies {
 
     implementation (libs.androidx.runtime)
     implementation (libs.androidx.foundation)
+
+    // Hilt
+    implementation(libs.hilt.android)
+    kapt(libs.hilt.android.compiler)
+
+    // Hilt Navigation Compose
+    implementation(libs.androidx.hilt.navigation.compose)
 }

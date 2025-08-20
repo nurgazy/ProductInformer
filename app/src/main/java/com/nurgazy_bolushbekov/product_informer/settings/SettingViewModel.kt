@@ -8,21 +8,22 @@ import com.nurgazy_bolushbekov.product_informer.application.App
 import com.nurgazy_bolushbekov.product_informer.utils.CryptoManager
 import com.nurgazy_bolushbekov.product_informer.utils.ParseInputStringToIntHelper
 import com.nurgazy_bolushbekov.product_informer.utils.ResultFetchData
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 enum class Protocol{
     HTTP, HTTPS
 }
 
-class SettingViewModel(application: Application): AndroidViewModel(application) {
+@HiltViewModel
+class SettingViewModel @Inject constructor(application: Application): AndroidViewModel(application) {
 
     private lateinit var apiRepository: ApiRepository
     private val connectSettingsPrefRep = (application as App).connectionSettingsPrefRep
-
-    val protocolList = Protocol.entries.toTypedArray()
 
     val protocol: StateFlow<Protocol> = connectSettingsPrefRep.protocol.asStateFlow()
     val server: StateFlow<String> = connectSettingsPrefRep.serverUrl.asStateFlow()

@@ -1,7 +1,5 @@
 package com.nurgazy_bolushbekov.product_informer.settings
 
-import android.app.Application
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -42,7 +40,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -51,7 +48,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.nurgazy_bolushbekov.product_informer.R
 import com.nurgazy_bolushbekov.product_informer.utils.ResultFetchData
@@ -64,12 +61,7 @@ enum class SettingScreenTab(val title: String) {
 }
 
 @Composable
-fun SettingScreen(navController: NavController){
-
-    val vm: SettingViewModel = viewModel(
-        viewModelStoreOwner = LocalContext.current as ComponentActivity,
-        factory = SettingsViewModelFactory(LocalContext.current.applicationContext as Application)
-    )
+fun SettingScreen(navController: NavController, vm: SettingViewModel = hiltViewModel()){
 
     BackHandler {
         navController.popBackStack(ScreenNavItem.SearchProductInfo.route, false)
@@ -107,13 +99,16 @@ fun SettingScreen(navController: NavController){
 @Composable
 fun GeneralTab(vm: SettingViewModel, navController: NavController){
     val scrollState = rememberScrollState()
+    val protocol by vm.protocol.collectAsState()
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .verticalScroll(scrollState)
     ) {
-        ProtocolRow(vm)
+        ProtocolRow(
+            protocolName = protocol.name,
+            onChangeProtocol = { newProtocol -> vm.onChangeProtocol(newProtocol) })
         ServerRow(vm)
         PortRow(vm)
         PublicationNameRow(vm)
@@ -128,7 +123,7 @@ fun GeneralTab(vm: SettingViewModel, navController: NavController){
 @Composable
 fun AdditionalTab(vm: SettingViewModel){
 
-    val forAllSpecifications by vm.isAllSpecifications.collectAsState()
+    val isFullSpecifications by vm.isAllSpecifications.collectAsState()
 
     Column(
         modifier = Modifier
@@ -139,7 +134,7 @@ fun AdditionalTab(vm: SettingViewModel){
             modifier = Modifier.padding(5.dp)
         ) {
             Switch(
-                checked = forAllSpecifications,
+                checked = isFullSpecifications,
                 onCheckedChange = { vm.onChangeIsAllSpecifications(it) }
             )
             Spacer(modifier = Modifier.width(16.dp))
@@ -153,10 +148,12 @@ fun AdditionalTab(vm: SettingViewModel){
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ProtocolRow(vm: SettingViewModel) {
+private fun ProtocolRow(
+    protocolName: String,
+    onChangeProtocol: (String) -> Unit) {
 
     var expanded by rememberSaveable { mutableStateOf(false) }
-    val protocol by vm.protocol.collectAsState()
+    val protocolList = Protocol.entries.toTypedArray()
 
     Row(
         Modifier
@@ -179,8 +176,8 @@ private fun ProtocolRow(vm: SettingViewModel) {
             onExpandedChange = { expanded = !expanded }
         ) {
             OutlinedTextField(
-                value = protocol.name,
-                onValueChange = { vm.onChangeProtocol(it) },
+                value = protocolName,
+                onValueChange = onChangeProtocol,
                 readOnly = true,
                 singleLine = true,
                 modifier = Modifier
@@ -193,10 +190,10 @@ private fun ProtocolRow(vm: SettingViewModel) {
                 expanded = expanded,
                 onDismissRequest = { expanded = false }
             ) {
-                vm.protocolList.forEach { protocol ->
+                protocolList.forEach { protocol ->
                     DropdownMenuItem(text = { Text(text = protocol.name) },
                         onClick = {
-                            vm.onChangeProtocol(protocol.name)
+                            onChangeProtocol(protocol.name)
                             expanded = false
                         })
                 }
