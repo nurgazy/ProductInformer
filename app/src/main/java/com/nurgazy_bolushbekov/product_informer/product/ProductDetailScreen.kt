@@ -241,7 +241,7 @@ fun DetailScreenContent(product: Product) {
             LazyColumn(modifier = Modifier.fillMaxSize()) {
                 items(listOf(product.productSpecifications)){ item ->
                     item?.forEach{ curProductSpec ->
-                        CollapsibleItem(title = curProductSpec.name) {
+                        CollapsibleSpecificatonItem(title = curProductSpec.name) {
                             CollapsibleItem(title = "Остатки (В наличии/Доступно)") {
                                 curProductSpec.balance?.forEach { curBalance ->
                                     Row(
@@ -357,6 +357,46 @@ fun CollapsibleItem(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .padding(5.dp)
+                .clickable { isExpanded = !isExpanded },
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(text = title, style = MaterialTheme.typography.titleMedium)
+            Icon(
+                imageVector = if (isExpanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
+                contentDescription = if (isExpanded) "Свернуть" else "Развернуть"
+            )
+        }
+        AnimatedVisibility(
+            visible = isExpanded,
+            enter = slideInVertically(animationSpec = tween(durationMillis = 300)),
+            exit = slideOutVertically(animationSpec = tween(durationMillis = 300))
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+                content()
+            }
+        }
+    }
+}
+
+@Composable
+fun CollapsibleSpecificatonItem(
+    title: String,
+    content: @Composable () -> Unit
+) {
+    var isExpanded by remember { mutableStateOf(true) }
+
+    Column(modifier = Modifier
+        .fillMaxWidth()
+        .padding(start = 5.dp)) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color(0xFF83F583))
                 .padding(5.dp)
                 .clickable { isExpanded = !isExpanded },
             verticalAlignment = Alignment.CenterVertically,
