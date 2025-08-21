@@ -1,6 +1,5 @@
 package com.nurgazy_bolushbekov.product_informer
 
-import android.app.Application
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -34,21 +33,18 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.nurgazy_bolushbekov.product_informer.main_menu.MainMenuScreen
 import com.nurgazy_bolushbekov.product_informer.product.ProductDetailScreen
 import com.nurgazy_bolushbekov.product_informer.product.ProductSharedViewModel
-import com.nurgazy_bolushbekov.product_informer.product.ProductSharedViewModelFactory
 import com.nurgazy_bolushbekov.product_informer.search_product_info.SearchProductInfoScreen
 import com.nurgazy_bolushbekov.product_informer.settings.SettingScreen
 import com.nurgazy_bolushbekov.product_informer.utils.ScreenNavItem
@@ -74,18 +70,15 @@ fun MainScreen(paddingValues: PaddingValues, navController: NavHostController){
         modifier = Modifier.padding(paddingValues)
     ) {
         composable(ScreenNavItem.Settings.route) { SettingScreen(navController) }
-        composable(ScreenNavItem.MainMenu.route) { MainMenuScreen(navController) }
         composable(ScreenNavItem.SearchProductInfo.route) {
-            val sharedViewModel: ProductSharedViewModel = viewModel(
-                navController.getBackStackEntry(ScreenNavItem.SearchProductInfo.route),
-                factory = ProductSharedViewModelFactory(LocalContext.current.applicationContext as Application)
+            val sharedViewModel: ProductSharedViewModel = hiltViewModel(
+                navController.getBackStackEntry(ScreenNavItem.SearchProductInfo.route)
             )
             SearchProductInfoScreen(navController, sharedViewModel)
         }
         composable(ScreenNavItem.ProductDetail.route) {
-            val sharedViewModel: ProductSharedViewModel = viewModel(
-                navController.getBackStackEntry(ScreenNavItem.SearchProductInfo.route),
-                factory = ProductSharedViewModelFactory(LocalContext.current.applicationContext as Application)
+            val sharedViewModel: ProductSharedViewModel = hiltViewModel(
+                navController.getBackStackEntry(ScreenNavItem.SearchProductInfo.route)
             )
             ProductDetailScreen(sharedViewModel, navController)
         }

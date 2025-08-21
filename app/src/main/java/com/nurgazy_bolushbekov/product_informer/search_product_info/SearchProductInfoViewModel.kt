@@ -8,13 +8,16 @@ import com.nurgazy_bolushbekov.product_informer.api_1C.ApiRepository
 import com.nurgazy_bolushbekov.product_informer.application.App
 import com.nurgazy_bolushbekov.product_informer.data_classes.Product
 import com.nurgazy_bolushbekov.product_informer.utils.ResultFetchData
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class SearchProductInfoViewModel(application: Application): AndroidViewModel(application) {
+@HiltViewModel
+class SearchProductInfoViewModel @Inject constructor(application: Application): AndroidViewModel(application) {
 
     private lateinit var apiRepository: ApiRepository
     private val connectSettingsPrefRep = (application as App).connectionSettingsPrefRep

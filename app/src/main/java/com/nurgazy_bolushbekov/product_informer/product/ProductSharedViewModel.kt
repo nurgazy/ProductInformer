@@ -6,13 +6,16 @@ import androidx.lifecycle.viewModelScope
 import com.nurgazy_bolushbekov.product_informer.data_classes.Product
 import com.nurgazy_bolushbekov.product_informer.product.image.ImageRepository
 import com.nurgazy_bolushbekov.product_informer.product.image.ImageRepositoryImpl
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class ProductSharedViewModel(application: Application): AndroidViewModel(application) {
+@HiltViewModel
+class ProductSharedViewModel @Inject constructor(application: Application): AndroidViewModel(application) {
 
     private val imageRepository: ImageRepository = ImageRepositoryImpl(application)
 
@@ -21,10 +24,6 @@ class ProductSharedViewModel(application: Application): AndroidViewModel(applica
 
     fun setProduct(product: Product) {
         _currentProduct.value = product
-    }
-
-    fun clearProduct() {
-        _currentProduct.value = null
     }
 
     fun deleteImage(){

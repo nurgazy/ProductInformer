@@ -70,8 +70,13 @@ fun SettingScreen(navController: NavController, vm: SettingViewModel = hiltViewM
     val tabs = SettingScreenTab.entries.toTypedArray()
     val pagerState = rememberPagerState(pageCount = { tabs.size })
     val coroutineScope = rememberCoroutineScope()
+    val scrollState = rememberScrollState()
 
-    Column {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(scrollState)
+    ) {
         TabRow(selectedTabIndex = pagerState.currentPage) {
             tabs.forEachIndexed{ index, tab ->
                 Tab(
@@ -89,22 +94,27 @@ fun SettingScreen(navController: NavController, vm: SettingViewModel = hiltViewM
             state = pagerState
         ) { page ->
             when (page) {
-                0 -> GeneralTab(vm = vm, navController = navController)
+                0 -> GeneralTab(vm = vm)
                 1 -> AdditionalTab(vm = vm)
             }
         }
+        Spacer(modifier = Modifier.weight(1f))
+        Column {
+            ButtonRow(vm, navController)
+            PingRow(vm)
+            ShowAlertDialog(vm)
+        }
+
     }
 }
 
 @Composable
-fun GeneralTab(vm: SettingViewModel, navController: NavController){
-    val scrollState = rememberScrollState()
+fun GeneralTab(vm: SettingViewModel){
     val protocol by vm.protocol.collectAsState()
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .verticalScroll(scrollState)
     ) {
         ProtocolRow(
             protocolName = protocol.name,
@@ -114,9 +124,6 @@ fun GeneralTab(vm: SettingViewModel, navController: NavController){
         PublicationNameRow(vm)
         UserNameRow(vm)
         PasswdRow(vm)
-        ButtonRow(vm, navController)
-        PingRow(vm)
-        ShowAlertDialog(vm)
     }
 }
 

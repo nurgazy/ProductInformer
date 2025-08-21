@@ -1,6 +1,5 @@
 package com.nurgazy_bolushbekov.product_informer.search_product_info
 
-import android.app.Application
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -28,23 +27,21 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.nurgazy_bolushbekov.product_informer.product.ProductSharedViewModel
 import com.nurgazy_bolushbekov.product_informer.utils.ResultFetchData
 import com.nurgazy_bolushbekov.product_informer.utils.ScreenNavItem
 
 @Composable
-fun SearchProductInfoScreen(navController: NavController, sharedViewModel: ProductSharedViewModel){
-
-    val vm: SearchProductInfoViewModel = viewModel(
-        factory = SearchProductInfoViewModelFactory(LocalContext.current.applicationContext as Application)
-    )
-
+fun SearchProductInfoScreen(
+    navController: NavController,
+    sharedViewModel: ProductSharedViewModel,
+    vm: SearchProductInfoViewModel = hiltViewModel()
+){
     BarcodeScannerScreen(vm, navController, sharedViewModel)
 }
 
