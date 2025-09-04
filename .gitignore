@@ -17,5 +17,4 @@ local.properties
 *.ipr
 *.iws
 /app/build/
-
-
+/app/release/

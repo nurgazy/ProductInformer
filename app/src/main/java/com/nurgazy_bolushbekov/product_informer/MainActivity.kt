@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
@@ -20,6 +21,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -38,11 +41,13 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.nurgazy_bolushbekov.product_informer.barcode_collection.list.BarcodeCollectionListScreen
 import com.nurgazy_bolushbekov.product_informer.product.ProductDetailScreen
 import com.nurgazy_bolushbekov.product_informer.product.ProductSharedViewModel
 import com.nurgazy_bolushbekov.product_informer.search_product_info.SearchProductInfoScreen
@@ -82,7 +87,9 @@ fun MainScreen(paddingValues: PaddingValues, navController: NavHostController){
             )
             ProductDetailScreen(sharedViewModel, navController)
         }
-
+        composable(ScreenNavItem.BarcodeCollectionList.route) {
+            BarcodeCollectionListScreen()
+        }
     }
 }
 
@@ -104,6 +111,7 @@ fun SideNavigationMenu() {
             ScreenNavItem.Settings.route -> ScreenNavItem.Settings.title
             ScreenNavItem.ProductDetail.route -> ScreenNavItem.ProductDetail.title
             ScreenNavItem.SearchProductInfo.route -> ScreenNavItem.SearchProductInfo.title
+            ScreenNavItem.BarcodeCollectionList.route -> ScreenNavItem.BarcodeCollectionList.title
             else -> ScreenNavItem.MainMenu.title
         }
     }
@@ -140,7 +148,8 @@ fun SideNavigationMenu() {
                 },
                 content = { paddingValues ->
                     MainScreen(paddingValues, navController)
-                }
+                },
+                bottomBar = { BottomNavigationBar(navController) }
             )
         }
     )
@@ -175,4 +184,31 @@ fun DrawerItem(
     }
 }
 
+
+@Composable
+fun BottomNavigationBar(navController: NavController) {
+    val items = listOf(ScreenNavItem.SearchProductInfo, ScreenNavItem.BarcodeCollectionList)
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
+    NavigationBar(
+        modifier = Modifier.height(56.dp)
+    ) {
+        items.forEach { screen ->
+            NavigationBarItem(
+                icon = { Icon(screen.icon, contentDescription = screen.title) },
+                label = { Text(screen.title) },
+                selected = currentRoute == screen.route,
+                onClick = {
+                    navController.navigate(screen.route) {
+                        // Избегаем создания нескольких экземпляров одного и того же экрана
+                        launchSingleTop = true
+                        // Сохраняем и восстанавливаем состояние, чтобы пользователь не терял местоположение при переключении
+                        restoreState = true
+                    }
+                }
+            )
+        }
+    }
+}
 

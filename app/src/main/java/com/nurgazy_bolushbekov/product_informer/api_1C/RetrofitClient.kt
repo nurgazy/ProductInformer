@@ -1,6 +1,5 @@
 package com.nurgazy_bolushbekov.product_informer.api_1C
 
-import android.util.Base64
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -9,22 +8,14 @@ object RetrofitClient {
 
     fun create(username: String, password: String, baseUrl: String): Api1C {
 
-        val credentials = "$username:$password"
-        val basicAuth = "Basic " + Base64.encodeToString(credentials.toByteArray(), Base64.NO_WRAP)
-
-        val client = OkHttpClient.Builder()
-            .addInterceptor { chain ->
-                val request = chain.request().newBuilder()
-                    .addHeader("Authorization", basicAuth)
-                    .build()
-                chain.proceed(request)
-            }
+        val okHttpClient = OkHttpClient.Builder()
+            .addInterceptor(BasicAuthInterceptor(username, password))
             .build()
 
         val instance: Retrofit by lazy {
             Retrofit.Builder()
                 .baseUrl(baseUrl)
-                .client(client)
+                .client(okHttpClient)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()
         }
