@@ -5,7 +5,7 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.nurgazy_bolushbekov.product_informer.api_1C.ApiRepository
-import com.nurgazy_bolushbekov.product_informer.application.App
+import com.nurgazy_bolushbekov.product_informer.application.DataStoreRepository
 import com.nurgazy_bolushbekov.product_informer.data_classes.Product
 import com.nurgazy_bolushbekov.product_informer.utils.ResultFetchData
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -17,17 +17,19 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class SearchProductInfoViewModel @Inject constructor(application: Application): AndroidViewModel(application) {
+class SearchProductInfoViewModel @Inject constructor(
+    application: Application,
+    private val dataStoreRepository: DataStoreRepository
+): AndroidViewModel(application) {
 
     private lateinit var apiRepository: ApiRepository
-    private val connectSettingsPrefRep = (application as App).connectionSettingsPrefRep
     private val curApplication = application
 
-    val serverUrl: StateFlow<String> = connectSettingsPrefRep.serverUrl.asStateFlow()
-    private val userName: StateFlow<String> = connectSettingsPrefRep.userName.asStateFlow()
-    private val password: StateFlow<String> = connectSettingsPrefRep.password.asStateFlow()
-    private val baseUrl: StateFlow<String> = connectSettingsPrefRep.baseUrl.asStateFlow()
-    private val isFullSpecifications: StateFlow<Boolean> = connectSettingsPrefRep.isAllSpecifications.asStateFlow()
+    val serverUrl: StateFlow<String> = dataStoreRepository.serverUrl.asStateFlow()
+    private val userName: StateFlow<String> = dataStoreRepository.userName.asStateFlow()
+    private val password: StateFlow<String> = dataStoreRepository.password.asStateFlow()
+    private val baseUrl: StateFlow<String> = dataStoreRepository.baseUrl.asStateFlow()
+    private val isFullSpecifications: StateFlow<Boolean> = dataStoreRepository.isAllSpecifications.asStateFlow()
 
     private val _barcode = MutableStateFlow("")
     val barcode: StateFlow<String> = _barcode.asStateFlow()

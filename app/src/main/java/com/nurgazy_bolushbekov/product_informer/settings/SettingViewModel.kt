@@ -1,10 +1,9 @@
 package com.nurgazy_bolushbekov.product_informer.settings
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nurgazy_bolushbekov.product_informer.api_1C.ApiRepository
-import com.nurgazy_bolushbekov.product_informer.application.App
+import com.nurgazy_bolushbekov.product_informer.application.DataStoreRepository
 import com.nurgazy_bolushbekov.product_informer.utils.CryptoManager
 import com.nurgazy_bolushbekov.product_informer.utils.ParseInputStringToIntHelper
 import com.nurgazy_bolushbekov.product_informer.utils.ResultFetchData
@@ -20,20 +19,20 @@ enum class Protocol{
 }
 
 @HiltViewModel
-class SettingViewModel @Inject constructor(application: Application): AndroidViewModel(application) {
+class SettingViewModel @Inject constructor(
+    private val dataStoreRepository: DataStoreRepository
+): ViewModel() {
 
     private lateinit var apiRepository: ApiRepository
-    private val connectSettingsPrefRep = (application as App).connectionSettingsPrefRep
 
-    val protocol: StateFlow<Protocol> = connectSettingsPrefRep.protocol.asStateFlow()
-    val server: StateFlow<String> = connectSettingsPrefRep.serverUrl.asStateFlow()
-    val port: StateFlow<Int> = connectSettingsPrefRep.port.asStateFlow()
-    val publicationName: StateFlow<String> = connectSettingsPrefRep.publicationName.asStateFlow()
-    val userName: StateFlow<String> = connectSettingsPrefRep.userName.asStateFlow()
-    val password: StateFlow<String> = connectSettingsPrefRep.password.asStateFlow()
-    private val baseUrl: StateFlow<String> = connectSettingsPrefRep.baseUrl.asStateFlow()
-
-    val isAllSpecifications: StateFlow<Boolean> = connectSettingsPrefRep.isAllSpecifications.asStateFlow()
+    val protocol: StateFlow<Protocol> = dataStoreRepository.protocol.asStateFlow()
+    val server: StateFlow<String> = dataStoreRepository.serverUrl.asStateFlow()
+    val port: StateFlow<Int> = dataStoreRepository.port.asStateFlow()
+    val publicationName: StateFlow<String> = dataStoreRepository.publicationName.asStateFlow()
+    val userName: StateFlow<String> = dataStoreRepository.userName.asStateFlow()
+    val password: StateFlow<String> = dataStoreRepository.password.asStateFlow()
+    private val baseUrl: StateFlow<String> = dataStoreRepository.baseUrl.asStateFlow()
+    val isAllSpecifications: StateFlow<Boolean> = dataStoreRepository.isAllSpecifications.asStateFlow()
 
     private val _protocolError = MutableStateFlow<String?>(null)
     private val _serverError = MutableStateFlow<String?>(null)
@@ -70,12 +69,12 @@ class SettingViewModel @Inject constructor(application: Application): AndroidVie
 
     //Change form data
     fun onChangeProtocol(value: String){
-        connectSettingsPrefRep.changeProtocol(value)
+        dataStoreRepository.changeProtocol(value)
         changePort(if (protocol.value == Protocol.HTTP) 80 else 443)
     }
 
     fun onChangeServer(value: String){
-        connectSettingsPrefRep.changeServerUrl(value)
+        dataStoreRepository.changeServerUrl(value)
         validateServer()
         changeFormValid()
     }
@@ -90,29 +89,29 @@ class SettingViewModel @Inject constructor(application: Application): AndroidVie
     }
 
     private fun changePort(value: Int){
-        connectSettingsPrefRep.changePort(value)
+        dataStoreRepository.changePort(value)
     }
 
     fun onChangePublicationName(value: String){
-        connectSettingsPrefRep.changePublicationName(value)
+        dataStoreRepository.changePublicationName(value)
         validatePublicationName()
         changeFormValid()
     }
 
     fun onChangeUserName(value: String){
-       connectSettingsPrefRep.changeUserName(value)
+       dataStoreRepository.changeUserName(value)
         validateUserName()
         changeFormValid()
     }
 
     fun onChangePassword(newPassword: String) {
-        connectSettingsPrefRep.changePassword(newPassword)
+        dataStoreRepository.changePassword(newPassword)
         validatePasswd()
         changeFormValid()
     }
 
     fun onChangeIsAllSpecifications(value: Boolean){
-        connectSettingsPrefRep.changeIsAllSpecifications(value)
+        dataStoreRepository.changeIsAllSpecifications(value)
     }
 
 
@@ -142,26 +141,26 @@ class SettingViewModel @Inject constructor(application: Application): AndroidVie
 
     private fun saveSettingsData(){
         viewModelScope.launch {
-            connectSettingsPrefRep.saveProtocol(protocol.value.name)
+            dataStoreRepository.saveProtocol(protocol.value.name)
         }
         viewModelScope.launch {
-            connectSettingsPrefRep.saveServerUrl(server.value)
+            dataStoreRepository.saveServerUrl(server.value)
         }
         viewModelScope.launch {
-            connectSettingsPrefRep.savePort(port.value)
+            dataStoreRepository.savePort(port.value)
         }
         viewModelScope.launch {
-            connectSettingsPrefRep.savePublicationName(publicationName.value)
+            dataStoreRepository.savePublicationName(publicationName.value)
         }
         viewModelScope.launch {
-            connectSettingsPrefRep.saveUserName(userName.value)
+            dataStoreRepository.saveUserName(userName.value)
         }
         viewModelScope.launch {
             val (encryptedPassword, iv) = CryptoManager.encrypt(password.value)
-            connectSettingsPrefRep.saveEncryptedPassword(encryptedPassword, iv)
+            dataStoreRepository.saveEncryptedPassword(encryptedPassword, iv)
         }
         viewModelScope.launch {
-            connectSettingsPrefRep.saveIsAllSpecifications(isAllSpecifications.value)
+            dataStoreRepository.saveIsAllSpecifications(isAllSpecifications.value)
         }
     }
 
