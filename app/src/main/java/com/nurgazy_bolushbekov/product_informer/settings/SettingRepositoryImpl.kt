@@ -1,23 +1,22 @@
 package com.nurgazy_bolushbekov.product_informer.settings
 
-import com.nurgazy_bolushbekov.product_informer.api_1C.ApiRepository
-import com.nurgazy_bolushbekov.product_informer.api_1C.RetrofitClient
-import com.nurgazy_bolushbekov.product_informer.data_classes.Product
+import com.nurgazy_bolushbekov.product_informer.api_1C.ApiProviderManager
 import com.nurgazy_bolushbekov.product_informer.utils.ResultFetchData
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
 
-class SettingRepositoryImpl(username: String, password: String, baseUrl: String) :
-    ApiRepository {
+class SettingRepositoryImpl @Inject constructor(
+    private val apiProviderManager: ApiProviderManager
+) {
 
-    private var apiService = RetrofitClient.create(username, password, baseUrl)
-
-    override suspend fun ping(): ResultFetchData<String> {
+    suspend fun ping(): ResultFetchData<String> {
         return withContext(Dispatchers.IO){
             try {
+                val apiService = apiProviderManager.apiService.filterNotNull().first()
                 val response = apiService.ping()
                 if (response.isSuccessful){
                     ResultFetchData.Success(response.body()!!.string())
@@ -28,9 +27,5 @@ class SettingRepositoryImpl(username: String, password: String, baseUrl: String)
                 ResultFetchData.Error(Exception("Ошибка при получении данных: ${e.message}"))
             }
         }
-    }
-
-    override suspend fun info(barcode: String, fullSpecifications: Boolean?): Flow<ResultFetchData<Product>> {
-        return emptyFlow()
     }
 }

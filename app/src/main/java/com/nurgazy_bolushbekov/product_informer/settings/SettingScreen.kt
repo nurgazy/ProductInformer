@@ -51,6 +51,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.nurgazy_bolushbekov.product_informer.R
+import com.nurgazy_bolushbekov.product_informer.utils.Protocol
 import com.nurgazy_bolushbekov.product_informer.utils.ResultFetchData
 import com.nurgazy_bolushbekov.product_informer.utils.ScreenNavItem
 import kotlinx.coroutines.launch
@@ -130,7 +131,7 @@ fun GeneralTab(vm: SettingViewModel){
 @Composable
 fun AdditionalTab(vm: SettingViewModel){
 
-    val isFullSpecifications by vm.isAllSpecifications.collectAsState()
+    val isFullSpecifications by vm.isFullSpecifications.collectAsState()
 
     Column(
         modifier = Modifier

@@ -29,7 +29,7 @@ class SearchProductInfoViewModel @Inject constructor(
     private val userName: StateFlow<String> = dataStoreRepository.userName.asStateFlow()
     private val password: StateFlow<String> = dataStoreRepository.password.asStateFlow()
     private val baseUrl: StateFlow<String> = dataStoreRepository.baseUrl.asStateFlow()
-    private val isFullSpecifications: StateFlow<Boolean> = dataStoreRepository.isAllSpecifications.asStateFlow()
+    private val isFullSpecifications: StateFlow<Boolean> = dataStoreRepository.isFullSpecifications.asStateFlow()
 
     private val _barcode = MutableStateFlow("")
     val barcode: StateFlow<String> = _barcode.asStateFlow()

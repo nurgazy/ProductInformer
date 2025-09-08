@@ -2,10 +2,10 @@ package com.nurgazy_bolushbekov.product_informer.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.nurgazy_bolushbekov.product_informer.api_1C.ApiRepository
 import com.nurgazy_bolushbekov.product_informer.application.DataStoreRepository
 import com.nurgazy_bolushbekov.product_informer.utils.CryptoManager
 import com.nurgazy_bolushbekov.product_informer.utils.ParseInputStringToIntHelper
+import com.nurgazy_bolushbekov.product_informer.utils.Protocol
 import com.nurgazy_bolushbekov.product_informer.utils.ResultFetchData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,16 +14,11 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-enum class Protocol{
-    HTTP, HTTPS
-}
-
 @HiltViewModel
 class SettingViewModel @Inject constructor(
-    private val dataStoreRepository: DataStoreRepository
+    private val dataStoreRepository: DataStoreRepository,
+    private val settingRepository: SettingRepositoryImpl
 ): ViewModel() {
-
-    private lateinit var apiRepository: ApiRepository
 
     val protocol: StateFlow<Protocol> = dataStoreRepository.protocol.asStateFlow()
     val server: StateFlow<String> = dataStoreRepository.serverUrl.asStateFlow()
@@ -31,8 +26,7 @@ class SettingViewModel @Inject constructor(
     val publicationName: StateFlow<String> = dataStoreRepository.publicationName.asStateFlow()
     val userName: StateFlow<String> = dataStoreRepository.userName.asStateFlow()
     val password: StateFlow<String> = dataStoreRepository.password.asStateFlow()
-    private val baseUrl: StateFlow<String> = dataStoreRepository.baseUrl.asStateFlow()
-    val isAllSpecifications: StateFlow<Boolean> = dataStoreRepository.isAllSpecifications.asStateFlow()
+    val isFullSpecifications: StateFlow<Boolean> = dataStoreRepository.isFullSpecifications.asStateFlow()
 
     private val _protocolError = MutableStateFlow<String?>(null)
     private val _serverError = MutableStateFlow<String?>(null)
@@ -111,7 +105,7 @@ class SettingViewModel @Inject constructor(
     }
 
     fun onChangeIsAllSpecifications(value: Boolean){
-        dataStoreRepository.changeIsAllSpecifications(value)
+        dataStoreRepository.changeIsFullSpecifications(value)
     }
 
 
@@ -121,7 +115,6 @@ class SettingViewModel @Inject constructor(
         handleAlertData()
         if (_isFormValid.value){
             closeAlertDialog()
-            apiRepository = SettingRepositoryImpl(userName.value, password.value, baseUrl.value)
             checkPing()
         }else{
             openAlertDialog()
@@ -160,7 +153,7 @@ class SettingViewModel @Inject constructor(
             dataStoreRepository.saveEncryptedPassword(encryptedPassword, iv)
         }
         viewModelScope.launch {
-            dataStoreRepository.saveIsAllSpecifications(isAllSpecifications.value)
+            dataStoreRepository.saveIsFullSpecifications(isFullSpecifications.value)
         }
     }
 
@@ -242,7 +235,7 @@ class SettingViewModel @Inject constructor(
     private fun checkPing() {
         viewModelScope.launch {
             _pingResult.value = ResultFetchData.Loading
-            when(val result = apiRepository.ping()){
+            when(val result = settingRepository.ping()){
                 is ResultFetchData.Error -> {
                     _pingResult.value = result
                     _alertText.value = result.exception.message.toString()

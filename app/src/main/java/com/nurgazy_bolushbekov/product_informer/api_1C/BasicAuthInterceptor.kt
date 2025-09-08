@@ -8,11 +8,7 @@ class BasicAuthInterceptor(private val username: String, private val password: S
     override fun intercept(chain: Interceptor.Chain): Response {
         val originalRequest = chain.request()
         val builder = originalRequest.newBuilder()
-
-        // Создание учетных данных Basic-аутентификации
         val credential = Credentials.basic(username, password, Charsets.UTF_8)
-
-        // Добавление заголовка Authorization
         builder.addHeader("Authorization", credential)
 
         val newRequest = builder.build()
