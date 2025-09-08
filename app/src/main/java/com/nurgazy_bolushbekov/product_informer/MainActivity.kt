@@ -105,6 +105,7 @@ fun SideNavigationMenu() {
 
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = currentBackStackEntry?.destination?.route
+
     var currentScreenTitle by rememberSaveable { mutableStateOf("") }
     LaunchedEffect(currentRoute) {
         currentScreenTitle = when (currentRoute) {
@@ -115,7 +116,6 @@ fun SideNavigationMenu() {
             else -> ScreenNavItem.MainMenu.title
         }
     }
-
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -190,6 +190,16 @@ fun BottomNavigationBar(navController: NavController) {
     val items = listOf(ScreenNavItem.SearchProductInfo, ScreenNavItem.BarcodeCollectionList)
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
+
+    val bottomBarScreens = listOf(
+        ScreenNavItem.SearchProductInfo,
+        ScreenNavItem.BarcodeCollectionList
+    )
+    val showBottomBar = bottomBarScreens.any { it.route == currentRoute }
+
+    if (!showBottomBar) {
+        return
+    }
 
     NavigationBar(
         modifier = Modifier.height(56.dp)
