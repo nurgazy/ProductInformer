@@ -3,7 +3,7 @@ package com.nurgazy_bolushbekov.product_informer.product
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.nurgazy_bolushbekov.product_informer.data_classes.Product
+import com.nurgazy_bolushbekov.product_informer.data_classes.ProductResponse
 import com.nurgazy_bolushbekov.product_informer.product.image.ImageRepository
 import com.nurgazy_bolushbekov.product_informer.product.image.ImageRepositoryImpl
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,16 +19,16 @@ class ProductSharedViewModel @Inject constructor(application: Application): Andr
 
     private val imageRepository: ImageRepository = ImageRepositoryImpl(application)
 
-    private val _currentProduct = MutableStateFlow<Product?>(null)
-    val currentProduct: StateFlow<Product?> = _currentProduct.asStateFlow()
+    private val _currentProductResponse = MutableStateFlow<ProductResponse?>(null)
+    val currentProductResponse: StateFlow<ProductResponse?> = _currentProductResponse.asStateFlow()
 
-    fun setProduct(product: Product) {
-        _currentProduct.value = product
+    fun setProduct(productResponse: ProductResponse) {
+        _currentProductResponse.value = productResponse
     }
 
     fun deleteImage(){
         viewModelScope.launch(Dispatchers.IO) {
-            imageRepository.deleteImageFromCache(_currentProduct.value!!.savedImagePath!!)
+            imageRepository.deleteImageFromCache(_currentProductResponse.value!!.savedImagePath!!)
         }
     }
 }

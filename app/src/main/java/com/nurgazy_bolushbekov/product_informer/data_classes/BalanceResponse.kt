@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
 
 @Parcelize
 @Serializable
-data class Balance(
+data class BalanceResponse(
     @SerialName("Склад")
     val warehouse: String,
     @SerialName("ВНаличии")
@@ -17,5 +17,5 @@ data class Balance(
     @SerialName("Единица")
     val unit: String,
     @SerialName("Ячейки")
-    val cellStock: List<CellStock>?=null
+    val cellStockResponse: List<CellStockResponse>?=null
 ) : Parcelable, java.io.Serializable

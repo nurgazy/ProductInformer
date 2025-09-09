@@ -1,12 +1,10 @@
 package com.nurgazy_bolushbekov.product_informer.search_product_info
 
-import android.app.Application
 import android.util.Log
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.nurgazy_bolushbekov.product_informer.api_1C.ApiRepository
 import com.nurgazy_bolushbekov.product_informer.application.DataStoreRepository
-import com.nurgazy_bolushbekov.product_informer.data_classes.Product
+import com.nurgazy_bolushbekov.product_informer.data_classes.ProductResponse
 import com.nurgazy_bolushbekov.product_informer.utils.ResultFetchData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,12 +16,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SearchProductInfoViewModel @Inject constructor(
-    application: Application,
-    private val dataStoreRepository: DataStoreRepository
-): AndroidViewModel(application) {
-
-    private lateinit var apiRepository: ApiRepository
-    private val curApplication = application
+    private val dataStoreRepository: DataStoreRepository,
+    private val searchProductInfoRepository: SearchProductInfoRepository
+): ViewModel() {
 
     val serverUrl: StateFlow<String> = dataStoreRepository.serverUrl.asStateFlow()
     private val userName: StateFlow<String> = dataStoreRepository.userName.asStateFlow()
@@ -34,8 +29,8 @@ class SearchProductInfoViewModel @Inject constructor(
     private val _barcode = MutableStateFlow("")
     val barcode: StateFlow<String> = _barcode.asStateFlow()
 
-    private val _product = MutableStateFlow<ResultFetchData<Product>?>(null)
-    val product: StateFlow<ResultFetchData<Product>?> = _product.asStateFlow()
+    private val _productResponse = MutableStateFlow<ResultFetchData<ProductResponse>?>(null)
+    val productResponse: StateFlow<ResultFetchData<ProductResponse>?> = _productResponse.asStateFlow()
 
     private val _navigateDetailScreen = MutableStateFlow(false)
     val navigateDetailScreen: StateFlow<Boolean> = _navigateDetailScreen.asStateFlow()
@@ -69,40 +64,38 @@ class SearchProductInfoViewModel @Inject constructor(
     fun getInfo() {
         Log.d("ProductInformer", "SearchProductInfoViewModel.getInfo barcode: ${_barcode.value}," +
                 " isAllSpecifications: ${isFullSpecifications.value}")
-        apiRepository = SearchProductInfoRepositoryImp(userName.value, password.value, baseUrl.value,
-            curApplication
-        )
+
         viewModelScope.launch {
-            _product.value = ResultFetchData.Loading
+            _productResponse.value = ResultFetchData.Loading
             if (_barcode.value.isEmpty()) {
-                _product.value = ResultFetchData.Error(Exception("Штрихкод не может быть пустым"))
+                _productResponse.value = ResultFetchData.Error(Exception("Штрихкод не может быть пустым"))
                 _alertText.value = "Штрихкод не может быть пустым"
                 setShowAlertDialog()
                 resetNavigationDetailScreen()
                 return@launch
             }
-            apiRepository.info(_barcode.value, isFullSpecifications.value).collectLatest { result ->
+            searchProductInfoRepository.refreshProduct(_barcode.value, isFullSpecifications.value).collectLatest { result ->
                 when (result) {
                     is ResultFetchData.Success -> {
                         try {
-                            _product.value = result
+                            _productResponse.value = result
                             setNavigationDetailScreen()
                         }catch (e: Exception){
-                            _product.value = ResultFetchData.Error(e)
+                            _productResponse.value = ResultFetchData.Error(e)
                             _alertText.value = e.message.toString()
                             setShowAlertDialog()
                             resetNavigationDetailScreen()
                         }
                     }
                     is ResultFetchData.Error -> {
-                        _product.value = result
+                        _productResponse.value = result
                         _alertText.value = result.exception.message.toString()
                         setShowAlertDialog()
                         resetNavigationDetailScreen()
                     }
 
                     ResultFetchData.Loading -> {
-                        _product.value = result
+                        _productResponse.value = result
                         resetNavigationDetailScreen()
                     }
                 }

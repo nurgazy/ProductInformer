@@ -7,9 +7,13 @@ import kotlinx.serialization.Serializable
 
 @Parcelize
 @Serializable
-data class CellStock(
-    @SerialName("Ячейка")
-    val cell: String,
-    @SerialName("ВНаличии")
-    val inStock: Double
+data class ProductSpecificResponse(
+    @SerialName("Наименование")
+    val name: String,
+
+    @SerialName("Остатки")
+    val balanceResponse: List<BalanceResponse>?=null,
+
+    @SerialName("Цены")
+    val priceResponse: List<PriceResponse>?=null
 ) : Parcelable, java.io.Serializable

@@ -7,7 +7,7 @@ import android.util.Base64
 import android.util.Log
 import com.nurgazy_bolushbekov.product_informer.api_1C.ApiRepository
 import com.nurgazy_bolushbekov.product_informer.api_1C.RetrofitClient
-import com.nurgazy_bolushbekov.product_informer.data_classes.Product
+import com.nurgazy_bolushbekov.product_informer.data_classes.ProductResponse
 import com.nurgazy_bolushbekov.product_informer.product.image.ImageRepository
 import com.nurgazy_bolushbekov.product_informer.product.image.ImageRepositoryImpl
 import com.nurgazy_bolushbekov.product_informer.utils.ResultFetchData
@@ -32,7 +32,7 @@ class SearchProductInfoRepositoryImp(username:String, password:String, baseUrl:S
         throw NotImplementedError("Not yet implemented")
     }
 
-    override suspend fun info(barcode: String, fullSpecifications: Boolean?): Flow<ResultFetchData<Product>> = flow{
+    override suspend fun info(barcode: String, fullSpecifications: Boolean?): Flow<ResultFetchData<ProductResponse>> = flow{
         emit(ResultFetchData.Loading)
 
         val response: Response<ResponseBody> = withContext(Dispatchers.IO){
@@ -49,8 +49,8 @@ class SearchProductInfoRepositoryImp(username:String, password:String, baseUrl:S
                 emit(ResultFetchData.Error(Exception("Товар не найден")))
                 return@flow
             }
-            val product: Product = jsonObj.decodeFromString(jsonString.jsonObject["Номенклатура"].toString())
-            product.productSpecifications = jsonObj.decodeFromString(jsonString.jsonObject["Характеристики"].toString())
+            val productResponse: ProductResponse = jsonObj.decodeFromString(jsonString.jsonObject["Номенклатура"].toString())
+            productResponse.productSpecificResponses = jsonObj.decodeFromString(jsonString.jsonObject["Характеристики"].toString())
 
             if (jsonString.jsonObject.containsKey("Картинка")){
                 val base64String = jsonString.jsonObject["Картинка"].toString()
@@ -66,25 +66,25 @@ class SearchProductInfoRepositoryImp(username:String, password:String, baseUrl:S
                     withContext(Dispatchers.IO){
                         val resultSaveImage = imageRepository.saveImageToCache(
                             bitmap,
-                            "${product.article}.jpeg",
+                            "${productResponse.article}.jpeg",
                             Bitmap.CompressFormat.JPEG,
                             90)
 
                         resultSaveImage.fold(
                             onSuccess = { file ->
-                                product.savedImagePath = file.absolutePath
+                                productResponse.savedImagePath = file.absolutePath
                             },
                             onFailure = { _ ->
-                                product.savedImagePath = null
+                                productResponse.savedImagePath = null
                             }
                         )
                     }
                 } else {
-                    product.savedImagePath = null
+                    productResponse.savedImagePath = null
                 }
             }
 
-            emit(ResultFetchData.Success(product))
+            emit(ResultFetchData.Success(productResponse))
         }else{
             emit(ResultFetchData.Error(Exception("Ошибка. Код: ${response.code()}. ${response.message()}")))
         }

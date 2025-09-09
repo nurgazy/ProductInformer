@@ -7,11 +7,9 @@ import kotlinx.serialization.Serializable
 
 @Parcelize
 @Serializable
-data class Price(
-    @SerialName("ВидЦены")
-    val priceType: String,
-    @SerialName("Цена")
-    val price: Double,
-    @SerialName("Валюта")
-    val currency: String
+data class CellStockResponse(
+    @SerialName("Ячейка")
+    val cell: String,
+    @SerialName("ВНаличии")
+    val inStock: Double
 ) : Parcelable, java.io.Serializable

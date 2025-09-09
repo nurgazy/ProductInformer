@@ -54,7 +54,7 @@ fun ProductInformationContent(
 ) {
 
     val barcodeText by vm.barcode.collectAsState()
-    val productResult by vm.product.collectAsState()
+    val productResult by vm.productResponse.collectAsState()
     val navigateDetailScreen by vm.navigateDetailScreen.collectAsState()
     val showDialog by vm.showDialog.collectAsState()
     val alertText by vm.alertText.collectAsState()

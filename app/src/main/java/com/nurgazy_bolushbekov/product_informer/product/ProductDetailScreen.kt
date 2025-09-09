@@ -50,7 +50,7 @@ import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import coil.size.Size
-import com.nurgazy_bolushbekov.product_informer.data_classes.Product
+import com.nurgazy_bolushbekov.product_informer.data_classes.ProductResponse
 import com.nurgazy_bolushbekov.product_informer.utils.ScreenNavItem
 import java.io.File
 
@@ -63,7 +63,7 @@ enum class ProductDetailTab {
 @Composable
 fun ProductDetailScreen(sharedViewModel: ProductSharedViewModel, navController: NavHostController) {
 
-    val product by sharedViewModel.currentProduct.collectAsState()
+    val product by sharedViewModel.currentProductResponse.collectAsState()
     val tabs = ProductDetailTab.entries.toTypedArray()
     val pagerState = rememberPagerState (pageCount = { tabs.size })
 
@@ -126,7 +126,7 @@ fun PagerIndicator(
 }
 
 @Composable
-fun DetailScreenContent(product: Product) {
+fun DetailScreenContent(productResponse: ProductResponse) {
     Column(Modifier.fillMaxWidth()) {
         //Наименование
         Row(
@@ -137,7 +137,7 @@ fun DetailScreenContent(product: Product) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = product.name,
+                text = productResponse.name,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center
             )
@@ -157,7 +157,7 @@ fun DetailScreenContent(product: Product) {
                 modifier = Modifier.weight(1f)
             )
             Text(
-                text = product.barcode,
+                text = productResponse.barcode,
                 textAlign = TextAlign.End,
                 modifier = Modifier.weight(1f)
             )
@@ -175,7 +175,7 @@ fun DetailScreenContent(product: Product) {
                 modifier = Modifier.weight(1f)
             )
             Text(
-                text = product.article,
+                text = productResponse.article,
                 textAlign = TextAlign.End,
                 modifier = Modifier.weight(1f)
             )
@@ -193,7 +193,7 @@ fun DetailScreenContent(product: Product) {
                 modifier = Modifier.weight(1f)
             )
             Text(
-                text = product.manufacturer,
+                text = productResponse.manufacturer,
                 textAlign = TextAlign.End,
                 modifier = Modifier.weight(1f)
             )
@@ -211,7 +211,7 @@ fun DetailScreenContent(product: Product) {
                 modifier = Modifier.weight(1f)
             )
             Text(
-                text = product.brand,
+                text = productResponse.brand,
                 textAlign = TextAlign.End,
                 modifier = Modifier.weight(1f)
             )
@@ -229,7 +229,7 @@ fun DetailScreenContent(product: Product) {
                 modifier = Modifier.weight(1f)
             )
             Text(
-                text = product.productCategory,
+                text = productResponse.productCategory,
                 textAlign = TextAlign.End,
                 modifier = Modifier.weight(1f)
             )
@@ -239,11 +239,11 @@ fun DetailScreenContent(product: Product) {
 
         Column{
             LazyColumn(modifier = Modifier.fillMaxSize()) {
-                items(listOf(product.productSpecifications)){ item ->
+                items(listOf(productResponse.productSpecificResponses)){ item ->
                     item?.forEach{ curProductSpec ->
                         CollapsibleSpecificatonItem(title = curProductSpec.name) {
                             CollapsibleItem(title = "Остатки (В наличии/Доступно)") {
-                                curProductSpec.balance?.forEach { curBalance ->
+                                curProductSpec.balanceResponse?.forEach { curBalance ->
                                     Row(
                                         Modifier
                                             .fillMaxWidth()
@@ -261,9 +261,9 @@ fun DetailScreenContent(product: Product) {
                                         )
                                     }
 
-                                    if (curBalance.cellStock != null){
+                                    if (curBalance.cellStockResponse != null){
                                         CollapsibleItem(title = "Ячейки"){
-                                            curBalance.cellStock.forEach{ curCellStock ->
+                                            curBalance.cellStockResponse.forEach{ curCellStock ->
                                                 Row(
                                                     Modifier
                                                         .fillMaxWidth()
@@ -289,7 +289,7 @@ fun DetailScreenContent(product: Product) {
                             }
                             Spacer(modifier = Modifier.height(8.dp))
                             CollapsibleItem(title = "Цены") {
-                                curProductSpec.price?.forEach{ curPrice ->
+                                curProductSpec.priceResponse?.forEach{ curPrice ->
                                     Row(
                                         Modifier
                                             .fillMaxWidth()
@@ -322,11 +322,11 @@ fun DetailScreenContent(product: Product) {
 }
 
 @Composable
-fun ImageScreenContent(product: Product) {
+fun ImageScreenContent(productResponse: ProductResponse) {
 
     val context = LocalContext.current
 
-    val imageFile = getCachedImageFile(context, "${product.article}.jpeg")
+    val imageFile = getCachedImageFile(context, "${productResponse.article}.jpeg")
     if (imageFile != null) {
         AsyncImage(
             model = ImageRequest.Builder(context)
@@ -334,7 +334,7 @@ fun ImageScreenContent(product: Product) {
                 .crossfade(true)
                 .size(Size.ORIGINAL)
                 .build(),
-            contentDescription = product.barcode,
+            contentDescription = productResponse.barcode,
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Fit
         )

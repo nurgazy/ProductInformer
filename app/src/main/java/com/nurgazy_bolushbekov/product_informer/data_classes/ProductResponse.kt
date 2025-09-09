@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
 
 @Parcelize
 @Serializable
-data class Product(
+data class ProductResponse(
     @SerialName("Наименование")
     val name: String,
     @SerialName("Штрихкод")
@@ -20,7 +20,9 @@ data class Product(
     val brand: String,
     @SerialName("ТоварнаяКатегория")
     val productCategory: String,
+    @SerialName("ГУИД1С")
+    val uuid1C: String,
     var savedImagePath: String? = null,
 
-    var productSpecifications: List<ProductSpecification>? = null
+    var productSpecificResponses: List<ProductSpecificResponse>? = null
 ) : Parcelable, java.io.Serializable
