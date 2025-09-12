@@ -1,18 +1,39 @@
 package com.nurgazy_bolushbekov.product_informer.product.image
 
-import android.app.Application
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.util.Base64
+import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.jsonObject
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import javax.inject.Inject
 
-class ImageRepositoryImpl(private val application: Application): ImageRepository {
+
+class ImageRepositoryImpl @Inject constructor(
+    private val context: Context
+): ImageRepository {
 
     private val cacheDir:File
-        get() = application.cacheDir
+        get() = context.cacheDir
+
+    fun getBitmapFromJson(jsonString: JsonElement): Bitmap?{
+        val base64String = jsonString.jsonObject["Картинка"].toString()
+        try {
+            val decodedBytes = Base64.decode(base64String, Base64.DEFAULT)
+            val bitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
+            return bitmap
+        }catch (e: Exception){
+            Log.d("ProductInformer", "Invalid Base64 string: ${e.message}")
+            return null
+        }
+    }
 
 
     override suspend fun saveImageToCache(
@@ -23,7 +44,6 @@ class ImageRepositoryImpl(private val application: Application): ImageRepository
     ): Result<File> = withContext(Dispatchers.IO){
         val file = File(cacheDir, filename)
         var fileOutputStream: FileOutputStream? = null
-
         return@withContext try {
             fileOutputStream = FileOutputStream(file)
             bitmap.compress(format, quality, fileOutputStream)

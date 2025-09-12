@@ -70,21 +70,26 @@ class DataStoreRepository @Inject constructor(
         applicationScope.launch {
             dataStore.data.map { preferences -> preferences[PROTOCOL_KEY] ?: Protocol.HTTP }.
                 collect { value -> protocol.value = Protocol.valueOf(value.toString()) }
+            changePort(if (protocol.value == Protocol.HTTP) 80 else 443)
+            changeBaseUrl()
         }
 
         applicationScope.launch {
             dataStore.data.map { preferences -> preferences[SERVER_URL_KEY] ?: "" }.
             collect { value -> serverUrl.value = value }
+            changeBaseUrl()
         }
 
         applicationScope.launch {
             dataStore.data.map { preferences -> preferences[PORT_KEY] ?: "0" }.
             collect { value -> port.value = value.toInt() }
+            changeBaseUrl()
         }
 
         applicationScope.launch {
             dataStore.data.map { preferences -> preferences[PUBLICATION_NAME_KEY] ?: "" }.
             collect { value -> publicationName.value = value }
+            changeBaseUrl()
         }
 
         applicationScope.launch {
@@ -100,9 +105,6 @@ class DataStoreRepository @Inject constructor(
             dataStore.data.map { preferences -> preferences[IS_ALL_SPECIFICATIONS_KEY] ?: "false" }.
             collect { value -> isFullSpecifications.value = value.toBoolean() }
         }
-
-        changePort(if (protocol.value == Protocol.HTTP) 80 else 443)
-        changeBaseUrl()
     }
 
     private suspend fun loadPassword(): String {

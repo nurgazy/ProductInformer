@@ -326,7 +326,7 @@ fun ImageScreenContent(productResponse: ProductResponse) {
 
     val context = LocalContext.current
 
-    val imageFile = getCachedImageFile(context, "${productResponse.article}.jpeg")
+    val imageFile = getCachedImageFile(context, "${productResponse.uuid1C}.jpeg")
     if (imageFile != null) {
         AsyncImage(
             model = ImageRequest.Builder(context)

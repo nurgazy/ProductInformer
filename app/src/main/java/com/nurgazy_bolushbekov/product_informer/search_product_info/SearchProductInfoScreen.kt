@@ -109,7 +109,7 @@ fun ProductInformationContent(
                     if (serverUrl.isEmpty()){
                         navController.navigate(ScreenNavItem.Settings.route)
                     }else {
-                        vm.getInfo()
+                        vm.refreshProduct()
                     }
                 },
                 modifier = Modifier

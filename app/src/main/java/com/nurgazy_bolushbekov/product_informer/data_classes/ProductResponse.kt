@@ -1,6 +1,7 @@
 package com.nurgazy_bolushbekov.product_informer.data_classes
 
 import android.os.Parcelable
+import com.nurgazy_bolushbekov.product_informer.product.entity.Product
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -25,4 +26,17 @@ data class ProductResponse(
     var savedImagePath: String? = null,
 
     var productSpecificResponses: List<ProductSpecificResponse>? = null
-) : Parcelable, java.io.Serializable
+) : Parcelable, java.io.Serializable {
+    fun toProduct(): Product {
+        return Product(
+            name = name,
+            barcode = barcode,
+            article = article,
+            manufacturer = manufacturer,
+            brand = brand,
+            productCategory = productCategory,
+            uuid1C = uuid1C,
+            savedImagePath = savedImagePath
+        )
+    }
+}

@@ -21,13 +21,13 @@ class SearchProductInfoViewModel @Inject constructor(
 ): ViewModel() {
 
     val serverUrl: StateFlow<String> = dataStoreRepository.serverUrl.asStateFlow()
-    private val userName: StateFlow<String> = dataStoreRepository.userName.asStateFlow()
-    private val password: StateFlow<String> = dataStoreRepository.password.asStateFlow()
-    private val baseUrl: StateFlow<String> = dataStoreRepository.baseUrl.asStateFlow()
     private val isFullSpecifications: StateFlow<Boolean> = dataStoreRepository.isFullSpecifications.asStateFlow()
 
     private val _barcode = MutableStateFlow("")
     val barcode: StateFlow<String> = _barcode.asStateFlow()
+
+    private val _uuidProduct = MutableStateFlow<String?>(null)
+    val uuidProduct: StateFlow<String?> = _uuidProduct.asStateFlow()
 
     private val _productResponse = MutableStateFlow<ResultFetchData<ProductResponse>?>(null)
     val productResponse: StateFlow<ResultFetchData<ProductResponse>?> = _productResponse.asStateFlow()
@@ -62,8 +62,6 @@ class SearchProductInfoViewModel @Inject constructor(
     }
 
     fun getInfo() {
-        Log.d("ProductInformer", "SearchProductInfoViewModel.getInfo barcode: ${_barcode.value}," +
-                " isAllSpecifications: ${isFullSpecifications.value}")
 
         viewModelScope.launch {
             _productResponse.value = ResultFetchData.Loading
@@ -74,7 +72,7 @@ class SearchProductInfoViewModel @Inject constructor(
                 resetNavigationDetailScreen()
                 return@launch
             }
-            searchProductInfoRepository.refreshProduct(_barcode.value, isFullSpecifications.value).collectLatest { result ->
+            searchProductInfoRepository.info(_barcode.value, isFullSpecifications.value).collectLatest { result ->
                 when (result) {
                     is ResultFetchData.Success -> {
                         try {
@@ -101,6 +99,28 @@ class SearchProductInfoViewModel @Inject constructor(
                 }
 
             }
+        }
+    }
+
+    fun refreshProduct(){
+        viewModelScope.launch {
+            _productResponse.value = null
+            if (_barcode.value.isEmpty()) {
+                _productResponse.value = ResultFetchData.Error(Exception("Штрихкод не может быть пустым"))
+                _alertText.value = "Штрихкод не может быть пустым"
+                setShowAlertDialog()
+                resetNavigationDetailScreen()
+                return@launch
+            }
+
+            _uuidProduct.value = searchProductInfoRepository.refreshProduct(_barcode.value, isFullSpecifications.value)
+
+//            val curProduct = searchProductInfoRepository.getProductByBarcode(_barcode.value)
+//            if (curProduct != null){
+//                _productResponse.value = null
+//                _alertText.value = curProduct.toString()
+//                setShowAlertDialog()
+//            }
         }
     }
 }
