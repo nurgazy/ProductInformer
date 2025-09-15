@@ -1,4 +1,4 @@
-package com.nurgazy_bolushbekov.product_informer.product
+package com.nurgazy_bolushbekov.product_informer.product.product_detail
 
 import android.content.Context
 import androidx.activity.compose.BackHandler
@@ -18,8 +18,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
@@ -32,6 +30,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -46,11 +45,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import coil.size.Size
-import com.nurgazy_bolushbekov.product_informer.data_classes.ProductResponse
+import com.nurgazy_bolushbekov.product_informer.product.entity.Product
 import com.nurgazy_bolushbekov.product_informer.utils.ScreenNavItem
 import java.io.File
 
@@ -61,18 +61,26 @@ enum class ProductDetailTab {
 }
 
 @Composable
-fun ProductDetailScreen(sharedViewModel: ProductSharedViewModel, navController: NavHostController) {
+fun ProductDetailScreen(
+    navController: NavHostController,
+    productId: String,
+    vm: ProductDetailViewModel = hiltViewModel()
+) {
 
-    val product by sharedViewModel.currentProductResponse.collectAsState()
     val tabs = ProductDetailTab.entries.toTypedArray()
     val pagerState = rememberPagerState (pageCount = { tabs.size })
+    val curProduct by vm.product.collectAsState()
+
+    LaunchedEffect(true) {
+        vm.getProductFromDB(productId)
+    }
 
     BackHandler {
-        sharedViewModel.deleteImage()
+        vm.deleteImageFromCache()
         navController.popBackStack(ScreenNavItem.SearchProductInfo.route, false)
     }
 
-    if (product == null) {
+    if (curProduct == null) {
         Column(Modifier.fillMaxWidth()) {
             Text(text = "Нет данных")
         }
@@ -91,8 +99,8 @@ fun ProductDetailScreen(sharedViewModel: ProductSharedViewModel, navController: 
                 .weight(1f)
         ) { page ->
             when (tabs[page]) {
-                ProductDetailTab.PRODUCT_DETAIL -> DetailScreenContent(product!!)
-                ProductDetailTab.PRODUCT_IMAGE -> ImageScreenContent(product!!)
+                ProductDetailTab.PRODUCT_DETAIL -> DetailScreenContent(curProduct!!)
+                ProductDetailTab.PRODUCT_IMAGE -> ImageScreenContent(curProduct!!)
             }
         }
         Spacer(Modifier.height(16.dp))
@@ -126,7 +134,7 @@ fun PagerIndicator(
 }
 
 @Composable
-fun DetailScreenContent(productResponse: ProductResponse) {
+fun DetailScreenContent(product: Product) {
     Column(Modifier.fillMaxWidth()) {
         //Наименование
         Row(
@@ -137,7 +145,7 @@ fun DetailScreenContent(productResponse: ProductResponse) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = productResponse.name,
+                text = product.name,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center
             )
@@ -157,7 +165,7 @@ fun DetailScreenContent(productResponse: ProductResponse) {
                 modifier = Modifier.weight(1f)
             )
             Text(
-                text = productResponse.barcode,
+                text = product.barcode,
                 textAlign = TextAlign.End,
                 modifier = Modifier.weight(1f)
             )
@@ -175,7 +183,7 @@ fun DetailScreenContent(productResponse: ProductResponse) {
                 modifier = Modifier.weight(1f)
             )
             Text(
-                text = productResponse.article,
+                text = product.article,
                 textAlign = TextAlign.End,
                 modifier = Modifier.weight(1f)
             )
@@ -193,7 +201,7 @@ fun DetailScreenContent(productResponse: ProductResponse) {
                 modifier = Modifier.weight(1f)
             )
             Text(
-                text = productResponse.manufacturer,
+                text = product.manufacturer,
                 textAlign = TextAlign.End,
                 modifier = Modifier.weight(1f)
             )
@@ -211,7 +219,7 @@ fun DetailScreenContent(productResponse: ProductResponse) {
                 modifier = Modifier.weight(1f)
             )
             Text(
-                text = productResponse.brand,
+                text = product.brand,
                 textAlign = TextAlign.End,
                 modifier = Modifier.weight(1f)
             )
@@ -229,104 +237,104 @@ fun DetailScreenContent(productResponse: ProductResponse) {
                 modifier = Modifier.weight(1f)
             )
             Text(
-                text = productResponse.productCategory,
+                text = product.productCategory,
                 textAlign = TextAlign.End,
                 modifier = Modifier.weight(1f)
             )
         }
 
         HorizontalDivider()
-
-        Column{
-            LazyColumn(modifier = Modifier.fillMaxSize()) {
-                items(listOf(productResponse.productSpecificResponses)){ item ->
-                    item?.forEach{ curProductSpec ->
-                        CollapsibleSpecificatonItem(title = curProductSpec.name) {
-                            CollapsibleItem(title = "Остатки (В наличии/Доступно)") {
-                                curProductSpec.balanceResponse?.forEach { curBalance ->
-                                    Row(
-                                        Modifier
-                                            .fillMaxWidth()
-                                            .padding(5.dp),
-                                    ) {
-                                        Text(
-                                            text = curBalance.warehouse,
-                                            textAlign = TextAlign.Start,
-                                            modifier = Modifier.weight(1f)
-                                        )
-                                        Text(
-                                            text = "${curBalance.inStock} / ${curBalance.available} ${curBalance.unit}",
-                                            textAlign = TextAlign.End,
-                                            modifier = Modifier.weight(1f)
-                                        )
-                                    }
-
-                                    if (curBalance.cellStockResponse != null){
-                                        CollapsibleItem(title = "Ячейки"){
-                                            curBalance.cellStockResponse.forEach{ curCellStock ->
-                                                Row(
-                                                    Modifier
-                                                        .fillMaxWidth()
-                                                        .padding(5.dp),
-                                                ) {
-                                                    Text(
-                                                        text = curCellStock.cell,
-                                                        textAlign = TextAlign.Start,
-                                                        modifier = Modifier.weight(1f)
-                                                    )
-
-                                                    Text(
-                                                        text = "${curCellStock.inStock}",
-                                                        textAlign = TextAlign.End,
-                                                        modifier = Modifier.weight(1f)
-                                                    )
-                                                }
-                                            }
-                                        }
-                                    }
-                                    HorizontalDivider()
-                                }
-                            }
-                            Spacer(modifier = Modifier.height(8.dp))
-                            CollapsibleItem(title = "Цены") {
-                                curProductSpec.priceResponse?.forEach{ curPrice ->
-                                    Row(
-                                        Modifier
-                                            .fillMaxWidth()
-                                            .padding(5.dp),
-                                    ) {
-                                        Text(
-                                            text = curPrice.priceType,
-                                            textAlign = TextAlign.Start,
-                                            modifier = Modifier.weight(1f)
-                                        )
-                                        Text(
-                                            text = "${curPrice.price}  ${curPrice.currency}",
-                                            textAlign = TextAlign.End,
-                                            modifier = Modifier.weight(1f)
-                                        )
-                                    }
-                                    HorizontalDivider()
-                                }
-                            }
-                            Spacer(modifier = Modifier.height(8.dp))
-                        }
-                    }
-                }
-            }
-
-        }
+//
+//        Column{
+//            LazyColumn(modifier = Modifier.fillMaxSize()) {
+//                items(listOf(productResponse.productSpecificResponses)){ item ->
+//                    item?.forEach{ curProductSpec ->
+//                        CollapsibleSpecificatonItem(title = curProductSpec.name) {
+//                            CollapsibleItem(title = "Остатки (В наличии/Доступно)") {
+//                                curProductSpec.balanceResponse?.forEach { curBalance ->
+//                                    Row(
+//                                        Modifier
+//                                            .fillMaxWidth()
+//                                            .padding(5.dp),
+//                                    ) {
+//                                        Text(
+//                                            text = curBalance.warehouse,
+//                                            textAlign = TextAlign.Start,
+//                                            modifier = Modifier.weight(1f)
+//                                        )
+//                                        Text(
+//                                            text = "${curBalance.inStock} / ${curBalance.available} ${curBalance.unit}",
+//                                            textAlign = TextAlign.End,
+//                                            modifier = Modifier.weight(1f)
+//                                        )
+//                                    }
+//
+//                                    if (curBalance.cellStockResponse != null){
+//                                        CollapsibleItem(title = "Ячейки"){
+//                                            curBalance.cellStockResponse.forEach{ curCellStock ->
+//                                                Row(
+//                                                    Modifier
+//                                                        .fillMaxWidth()
+//                                                        .padding(5.dp),
+//                                                ) {
+//                                                    Text(
+//                                                        text = curCellStock.cell,
+//                                                        textAlign = TextAlign.Start,
+//                                                        modifier = Modifier.weight(1f)
+//                                                    )
+//
+//                                                    Text(
+//                                                        text = "${curCellStock.inStock}",
+//                                                        textAlign = TextAlign.End,
+//                                                        modifier = Modifier.weight(1f)
+//                                                    )
+//                                                }
+//                                            }
+//                                        }
+//                                    }
+//                                    HorizontalDivider()
+//                                }
+//                            }
+//                            Spacer(modifier = Modifier.height(8.dp))
+//                            CollapsibleItem(title = "Цены") {
+//                                curProductSpec.priceResponse?.forEach{ curPrice ->
+//                                    Row(
+//                                        Modifier
+//                                            .fillMaxWidth()
+//                                            .padding(5.dp),
+//                                    ) {
+//                                        Text(
+//                                            text = curPrice.priceType,
+//                                            textAlign = TextAlign.Start,
+//                                            modifier = Modifier.weight(1f)
+//                                        )
+//                                        Text(
+//                                            text = "${curPrice.price}  ${curPrice.currency}",
+//                                            textAlign = TextAlign.End,
+//                                            modifier = Modifier.weight(1f)
+//                                        )
+//                                    }
+//                                    HorizontalDivider()
+//                                }
+//                            }
+//                            Spacer(modifier = Modifier.height(8.dp))
+//                        }
+//                    }
+//                }
+//            }
+//
+//        }
 
     }
 
 }
 
 @Composable
-fun ImageScreenContent(productResponse: ProductResponse) {
+fun ImageScreenContent(product: Product) {
 
     val context = LocalContext.current
 
-    val imageFile = getCachedImageFile(context, "${productResponse.uuid1C}.jpeg")
+    val imageFile = getCachedImageFile(context, "${product.uuid1C}.jpeg")
     if (imageFile != null) {
         AsyncImage(
             model = ImageRequest.Builder(context)
@@ -334,7 +342,7 @@ fun ImageScreenContent(productResponse: ProductResponse) {
                 .crossfade(true)
                 .size(Size.ORIGINAL)
                 .build(),
-            contentDescription = productResponse.barcode,
+            contentDescription = product.name,
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Fit
         )

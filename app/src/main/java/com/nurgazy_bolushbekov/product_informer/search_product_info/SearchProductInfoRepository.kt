@@ -7,7 +7,6 @@ import android.util.Log
 import com.nurgazy_bolushbekov.product_informer.api_1C.ApiProviderManager
 import com.nurgazy_bolushbekov.product_informer.data_classes.ProductResponse
 import com.nurgazy_bolushbekov.product_informer.product.dao.ProductDao
-import com.nurgazy_bolushbekov.product_informer.product.entity.Product
 import com.nurgazy_bolushbekov.product_informer.product.image.ImageRepositoryImpl
 import com.nurgazy_bolushbekov.product_informer.utils.ResultFetchData
 import kotlinx.coroutines.Dispatchers
@@ -30,7 +29,7 @@ class SearchProductInfoRepository @Inject constructor(
     private val productDao: ProductDao
 ) {
 
-    suspend fun refreshProduct(barcode: String, fullSpecifications: Boolean?): String? {
+    suspend fun refreshProduct(barcode: String, fullSpecifications: Boolean?): ResultFetchData<String> {
         return withContext(Dispatchers.IO){
             try {
                 val apiService = apiProviderManager.apiService.filterNotNull().first()
@@ -42,7 +41,7 @@ class SearchProductInfoRepository @Inject constructor(
 
                     val productFound: Boolean = jsonString.jsonObject["Результат"].toString().toBoolean()
                     if (!productFound){
-                        return@withContext null
+                        return@withContext ResultFetchData.Error(Exception("Товар не найден"))
                     }
 
                     val productResponse: ProductResponse = jsonObj.decodeFromString(jsonString.jsonObject["Номенклатура"].toString())
@@ -67,19 +66,13 @@ class SearchProductInfoRepository @Inject constructor(
                         }
                     }
                     productDao.insert(productResponse.toProduct())
-                    return@withContext productResponse.uuid1C
+                    return@withContext ResultFetchData.Success(productResponse.uuid1C)
                 }else{
-                    null
+                    return@withContext ResultFetchData.Error(Exception("Ошибка. Код: ${response.code()}. ${response.message()}"))
                 }
             } catch (e: Exception){
-                null
+                return@withContext ResultFetchData.Error(e)
             }
-        }
-    }
-
-    suspend fun getProductByBarcode(barcode: String): Product?{
-        return withContext(Dispatchers.IO){
-            productDao.getProductByBarcode(barcode)
         }
     }
 

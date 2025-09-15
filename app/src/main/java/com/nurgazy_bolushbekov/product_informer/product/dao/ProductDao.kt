@@ -13,4 +13,8 @@ interface ProductDao {
 
     @Query("SELECT * FROM products WHERE barcode = :barcode")
     suspend fun getProductByBarcode(barcode: String): Product?
+
+    @Query("SELECT * FROM products WHERE uuid1C = :uuid1C")
+    suspend fun getProductByUuid1C(uuid1C: String): Product?
+
 }

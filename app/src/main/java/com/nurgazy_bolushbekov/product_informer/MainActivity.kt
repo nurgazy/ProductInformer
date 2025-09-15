@@ -40,16 +40,16 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.nurgazy_bolushbekov.product_informer.barcode_collection.list.BarcodeCollectionListScreen
-import com.nurgazy_bolushbekov.product_informer.product.ProductDetailScreen
-import com.nurgazy_bolushbekov.product_informer.product.ProductSharedViewModel
+import com.nurgazy_bolushbekov.product_informer.product.product_detail.ProductDetailScreen
 import com.nurgazy_bolushbekov.product_informer.search_product_info.SearchProductInfoScreen
 import com.nurgazy_bolushbekov.product_informer.settings.SettingScreen
 import com.nurgazy_bolushbekov.product_informer.utils.ScreenNavItem
@@ -76,16 +76,16 @@ fun MainScreen(paddingValues: PaddingValues, navController: NavHostController){
     ) {
         composable(ScreenNavItem.Settings.route) { SettingScreen(navController) }
         composable(ScreenNavItem.SearchProductInfo.route) {
-            val sharedViewModel: ProductSharedViewModel = hiltViewModel(
-                navController.getBackStackEntry(ScreenNavItem.SearchProductInfo.route)
-            )
-            SearchProductInfoScreen(navController, sharedViewModel)
+            SearchProductInfoScreen(navController)
         }
-        composable(ScreenNavItem.ProductDetail.route) {
-            val sharedViewModel: ProductSharedViewModel = hiltViewModel(
-                navController.getBackStackEntry(ScreenNavItem.SearchProductInfo.route)
-            )
-            ProductDetailScreen(sharedViewModel, navController)
+        composable(
+            route = ScreenNavItem.ProductDetail.route+"/{productId}",
+            arguments = listOf(navArgument("productId"){ type= NavType.StringType })
+        ) { backStackEntry ->
+            val productId = backStackEntry.arguments?.getString("productId")
+            if (productId != null) {
+                ProductDetailScreen(navController, productId)
+            }
         }
         composable(ScreenNavItem.BarcodeCollectionList.route) {
             BarcodeCollectionListScreen()

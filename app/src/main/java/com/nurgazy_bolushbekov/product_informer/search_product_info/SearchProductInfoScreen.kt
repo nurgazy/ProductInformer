@@ -32,39 +32,35 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.nurgazy_bolushbekov.product_informer.product.ProductSharedViewModel
 import com.nurgazy_bolushbekov.product_informer.utils.ResultFetchData
 import com.nurgazy_bolushbekov.product_informer.utils.ScreenNavItem
 
 @Composable
 fun SearchProductInfoScreen(
     navController: NavController,
-    sharedViewModel: ProductSharedViewModel,
     vm: SearchProductInfoViewModel = hiltViewModel()
 ){
-    BarcodeScannerScreen(vm, navController, sharedViewModel)
+    BarcodeScannerScreen(vm, navController)
 }
 
 @Composable
 fun ProductInformationContent(
     vm: SearchProductInfoViewModel,
     isScannerVisible: MutableState<Boolean>,
-    navController: NavController,
-    sharedViewModel: ProductSharedViewModel
+    navController: NavController
 ) {
 
     val barcodeText by vm.barcode.collectAsState()
-    val productResult by vm.productResponse.collectAsState()
+    val refreshResult by vm.refreshResult.collectAsState()
     val navigateDetailScreen by vm.navigateDetailScreen.collectAsState()
     val showDialog by vm.showDialog.collectAsState()
     val alertText by vm.alertText.collectAsState()
     val serverUrl by vm.serverUrl.collectAsState()
+    val productId by vm.productId.collectAsState()
 
     LaunchedEffect(navigateDetailScreen) {
         if (navigateDetailScreen) {
-            val product = (productResult as ResultFetchData.Success).data
-            sharedViewModel.setProduct(product)
-            navController.navigate(ScreenNavItem.ProductDetail.route)
+            navController.navigate(ScreenNavItem.ProductDetail.route+"/$productId")
             vm.resetNavigationDetailScreen()
         }
     }
@@ -93,7 +89,7 @@ fun ProductInformationContent(
             Button(
                 onClick = {
                     if (serverUrl.isEmpty()){
-                        navController.navigate(ScreenNavItem.Settings.route)
+                        navController.navigate(ScreenNavItem.Settings.route+"/$productId")
                     }else {
                         isScannerVisible.value = true
                     }
@@ -120,10 +116,10 @@ fun ProductInformationContent(
             }
         }
 
-        when(productResult){
+        when(refreshResult){
             null -> {}
             is ResultFetchData.Error -> {
-                val error = (productResult as ResultFetchData.Error).exception
+                val error = (refreshResult as ResultFetchData.Error).exception
                 ExpandableText(
                     text = "Ошибка: ${error.message}"
                 )
