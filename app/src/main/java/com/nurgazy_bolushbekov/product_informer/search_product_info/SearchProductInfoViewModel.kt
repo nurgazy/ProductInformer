@@ -18,7 +18,7 @@ class SearchProductInfoViewModel @Inject constructor(
 ): ViewModel() {
 
     val serverUrl: StateFlow<String> = dataStoreRepository.serverUrl.asStateFlow()
-    private val isFullSpecifications: StateFlow<Boolean> = dataStoreRepository.isFullSpecifications.asStateFlow()
+    val isFullSpecifications: StateFlow<Boolean> = dataStoreRepository.isFullSpecifications.asStateFlow()
 
     private val _barcode = MutableStateFlow("")
     val barcode: StateFlow<String> = _barcode.asStateFlow()
@@ -59,47 +59,6 @@ class SearchProductInfoViewModel @Inject constructor(
     fun resetNavigationDetailScreen(){
         _navigateDetailScreen.value = false
     }
-
-//    fun getInfo() {
-//
-//        viewModelScope.launch {
-//            _productResponse.value = ResultFetchData.Loading
-//            if (_barcode.value.isEmpty()) {
-//                _productResponse.value = ResultFetchData.Error(Exception("Штрихкод не может быть пустым"))
-//                _alertText.value = "Штрихкод не может быть пустым"
-//                setShowAlertDialog()
-//                resetNavigationDetailScreen()
-//                return@launch
-//            }
-//            searchProductInfoRepository.info(_barcode.value, isFullSpecifications.value).collectLatest { result ->
-//                when (result) {
-//                    is ResultFetchData.Success -> {
-//                        try {
-//                            _productResponse.value = result
-//                            setNavigationDetailScreen()
-//                        }catch (e: Exception){
-//                            _productResponse.value = ResultFetchData.Error(e)
-//                            _alertText.value = e.message.toString()
-//                            setShowAlertDialog()
-//                            resetNavigationDetailScreen()
-//                        }
-//                    }
-//                    is ResultFetchData.Error -> {
-//                        _productResponse.value = result
-//                        _alertText.value = result.exception.message.toString()
-//                        setShowAlertDialog()
-//                        resetNavigationDetailScreen()
-//                    }
-//
-//                    ResultFetchData.Loading -> {
-//                        _productResponse.value = result
-//                        resetNavigationDetailScreen()
-//                    }
-//                }
-//
-//            }
-//        }
-//    }
 
     fun refreshProduct(){
         viewModelScope.launch {

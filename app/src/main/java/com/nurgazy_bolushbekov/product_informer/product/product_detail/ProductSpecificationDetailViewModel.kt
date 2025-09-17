@@ -2,7 +2,7 @@ package com.nurgazy_bolushbekov.product_informer.product.product_detail
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.nurgazy_bolushbekov.product_informer.product.entity.ProductWithSpecifications
+import com.nurgazy_bolushbekov.product_informer.product.entity.SpecificationWithProduct
 import com.nurgazy_bolushbekov.product_informer.product.image.ImageRepositoryImpl
 import com.nurgazy_bolushbekov.product_informer.product.repo.ProductRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -14,32 +14,31 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class ProductDetailViewModel @Inject constructor(
+class ProductSpecificationDetailViewModel @Inject constructor(
     private val productRepository: ProductRepository,
     private val imageRepository: ImageRepositoryImpl,
 ): ViewModel() {
 
-    private val _productWithSpecifications = MutableStateFlow<ProductWithSpecifications?>(null)
-    val productWithSpecifications: StateFlow<ProductWithSpecifications?> = _productWithSpecifications.asStateFlow()
+    private val _specWithProduct = MutableStateFlow<SpecificationWithProduct?>(null)
+    val specWithProduct: StateFlow<SpecificationWithProduct?> = _specWithProduct.asStateFlow()
 
     fun getProductFromDB(productId: String){
-        getProductWithSpecificationsByUuid1C(productId)
+        getSpecificationWithProduct(productId)
     }
 
     fun deleteImageFromCache(){
-        viewModelScope.launch(Dispatchers.IO) {
-            val curProduct = productWithSpecifications.value!!.product
-            if (curProduct.savedImagePath != null)
-                imageRepository.deleteImageFromCache(curProduct.savedImagePath)
-        }
+       viewModelScope.launch(Dispatchers.IO) {
+           val product = _specWithProduct.value!!.product
+           if (product.savedImagePath != null)
+               imageRepository.deleteImageFromCache(product.savedImagePath)
+       }
     }
 
-    private fun getProductWithSpecificationsByUuid1C(productId: String){
+    private fun getSpecificationWithProduct(productId: String){
         viewModelScope.launch {
-            productRepository.getProductWithSpecificationsByUuid1C(productId).collect{
-                _productWithSpecifications.value = it
+            productRepository.getSpecificationWithProduct(productId).collect{
+                _specWithProduct.value = it
             }
         }
     }
-
 }

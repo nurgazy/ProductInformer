@@ -11,6 +11,9 @@ data class ProductSpecificResponse(
     @SerialName("Наименование")
     val name: String,
 
+    @SerialName("ГУИД1С")
+    val uuid1C: String,
+
     @SerialName("Остатки")
     val balanceResponse: List<BalanceResponse>?=null,
 

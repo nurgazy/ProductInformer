@@ -57,6 +57,7 @@ fun ProductInformationContent(
     val alertText by vm.alertText.collectAsState()
     val serverUrl by vm.serverUrl.collectAsState()
     val productId by vm.productId.collectAsState()
+    val isFullSpecifications by vm.isFullSpecifications.collectAsState()
 
     LaunchedEffect(navigateDetailScreen) {
         if (navigateDetailScreen) {
@@ -89,7 +90,10 @@ fun ProductInformationContent(
             Button(
                 onClick = {
                     if (serverUrl.isEmpty()){
-                        navController.navigate(ScreenNavItem.Settings.route+"/$productId")
+                        if (isFullSpecifications)
+                            navController.navigate(ScreenNavItem.ProductDetail.route+"/$productId")
+                        else
+                            navController.navigate(ScreenNavItem.ProductSpecificationDetail.route+"/$productId")
                     }else {
                         isScannerVisible.value = true
                     }
@@ -103,7 +107,10 @@ fun ProductInformationContent(
             Button(
                 onClick = {
                     if (serverUrl.isEmpty()){
-                        navController.navigate(ScreenNavItem.Settings.route)
+                        if (isFullSpecifications)
+                            navController.navigate(ScreenNavItem.ProductDetail.route+"/$productId")
+                        else
+                            navController.navigate(ScreenNavItem.ProductSpecificationDetail.route+"/$productId")
                     }else {
                         vm.refreshProduct()
                     }

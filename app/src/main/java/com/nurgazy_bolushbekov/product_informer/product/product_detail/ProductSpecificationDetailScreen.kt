@@ -1,15 +1,7 @@
 package com.nurgazy_bolushbekov.product_informer.product.product_detail
 
-import android.content.Context
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -17,31 +9,18 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -52,26 +31,20 @@ import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import coil.size.Size
-import com.nurgazy_bolushbekov.product_informer.product.entity.ProductWithSpecifications
+import com.nurgazy_bolushbekov.product_informer.product.entity.SpecificationWithProduct
 import com.nurgazy_bolushbekov.product_informer.utils.ScreenNavItem
-import java.io.File
 
-
-enum class ProductDetailTab {
-    PRODUCT_DETAIL,
-    PRODUCT_IMAGE,
-}
 
 @Composable
-fun ProductDetailScreen(
+fun ProductSpecificationDetailScreen(
     navController: NavHostController,
     productId: String,
-    vm: ProductDetailViewModel = hiltViewModel()
+    vm: ProductSpecificationDetailViewModel = hiltViewModel()
 ) {
 
     val tabs = ProductDetailTab.entries.toTypedArray()
     val pagerState = rememberPagerState (pageCount = { tabs.size })
-    val productWithSpec by vm.productWithSpecifications.collectAsState()
+    val productWithSpec by vm.specWithProduct.collectAsState()
 
     LaunchedEffect(true) {
         vm.getProductFromDB(productId)
@@ -101,8 +74,8 @@ fun ProductDetailScreen(
                 .weight(1f)
         ) { page ->
             when (tabs[page]) {
-                ProductDetailTab.PRODUCT_DETAIL -> DetailScreenContent(productWithSpec!!)
-                ProductDetailTab.PRODUCT_IMAGE -> ImageScreenContent(productWithSpec!!)
+                ProductDetailTab.PRODUCT_DETAIL -> SpecificationDetailScreenContent(productWithSpec!!)
+                ProductDetailTab.PRODUCT_IMAGE -> SpecificationImageScreenContent(productWithSpec!!)
             }
         }
         Spacer(Modifier.height(16.dp))
@@ -111,34 +84,9 @@ fun ProductDetailScreen(
 }
 
 @Composable
-fun PagerIndicator(
-    pagerState: PagerState,
-    modifier: Modifier = Modifier,
-    activeColor: Color = MaterialTheme.colorScheme.primary,
-    inactiveColor: Color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
-) {
-    Row(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        repeat(pagerState.pageCount) { iteration ->
-            val color = if (pagerState.currentPage == iteration) activeColor else inactiveColor
-            Box(
-                modifier = Modifier
-                    .padding(horizontal = 4.dp)
-                    .clip(CircleShape)
-                    .size(8.dp)
-                    .background(color)
-            )
-        }
-    }
-}
+fun SpecificationDetailScreenContent(productSpecification: SpecificationWithProduct) {
 
-@Composable
-fun DetailScreenContent(productWithSpecifications: ProductWithSpecifications) {
-
-    val product = productWithSpecifications.product
+    val product = productSpecification.product
 
     Column(Modifier.fillMaxWidth()) {
         //Наименование
@@ -252,13 +200,11 @@ fun DetailScreenContent(productWithSpecifications: ProductWithSpecifications) {
 
         Column{
             LazyColumn(modifier = Modifier.fillMaxSize()) {
-                items(listOf(productWithSpecifications.specifications)){ item ->
-                    item.forEach{ curProductSpec ->
-                        CollapsibleSpecificatonItem(title = curProductSpec.name) {
-                            CollapsibleItem(title = "Остатки (В наличии/Доступно)") {
-                            }
-                            Spacer(modifier = Modifier.height(8.dp))
+                items(listOf(productSpecification.specification)){ curProductSpec ->
+                    CollapsibleSpecificatonItem(title = curProductSpec.name) {
+                        CollapsibleItem(title = "Остатки (В наличии/Доступно)") {
                         }
+                        Spacer(modifier = Modifier.height(8.dp))
                     }
                 }
             }
@@ -269,10 +215,10 @@ fun DetailScreenContent(productWithSpecifications: ProductWithSpecifications) {
 }
 
 @Composable
-fun ImageScreenContent(productWithSpecifications: ProductWithSpecifications) {
+fun SpecificationImageScreenContent(productSpecification: SpecificationWithProduct) {
 
     val context = LocalContext.current
-    val product = productWithSpecifications.product
+    val product = productSpecification.product
 
     val imageFile = getCachedImageFile(context, "${product.productUuid1C}.jpeg")
     if (imageFile != null) {
@@ -290,89 +236,4 @@ fun ImageScreenContent(productWithSpecifications: ProductWithSpecifications) {
         Text("Файл изображения не найден.")
     }
 
-}
-
-@Composable
-fun CollapsibleItem(
-    title: String,
-    content: @Composable () -> Unit
-) {
-    var isExpanded by remember { mutableStateOf(true) }
-
-    Column(modifier = Modifier
-        .fillMaxWidth()
-        .padding(start = 5.dp)) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(5.dp)
-                .clickable { isExpanded = !isExpanded },
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(text = title, style = MaterialTheme.typography.titleMedium)
-            Icon(
-                imageVector = if (isExpanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
-                contentDescription = if (isExpanded) "Свернуть" else "Развернуть"
-            )
-        }
-        AnimatedVisibility(
-            visible = isExpanded,
-            enter = slideInVertically(animationSpec = tween(durationMillis = 300)),
-            exit = slideOutVertically(animationSpec = tween(durationMillis = 300))
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-            ) {
-                content()
-            }
-        }
-    }
-}
-
-@Composable
-fun CollapsibleSpecificatonItem(
-    title: String,
-    content: @Composable () -> Unit
-) {
-    var isExpanded by remember { mutableStateOf(true) }
-
-    Column(modifier = Modifier
-        .fillMaxWidth()
-        .padding(start = 5.dp)) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color(0xFF83F583))
-                .padding(5.dp)
-                .clickable { isExpanded = !isExpanded },
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(text = title, style = MaterialTheme.typography.titleMedium)
-            Icon(
-                imageVector = if (isExpanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
-                contentDescription = if (isExpanded) "Свернуть" else "Развернуть"
-            )
-        }
-        AnimatedVisibility(
-            visible = isExpanded,
-            enter = slideInVertically(animationSpec = tween(durationMillis = 300)),
-            exit = slideOutVertically(animationSpec = tween(durationMillis = 300))
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-            ) {
-                content()
-            }
-        }
-    }
-}
-
-fun getCachedImageFile(context: Context, fileName: String): File? {
-    val cacheDir = context.cacheDir
-    val file = File(cacheDir, fileName)
-    return if (file.exists()) file else null
 }

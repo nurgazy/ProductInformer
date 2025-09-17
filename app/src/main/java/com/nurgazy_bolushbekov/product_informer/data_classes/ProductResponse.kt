@@ -29,13 +29,13 @@ data class ProductResponse(
 ) : Parcelable, java.io.Serializable {
     fun toProduct(): Product {
         return Product(
-            name = name,
+            productName = name,
             barcode = barcode,
             article = article,
             manufacturer = manufacturer,
             brand = brand,
             productCategory = productCategory,
-            uuid1C = uuid1C,
+            productUuid1C = uuid1C,
             savedImagePath = savedImagePath
         )
     }
