@@ -16,6 +16,7 @@ data class ProductSpecification(
     val id: Long=0,
     val name: String,
     val uuid1C: String,
+    val specificationBarcode: String = "",
     @ColumnInfo(name = "product_id")
     val productId: Long=0
 )

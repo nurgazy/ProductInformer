@@ -51,7 +51,7 @@ fun ProductSpecificationDetailScreen(
     }
 
     BackHandler {
-        vm.deleteImageFromCache()
+//        vm.deleteImageFromCache()
         navController.popBackStack(ScreenNavItem.SearchProductInfo.route, false)
     }
 

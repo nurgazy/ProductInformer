@@ -73,3 +73,21 @@ val MIGRATION_10_11 = object : Migration(10, 11) {
         db.execSQL("ALTER TABLE products RENAME COLUMN uuid1c TO productUuid1C")
     }
 }
+
+val MIGRATION_11_12 = object : Migration(11, 12) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE product_specification ADD COLUMN specificationBarcode TEXT NOT NULL DEFAULT ''")
+    }
+}
+
+val MIGRATION_12_13 = object : Migration(12, 13) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE product_specification ADD COLUMN specificationBarcode TEXT NOT NULL DEFAULT ''")
+    }
+}
+
+val MIGRATION_13_14 = object : Migration(13, 14) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("CREATE TABLE IF NOT EXISTS prices (priceId INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, priceType TEXT NOT NULL, price REAL NOT NULL, currency TEXT NOT NULL, specificationId INTEGER NOT NULL DEFAULT 0)")
+    }
+}

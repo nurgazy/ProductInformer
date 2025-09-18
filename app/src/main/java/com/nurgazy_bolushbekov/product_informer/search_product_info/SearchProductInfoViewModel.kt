@@ -1,5 +1,6 @@
 package com.nurgazy_bolushbekov.product_informer.search_product_info
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nurgazy_bolushbekov.product_informer.application.DataStoreRepository
@@ -77,6 +78,7 @@ class SearchProductInfoViewModel @Inject constructor(
                     _uuidProduct.value = null
                     _refreshResult.value = result
                     _alertText.value = result.exception.message.toString()
+                    Log.d("ProductInformer", result.exception.message.toString())
                     setShowAlertDialog()
                     resetNavigationDetailScreen()
                 }
