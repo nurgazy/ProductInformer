@@ -91,3 +91,9 @@ val MIGRATION_13_14 = object : Migration(13, 14) {
         db.execSQL("CREATE TABLE IF NOT EXISTS prices (priceId INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, priceType TEXT NOT NULL, price REAL NOT NULL, currency TEXT NOT NULL, specificationId INTEGER NOT NULL DEFAULT 0)")
     }
 }
+
+val MIGRATION_14_15 = object : Migration(14, 15) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE prices ADD COLUMN productId INTEGER NOT NULL DEFAULT 0")
+    }
+}
