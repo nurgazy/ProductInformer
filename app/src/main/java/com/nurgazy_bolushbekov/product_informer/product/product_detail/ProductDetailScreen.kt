@@ -52,7 +52,7 @@ import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import coil.size.Size
-import com.nurgazy_bolushbekov.product_informer.product.entity.ProductWithSpecifications
+import com.nurgazy_bolushbekov.product_informer.product.entity.ProductWithSpecificationsAndPrices
 import com.nurgazy_bolushbekov.product_informer.utils.ScreenNavItem
 import java.io.File
 
@@ -71,18 +71,17 @@ fun ProductDetailScreen(
 
     val tabs = ProductDetailTab.entries.toTypedArray()
     val pagerState = rememberPagerState (pageCount = { tabs.size })
-    val productWithSpec by vm.productWithSpecifications.collectAsState()
+    val productData by vm.productData.collectAsState()
 
     LaunchedEffect(true) {
         vm.getProductFromDB(productId)
     }
 
     BackHandler {
-//        vm.deleteImageFromCache()
         navController.popBackStack(ScreenNavItem.SearchProductInfo.route, false)
     }
 
-    if (productWithSpec == null) {
+    if (productData == null) {
         Column(Modifier.fillMaxWidth()) {
             Text(text = "Нет данных")
         }
@@ -101,8 +100,8 @@ fun ProductDetailScreen(
                 .weight(1f)
         ) { page ->
             when (tabs[page]) {
-                ProductDetailTab.PRODUCT_DETAIL -> DetailScreenContent(productWithSpec!!)
-                ProductDetailTab.PRODUCT_IMAGE -> ImageScreenContent(productWithSpec!!)
+                ProductDetailTab.PRODUCT_DETAIL -> DetailScreenContent(productData)
+                ProductDetailTab.PRODUCT_IMAGE -> ImageScreenContent(productData)
             }
         }
         Spacer(Modifier.height(16.dp))
@@ -136,9 +135,13 @@ fun PagerIndicator(
 }
 
 @Composable
-fun DetailScreenContent(productWithSpecifications: ProductWithSpecifications) {
+fun DetailScreenContent(productData: ProductWithSpecificationsAndPrices?) {
 
-    val product = productWithSpecifications.product
+    if (productData == null)
+        return
+
+    val product = productData.product
+    val specificationsWithPrices = productData.specificationsWithPrices
 
     Column(Modifier.fillMaxWidth()) {
         //Наименование
@@ -252,27 +255,55 @@ fun DetailScreenContent(productWithSpecifications: ProductWithSpecifications) {
 
         Column{
             LazyColumn(modifier = Modifier.fillMaxSize()) {
-                items(listOf(productWithSpecifications.specifications)){ item ->
-                    item.forEach{ curProductSpec ->
-                        CollapsibleSpecificatonItem(title = curProductSpec.name) {
+                items(specificationsWithPrices){ item ->
+
+                        CollapsibleSpecificatonItem(title = item.specification.name) {
+
                             CollapsibleItem(title = "Остатки (В наличии/Доступно)") {
                             }
                             Spacer(modifier = Modifier.height(8.dp))
+
+                            CollapsibleItem(title = "Цены") {
+                                item.prices.forEach { curPrice ->
+                                    Row(
+                                        Modifier
+                                            .fillMaxWidth()
+                                            .padding(5.dp),
+                                    ) {
+                                        Text(
+                                            text = curPrice.priceType,
+                                            textAlign = TextAlign.Start,
+                                            modifier = Modifier.weight(1f)
+                                        )
+                                        Text(
+                                            text = "${curPrice.price}  ${curPrice.currency}",
+                                            textAlign = TextAlign.End,
+                                            modifier = Modifier.weight(1f)
+                                        )
+                                    }
+                                    HorizontalDivider()
+                                }
+                            }
+                            Spacer(modifier = Modifier.height(8.dp))
                         }
-                    }
+
                 }
+
+
             }
         }
-
     }
 
 }
 
 @Composable
-fun ImageScreenContent(productWithSpecifications: ProductWithSpecifications) {
+fun ImageScreenContent(productData: ProductWithSpecificationsAndPrices?) {
+
+    if (productData == null)
+        return
 
     val context = LocalContext.current
-    val product = productWithSpecifications.product
+    val product = productData.product
 
     val imageFile = getCachedImageFile(context, "${product.productUuid1C}.jpeg")
     if (imageFile != null) {

@@ -1,5 +1,6 @@
 package com.nurgazy_bolushbekov.product_informer.search_product_info
 
+import android.util.Log
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -59,6 +60,8 @@ fun ProductInformationContent(
     val productId by vm.productId.collectAsState()
     val isFullSpecifications by vm.isFullSpecifications.collectAsState()
 
+    Log.d("ProductInformer", "isFullSpecifications: $isFullSpecifications")
+
     LaunchedEffect(navigateDetailScreen) {
         if (navigateDetailScreen) {
             navController.navigate(ScreenNavItem.ProductDetail.route+"/$productId")
@@ -90,10 +93,7 @@ fun ProductInformationContent(
             Button(
                 onClick = {
                     if (serverUrl.isEmpty()){
-                        if (isFullSpecifications)
-                            navController.navigate(ScreenNavItem.ProductDetail.route+"/$productId")
-                        else
-                            navController.navigate(ScreenNavItem.ProductSpecificationDetail.route+"/$productId")
+                        navController.navigate(ScreenNavItem.ProductDetail.route+"/$productId")
                     }else {
                         isScannerVisible.value = true
                     }
@@ -107,10 +107,7 @@ fun ProductInformationContent(
             Button(
                 onClick = {
                     if (serverUrl.isEmpty()){
-                        if (isFullSpecifications)
-                            navController.navigate(ScreenNavItem.ProductDetail.route+"/$productId")
-                        else
-                            navController.navigate(ScreenNavItem.ProductSpecificationDetail.route+"/$productId")
+                        navController.navigate(ScreenNavItem.ProductDetail.route+"/$productId")
                     }else {
                         vm.refreshProduct()
                     }

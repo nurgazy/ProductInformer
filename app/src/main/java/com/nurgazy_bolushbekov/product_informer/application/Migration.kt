@@ -95,5 +95,17 @@ val MIGRATION_13_14 = object : Migration(13, 14) {
 val MIGRATION_14_15 = object : Migration(14, 15) {
     override fun migrate(db: SupportSQLiteDatabase) {
         db.execSQL("ALTER TABLE prices ADD COLUMN productId INTEGER NOT NULL DEFAULT 0")
+        db.execSQL("CREATE TABLE IF NOT EXISTS new_prices (" +
+                "priceId INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," +
+                "priceType TEXT NOT NULL," +
+                "price REAL NOT NULL," +
+                "currency TEXT NOT NULL," +
+                "specificationId INTEGER NOT NULL DEFAULT 0," +
+                "productId INTEGER NOT NULL DEFAULT 0," +
+                "FOREIGN KEY(specificationId) REFERENCES product_specification(id) ON UPDATE NO ACTION ON DELETE CASCADE)," +
+                "FOREIGN KEY(productId) REFERENCES products(productId) ON UPDATE NO ACTION ON DELETE CASCADE");
+        db.execSQL("INSERT INTO new_prices (priceId, priceType, price, currency, specificationId, productId) SELECT priceId, priceType, price, currency, specificationId, productId FROM prices");
+        db.execSQL("DROP TABLE prices");
+        db.execSQL("ALTER TABLE new_prices RENAME TO prices");
     }
 }

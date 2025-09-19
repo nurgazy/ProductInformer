@@ -7,7 +7,7 @@ class ProductRepository @Inject constructor(
     private val productDao: ProductDao
 ) {
 
-    fun getProductWithSpecificationsByUuid1C(uuid1C: String) = productDao.getProductWithSpecificationsByUuid1C(uuid1C)
+    fun getProductWithSpecificationsAndPricesByUuid1C(uuid1C: String) = productDao.getProductWithSpecificationsAndPricesByUuid1C(uuid1C)
 
-    fun getSpecificationWithProduct(uuid1C: String) = productDao.getSpecificationWithProduct(uuid1C)
+    fun getProductWithSpecificationsByBarcode(barcode: String) = productDao.getProductWithSpecificationsByBarcode(barcode)
 }
