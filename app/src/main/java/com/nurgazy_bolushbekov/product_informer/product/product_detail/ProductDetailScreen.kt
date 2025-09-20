@@ -32,7 +32,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -47,12 +46,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import coil.size.Size
-import com.nurgazy_bolushbekov.product_informer.product.entity.ProductWithSpecificationsAndPrices
+import com.nurgazy_bolushbekov.product_informer.data_classes.ProductResponse
+import com.nurgazy_bolushbekov.product_informer.product.ProductSharedVM
 import com.nurgazy_bolushbekov.product_informer.utils.ScreenNavItem
 import java.io.File
 
@@ -65,17 +64,12 @@ enum class ProductDetailTab {
 @Composable
 fun ProductDetailScreen(
     navController: NavHostController,
-    productId: String,
-    vm: ProductDetailViewModel = hiltViewModel()
+    productSharedVM: ProductSharedVM
 ) {
 
     val tabs = ProductDetailTab.entries.toTypedArray()
     val pagerState = rememberPagerState (pageCount = { tabs.size })
-    val productData by vm.productData.collectAsState()
-
-    LaunchedEffect(true) {
-        vm.getProductFromDB(productId)
-    }
+    val productData by productSharedVM.productData.collectAsState()
 
     BackHandler {
         navController.popBackStack(ScreenNavItem.SearchProductInfo.route, false)
@@ -135,13 +129,10 @@ fun PagerIndicator(
 }
 
 @Composable
-fun DetailScreenContent(productData: ProductWithSpecificationsAndPrices?) {
+fun DetailScreenContent(product: ProductResponse?) {
 
-    if (productData == null)
+    if (product == null)
         return
-
-    val product = productData.product
-    val specificationsWithPrices = productData.specificationsWithPrices
 
     Column(Modifier.fillMaxWidth()) {
         //Наименование
@@ -153,7 +144,7 @@ fun DetailScreenContent(productData: ProductWithSpecificationsAndPrices?) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = product.productName,
+                text = product.name,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center
             )
@@ -255,16 +246,57 @@ fun DetailScreenContent(productData: ProductWithSpecificationsAndPrices?) {
 
         Column{
             LazyColumn(modifier = Modifier.fillMaxSize()) {
-                items(specificationsWithPrices){ item ->
-
-                        CollapsibleSpecificatonItem(title = item.specification.name) {
-
+                items(listOf(product.productSpecificResponses)){ item ->
+                    item?.forEach{ curProductSpec ->
+                        CollapsibleSpecificatonItem(title = curProductSpec.name) {
                             CollapsibleItem(title = "Остатки (В наличии/Доступно)") {
+                                curProductSpec.balanceResponse?.forEach { curBalance ->
+                                    Row(
+                                        Modifier
+                                            .fillMaxWidth()
+                                            .padding(5.dp),
+                                    ) {
+                                        Text(
+                                            text = curBalance.warehouse,
+                                            textAlign = TextAlign.Start,
+                                            modifier = Modifier.weight(1f)
+                                        )
+                                        Text(
+                                            text = "${curBalance.inStock} / ${curBalance.available} ${curBalance.unit}",
+                                            textAlign = TextAlign.End,
+                                            modifier = Modifier.weight(1f)
+                                        )
+                                    }
+
+                                    if (curBalance.cellStockResponse != null){
+                                        CollapsibleItem(title = "Ячейки"){
+                                            curBalance.cellStockResponse.forEach{ curCellStock ->
+                                                Row(
+                                                    Modifier
+                                                        .fillMaxWidth()
+                                                        .padding(5.dp),
+                                                ) {
+                                                    Text(
+                                                        text = curCellStock.cell,
+                                                        textAlign = TextAlign.Start,
+                                                        modifier = Modifier.weight(1f)
+                                                    )
+
+                                                    Text(
+                                                        text = "${curCellStock.inStock}",
+                                                        textAlign = TextAlign.End,
+                                                        modifier = Modifier.weight(1f)
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
+                                    HorizontalDivider()
+                                }
                             }
                             Spacer(modifier = Modifier.height(8.dp))
-
                             CollapsibleItem(title = "Цены") {
-                                item.prices.forEach { curPrice ->
+                                curProductSpec.priceResponse?.forEach{ curPrice ->
                                     Row(
                                         Modifier
                                             .fillMaxWidth()
@@ -286,10 +318,8 @@ fun DetailScreenContent(productData: ProductWithSpecificationsAndPrices?) {
                             }
                             Spacer(modifier = Modifier.height(8.dp))
                         }
-
+                    }
                 }
-
-
             }
         }
     }
@@ -297,15 +327,14 @@ fun DetailScreenContent(productData: ProductWithSpecificationsAndPrices?) {
 }
 
 @Composable
-fun ImageScreenContent(productData: ProductWithSpecificationsAndPrices?) {
+fun ImageScreenContent(productData: ProductResponse?) {
 
     if (productData == null)
         return
 
     val context = LocalContext.current
-    val product = productData.product
 
-    val imageFile = getCachedImageFile(context, "${product.productUuid1C}.jpeg")
+    val imageFile = getCachedImageFile(context, "${productData.uuid1C}.jpeg")
     if (imageFile != null) {
         AsyncImage(
             model = ImageRequest.Builder(context)
@@ -313,7 +342,7 @@ fun ImageScreenContent(productData: ProductWithSpecificationsAndPrices?) {
                 .crossfade(true)
                 .size(Size.ORIGINAL)
                 .build(),
-            contentDescription = product.productName,
+            contentDescription = productData.name,
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Fit
         )

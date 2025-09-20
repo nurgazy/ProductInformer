@@ -1,6 +1,5 @@
 package com.nurgazy_bolushbekov.product_informer.search_product_info
 
-import android.util.Log
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -33,38 +32,41 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.nurgazy_bolushbekov.product_informer.data_classes.ProductResponse
+import com.nurgazy_bolushbekov.product_informer.product.ProductSharedVM
 import com.nurgazy_bolushbekov.product_informer.utils.ResultFetchData
 import com.nurgazy_bolushbekov.product_informer.utils.ScreenNavItem
 
 @Composable
 fun SearchProductInfoScreen(
     navController: NavController,
-    vm: SearchProductInfoViewModel = hiltViewModel()
+    vm: SearchProductInfoViewModel = hiltViewModel(),
+    productSharedVM: ProductSharedVM
 ){
-    BarcodeScannerScreen(vm, navController)
+    val onSetProductSharedVM: (productData: ProductResponse?) -> Unit = productSharedVM::onSetProductData
+    BarcodeScannerScreen(vm, navController, onSetProductSharedVM)
 }
 
 @Composable
 fun ProductInformationContent(
     vm: SearchProductInfoViewModel,
     isScannerVisible: MutableState<Boolean>,
-    navController: NavController
+    navController: NavController,
+    onSetProductSharedVM: (productData: ProductResponse?) -> Unit
 ) {
 
     val barcodeText by vm.barcode.collectAsState()
-    val refreshResult by vm.refreshResult.collectAsState()
     val navigateDetailScreen by vm.navigateDetailScreen.collectAsState()
     val showDialog by vm.showDialog.collectAsState()
     val alertText by vm.alertText.collectAsState()
     val serverUrl by vm.serverUrl.collectAsState()
-    val productId by vm.productId.collectAsState()
-    val isFullSpecifications by vm.isFullSpecifications.collectAsState()
-
-    Log.d("ProductInformer", "isFullSpecifications: $isFullSpecifications")
+    val productResponse by vm.productResponse.collectAsState()
 
     LaunchedEffect(navigateDetailScreen) {
         if (navigateDetailScreen) {
-            navController.navigate(ScreenNavItem.ProductDetail.route+"/$productId")
+            val product = (productResponse as ResultFetchData.Success).data
+            onSetProductSharedVM(product)
+            navController.navigate(ScreenNavItem.ProductDetail.route)
             vm.resetNavigationDetailScreen()
         }
     }
@@ -93,7 +95,7 @@ fun ProductInformationContent(
             Button(
                 onClick = {
                     if (serverUrl.isEmpty()){
-                        navController.navigate(ScreenNavItem.ProductDetail.route+"/$productId")
+                        navController.navigate(ScreenNavItem.ProductDetail.route)
                     }else {
                         isScannerVisible.value = true
                     }
@@ -107,7 +109,7 @@ fun ProductInformationContent(
             Button(
                 onClick = {
                     if (serverUrl.isEmpty()){
-                        navController.navigate(ScreenNavItem.ProductDetail.route+"/$productId")
+                        navController.navigate(ScreenNavItem.ProductDetail.route)
                     }else {
                         vm.refreshProduct()
                     }
@@ -120,10 +122,10 @@ fun ProductInformationContent(
             }
         }
 
-        when(refreshResult){
+        when(productResponse){
             null -> {}
             is ResultFetchData.Error -> {
-                val error = (refreshResult as ResultFetchData.Error).exception
+                val error = (productResponse as ResultFetchData.Error).exception
                 ExpandableText(
                     text = "Ошибка: ${error.message}"
                 )

@@ -1,9 +1,9 @@
 package com.nurgazy_bolushbekov.product_informer.search_product_info
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nurgazy_bolushbekov.product_informer.application.DataStoreRepository
+import com.nurgazy_bolushbekov.product_informer.data_classes.ProductResponse
 import com.nurgazy_bolushbekov.product_informer.utils.ResultFetchData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,23 +14,18 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SearchProductInfoViewModel @Inject constructor(
-    private val dataStoreRepository: DataStoreRepository,
+    dataStoreRepository: DataStoreRepository,
     private val searchProductInfoRepository: SearchProductInfoRepository
 ): ViewModel() {
 
     val serverUrl: StateFlow<String> = dataStoreRepository.serverUrl.asStateFlow()
-    val isFullSpecifications: StateFlow<Boolean> = dataStoreRepository.isFullSpecifications.asStateFlow()
+    private val _isFullSpecifications: StateFlow<Boolean> = dataStoreRepository.isFullSpecifications.asStateFlow()
 
     private val _barcode = MutableStateFlow("")
     val barcode: StateFlow<String> = _barcode.asStateFlow()
 
-    private val _uuidProduct = MutableStateFlow<String?>("")
-
-    private val _productId = MutableStateFlow<String>("")
-    val productId: StateFlow<String> = _productId.asStateFlow()
-
-    private val _refreshResult = MutableStateFlow<ResultFetchData<String>?>(null)
-    val refreshResult: StateFlow<ResultFetchData<String>?> = _refreshResult.asStateFlow()
+    private val _productResponse = MutableStateFlow<ResultFetchData<ProductResponse>?>(null)
+    val productResponse: StateFlow<ResultFetchData<ProductResponse>?> = _productResponse.asStateFlow()
 
     private val _navigateDetailScreen = MutableStateFlow(false)
     val navigateDetailScreen: StateFlow<Boolean> = _navigateDetailScreen.asStateFlow()
@@ -70,23 +65,21 @@ class SearchProductInfoViewModel @Inject constructor(
                 return@launch
             }
 
-            _refreshResult.value = ResultFetchData.Loading
-            val result = searchProductInfoRepository.refreshProduct(_barcode.value, isFullSpecifications.value)
+            _productResponse.value = ResultFetchData.Loading
+            val result = searchProductInfoRepository.refreshProduct(_barcode.value, _isFullSpecifications.value)
             when(result){
-                ResultFetchData.Loading ->{}
                 is ResultFetchData.Error -> {
-                    _uuidProduct.value = null
-                    _refreshResult.value = result
+                    _productResponse.value = result
                     _alertText.value = result.exception.message.toString()
-                    Log.d("ProductInformer", result.exception.message.toString())
                     setShowAlertDialog()
                     resetNavigationDetailScreen()
                 }
                 is ResultFetchData.Success -> {
-                    _uuidProduct.value = result.data
-                    _refreshResult.value = result
-                    _productId.value = if (isFullSpecifications.value) _uuidProduct.value?:"" else _barcode.value
+                    _productResponse.value = result
                     setNavigationDetailScreen()
+                }
+                ResultFetchData.Loading ->{
+                    resetNavigationDetailScreen()
                 }
             }
         }
