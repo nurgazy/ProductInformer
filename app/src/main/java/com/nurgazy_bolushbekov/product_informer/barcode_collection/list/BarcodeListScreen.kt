@@ -1,0 +1,48 @@
+package com.nurgazy_bolushbekov.product_informer.barcode_collection.list
+
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
+import com.nurgazy_bolushbekov.product_informer.utils.ScreenNavItem
+
+@Composable
+fun BarcodeListScreen(
+    navController: NavHostController,
+    vm: BarcodeListVM = hiltViewModel()
+) {
+
+    LaunchedEffect(Unit) {
+        vm.refreshBarcodeDocList()
+    }
+    val barcodeDocs by vm.barcodeDocList.collectAsState()
+
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(text = "Barcode collection list")
+        barcodeDocs.forEach { barcodeDoc ->
+            BarcodeDocItem(
+                document = barcodeDoc,
+                onEditClick = {navController.navigate(ScreenNavItem.BarcodeDetail.route+"?barcodeDocId=${barcodeDoc.barcodeDocId}")},
+                onDeleteClick = { }
+            )
+        }
+
+        Button(onClick = {
+            navController.navigate(ScreenNavItem.BarcodeDetail.route)
+        }) {
+            Text(text = "Добавить")
+        }
+    }
+
+}

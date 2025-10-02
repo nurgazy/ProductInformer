@@ -32,8 +32,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.nurgazy_bolushbekov.product_informer.barcode_scanner.BarcodeScannerScreen
 import com.nurgazy_bolushbekov.product_informer.data_classes.ProductResponse
-import com.nurgazy_bolushbekov.product_informer.product.ProductSharedVM
+import com.nurgazy_bolushbekov.product_informer.product.SharedVM
 import com.nurgazy_bolushbekov.product_informer.utils.ResultFetchData
 import com.nurgazy_bolushbekov.product_informer.utils.ScreenNavItem
 
@@ -41,15 +42,18 @@ import com.nurgazy_bolushbekov.product_informer.utils.ScreenNavItem
 fun SearchProductInfoScreen(
     navController: NavController,
     vm: SearchProductInfoViewModel = hiltViewModel(),
-    productSharedVM: ProductSharedVM
+    sharedVM: SharedVM
 ){
-    val onSetProductSharedVM: (productData: ProductResponse?) -> Unit = productSharedVM::onSetProductData
+    val onSetProductSharedVM: (productData: ProductResponse?) -> Unit = sharedVM::onSetProductData
+    LaunchedEffect(Unit) {
+        vm.setPreviousRoute(sharedVM.previousRoute.value)
+    }
     BarcodeScannerScreen(vm, navController, onSetProductSharedVM)
 }
 
 @Composable
 fun ProductInformationContent(
-    vm: SearchProductInfoViewModel,
+    vm: SearchProductInfoViewModel = hiltViewModel(),
     isScannerVisible: MutableState<Boolean>,
     navController: NavController,
     onSetProductSharedVM: (productData: ProductResponse?) -> Unit
@@ -61,13 +65,18 @@ fun ProductInformationContent(
     val alertText by vm.alertText.collectAsState()
     val serverUrl by vm.serverUrl.collectAsState()
     val productResponse by vm.productResponse.collectAsState()
+    val prevRoute by vm.prevRoute.collectAsState()
 
     LaunchedEffect(navigateDetailScreen) {
         if (navigateDetailScreen) {
             val product = (productResponse as ResultFetchData.Success).data
             onSetProductSharedVM(product)
-            navController.navigate(ScreenNavItem.ProductDetail.route)
+            if (prevRoute != null)
+                navController.navigate(prevRoute!!)
+            else
+                navController.navigate(ScreenNavItem.ProductDetail.route)
             vm.resetNavigationDetailScreen()
+            vm.resetPreviousRoute()
         }
     }
 

@@ -1,13 +1,71 @@
 package com.nurgazy_bolushbekov.product_informer.product.repo
 
-import com.nurgazy_bolushbekov.product_informer.product.dao.ProductDao
+import android.graphics.Bitmap
+import com.nurgazy_bolushbekov.product_informer.api_1C.ApiProviderManager
+import com.nurgazy_bolushbekov.product_informer.data_classes.ProductResponse
+import com.nurgazy_bolushbekov.product_informer.product.image.ImageRepositoryImpl
+import com.nurgazy_bolushbekov.product_informer.utils.ResultFetchData
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
+import okhttp3.ResponseBody
+import retrofit2.Response
 import javax.inject.Inject
 
 class ProductRepository @Inject constructor(
-    private val productDao: ProductDao
+    private val apiProviderManager: ApiProviderManager,
+    private val imageRepository: ImageRepositoryImpl,
 ) {
 
-    fun getProductWithSpecificationsAndPricesByUuid1C(uuid1C: String) = productDao.getProductWithSpecificationsAndPricesByUuid1C(uuid1C)
+    suspend fun refreshProduct(barcode: String, fullSpecifications: Boolean?): ResultFetchData<ProductResponse> {
+        return withContext(Dispatchers.IO){
+            try {
+                val apiService = apiProviderManager.apiService.filterNotNull().first()
+                val response: Response<ResponseBody> = apiService.info(barcode, fullSpecifications)
+                if (response.isSuccessful){
+                    val responseString = response.body()!!.string()
+                    val jsonObj = Json { ignoreUnknownKeys = true }
+                    val jsonString = jsonObj.parseToJsonElement(responseString)
 
-    fun getProductWithSpecificationsByBarcode(barcode: String) = productDao.getProductWithSpecificationsByBarcode(barcode)
+                    val productFound = jsonString.jsonObject["Результат"].toString().toBoolean()
+                    if (!productFound){
+                        return@withContext ResultFetchData.Error(Exception("Товар не найден"))
+                    }
+
+                    val productResponse: ProductResponse = jsonObj.decodeFromString(jsonString.jsonObject["Номенклатура"].toString())
+                    productResponse.productSpecificResponses = jsonObj.decodeFromString(jsonString.jsonObject["Характеристики"].toString())
+
+                    if (jsonString.jsonObject.containsKey("Картинка")){
+                        val bitmap = imageRepository.getBitmapFromJson(jsonString)
+
+                        if (bitmap != null) {
+                            val resultSaveImage = imageRepository.saveImageToCache(
+                                bitmap,
+                                "${productResponse.uuid1C}.jpeg",
+                                Bitmap.CompressFormat.JPEG,
+                                90)
+
+                            resultSaveImage.fold(
+                                onSuccess = { file ->
+                                    productResponse.savedImagePath = file.absolutePath
+                                },
+                                onFailure = { _ ->
+                                    productResponse.savedImagePath = null
+                                }
+                            )
+                        }
+                    }
+                    return@withContext ResultFetchData.Success(productResponse)
+                }else{
+                    return@withContext ResultFetchData.Error(Exception("Ошибка. Код: ${response.code()}. ${response.message()}"))
+                }
+            } catch (e: Exception){
+                return@withContext ResultFetchData.Error(e)
+            }
+        }
+    }
+
 }

@@ -2,7 +2,7 @@ package com.nurgazy_bolushbekov.product_informer.application
 
 import android.content.Context
 import androidx.room.Room
-import com.nurgazy_bolushbekov.product_informer.product.dao.ProductDao
+import com.nurgazy_bolushbekov.product_informer.barcode_collection.dao.BarcodeDocDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -21,26 +21,11 @@ object AppDatabaseModule {
             context.applicationContext,
             AppDatabase::class.java,
             "product_informer_db"
-        )
-            .addMigrations(MIGRATION_1_2)
-            .addMigrations(MIGRATION_2_3)
-            .addMigrations(MIGRATION_3_4)
-            .addMigrations(MIGRATION_4_5)
-            .addMigrations(MIGRATION_5_6)
-            .addMigrations(MIGRATION_6_7)
-            .addMigrations(MIGRATION_7_8)
-            .addMigrations(MIGRATION_8_9)
-            .addMigrations(MIGRATION_9_10)
-            .addMigrations(MIGRATION_10_11)
-            .addMigrations(MIGRATION_11_12)
-            .addMigrations(MIGRATION_12_13)
-            .addMigrations(MIGRATION_13_14)
-            .addMigrations(MIGRATION_14_15)
-            .build()
+        ).build()
     }
 
     @Provides
-    fun provideProductDao(database: AppDatabase): ProductDao {
-        return database.productDao()
+    fun provideBarcodeDocDao(database: AppDatabase): BarcodeDocDao {
+        return database.barcodeDocDao()
     }
 }

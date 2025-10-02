@@ -1,4 +1,4 @@
-package com.nurgazy_bolushbekov.product_informer.search_product_info
+package com.nurgazy_bolushbekov.product_informer.barcode_scanner
 
 import android.Manifest
 import android.content.pm.PackageManager
@@ -32,6 +32,8 @@ import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
 import com.nurgazy_bolushbekov.product_informer.data_classes.ProductResponse
+import com.nurgazy_bolushbekov.product_informer.search_product_info.ProductInformationContent
+import com.nurgazy_bolushbekov.product_informer.search_product_info.SearchProductInfoViewModel
 import java.util.concurrent.Executors
 
 @Composable

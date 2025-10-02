@@ -32,6 +32,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -51,7 +52,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import coil.size.Size
 import com.nurgazy_bolushbekov.product_informer.data_classes.ProductResponse
-import com.nurgazy_bolushbekov.product_informer.product.ProductSharedVM
+import com.nurgazy_bolushbekov.product_informer.product.SharedVM
 import com.nurgazy_bolushbekov.product_informer.utils.ScreenNavItem
 import java.io.File
 
@@ -64,15 +65,21 @@ enum class ProductDetailTab {
 @Composable
 fun ProductDetailScreen(
     navController: NavHostController,
-    productSharedVM: ProductSharedVM
+    sharedVM: SharedVM
 ) {
 
     val tabs = ProductDetailTab.entries.toTypedArray()
     val pagerState = rememberPagerState (pageCount = { tabs.size })
-    val productData by productSharedVM.productData.collectAsState()
+    val productData by sharedVM.productData.collectAsState()
 
     BackHandler {
         navController.popBackStack(ScreenNavItem.SearchProductInfo.route, false)
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            sharedVM.resetProductData()
+        }
     }
 
     if (productData == null) {

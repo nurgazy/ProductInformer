@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nurgazy_bolushbekov.product_informer.application.DataStoreRepository
 import com.nurgazy_bolushbekov.product_informer.data_classes.ProductResponse
+import com.nurgazy_bolushbekov.product_informer.product.repo.ProductRepository
 import com.nurgazy_bolushbekov.product_informer.utils.ResultFetchData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,7 +16,7 @@ import javax.inject.Inject
 @HiltViewModel
 class SearchProductInfoViewModel @Inject constructor(
     dataStoreRepository: DataStoreRepository,
-    private val searchProductInfoRepository: SearchProductInfoRepository
+    private val productRepository: ProductRepository
 ): ViewModel() {
 
     val serverUrl: StateFlow<String> = dataStoreRepository.serverUrl.asStateFlow()
@@ -35,6 +36,9 @@ class SearchProductInfoViewModel @Inject constructor(
 
     private val _alertText = MutableStateFlow("")
     val alertText: StateFlow<String> = _alertText.asStateFlow()
+
+    private val _prevRoute = MutableStateFlow<String?>(null)
+    val prevRoute: StateFlow<String?> = _prevRoute.asStateFlow()
 
     fun onChangeBarcode(newBarcode: String) {
         _barcode.value = newBarcode
@@ -56,6 +60,14 @@ class SearchProductInfoViewModel @Inject constructor(
         _navigateDetailScreen.value = false
     }
 
+    fun setPreviousRoute(route: String?) {
+        _prevRoute.value = route
+    }
+
+    fun resetPreviousRoute(){
+        _prevRoute.value = null
+    }
+
     fun refreshProduct(){
         viewModelScope.launch {
             if (_barcode.value.isEmpty()) {
@@ -66,7 +78,7 @@ class SearchProductInfoViewModel @Inject constructor(
             }
 
             _productResponse.value = ResultFetchData.Loading
-            val result = searchProductInfoRepository.refreshProduct(_barcode.value, _isFullSpecifications.value)
+            val result = productRepository.refreshProduct(_barcode.value, _isFullSpecifications.value)
             when(result){
                 is ResultFetchData.Error -> {
                     _productResponse.value = result

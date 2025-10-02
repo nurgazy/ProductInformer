@@ -43,12 +43,15 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.nurgazy_bolushbekov.product_informer.barcode_collection.list.BarcodeCollectionListScreen
-import com.nurgazy_bolushbekov.product_informer.product.ProductSharedVM
+import androidx.navigation.navArgument
+import com.nurgazy_bolushbekov.product_informer.barcode_collection.detail.BarcodeDetailScreen
+import com.nurgazy_bolushbekov.product_informer.barcode_collection.list.BarcodeListScreen
+import com.nurgazy_bolushbekov.product_informer.product.SharedVM
 import com.nurgazy_bolushbekov.product_informer.product.product_detail.ProductDetailScreen
 import com.nurgazy_bolushbekov.product_informer.search_product_info.SearchProductInfoScreen
 import com.nurgazy_bolushbekov.product_informer.settings.SettingScreen
@@ -69,7 +72,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainScreen(paddingValues: PaddingValues, navController: NavHostController){
 
-    val productSharedVM: ProductSharedVM = hiltViewModel()
+    val sharedVM: SharedVM = hiltViewModel()
 
     NavHost(
         navController = navController,
@@ -78,13 +81,25 @@ fun MainScreen(paddingValues: PaddingValues, navController: NavHostController){
     ) {
         composable(ScreenNavItem.Settings.route) { SettingScreen(navController) }
         composable(ScreenNavItem.SearchProductInfo.route) {
-            SearchProductInfoScreen(navController, productSharedVM = productSharedVM)
+            SearchProductInfoScreen(navController, sharedVM = sharedVM)
         }
         composable(route = ScreenNavItem.ProductDetail.route) {
-            ProductDetailScreen(navController, productSharedVM = productSharedVM)
+            ProductDetailScreen(navController, sharedVM = sharedVM)
         }
-        composable(ScreenNavItem.BarcodeCollectionList.route) {
-            BarcodeCollectionListScreen()
+        composable(ScreenNavItem.BarcodeList.route) {
+            BarcodeListScreen(navController)
+        }
+        composable(
+            route = ScreenNavItem.BarcodeDetail.route+"?barcodeDocId={barcodeDocId}",
+            arguments = listOf(
+                navArgument("barcodeDocId") {
+                    type = NavType.LongType
+                    defaultValue = 0
+                }
+            )
+        ) { backStackEntry ->
+            val barcodeDocId = backStackEntry.arguments?.getLong("barcodeDocId")?: 0
+            BarcodeDetailScreen(navController, sharedVM = sharedVM, barcodeDocId = barcodeDocId)
         }
     }
 }
@@ -108,7 +123,8 @@ fun SideNavigationMenu() {
             ScreenNavItem.Settings.route -> ScreenNavItem.Settings.title
             ScreenNavItem.ProductDetail.route -> ScreenNavItem.ProductDetail.title
             ScreenNavItem.SearchProductInfo.route -> ScreenNavItem.SearchProductInfo.title
-            ScreenNavItem.BarcodeCollectionList.route -> ScreenNavItem.BarcodeCollectionList.title
+            ScreenNavItem.BarcodeList.route -> ScreenNavItem.BarcodeList.title
+            ScreenNavItem.BarcodeDetail.route -> ScreenNavItem.BarcodeDetail.title
             else -> ScreenNavItem.MainMenu.title
         }
     }
@@ -183,13 +199,13 @@ fun DrawerItem(
 
 @Composable
 fun BottomNavigationBar(navController: NavController) {
-    val items = listOf(ScreenNavItem.SearchProductInfo, ScreenNavItem.BarcodeCollectionList)
+    val items = listOf(ScreenNavItem.SearchProductInfo, ScreenNavItem.BarcodeList)
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
     val bottomBarScreens = listOf(
         ScreenNavItem.SearchProductInfo,
-        ScreenNavItem.BarcodeCollectionList
+        ScreenNavItem.BarcodeList
     )
     val showBottomBar = bottomBarScreens.any { it.route == currentRoute }
 
