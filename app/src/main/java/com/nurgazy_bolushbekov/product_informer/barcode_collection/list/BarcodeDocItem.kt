@@ -15,13 +15,12 @@ import com.nurgazy_bolushbekov.product_informer.barcode_collection.entity.Barcod
 fun BarcodeDocItem(
     document: BarcodeDoc,
     onEditClick: (BarcodeDoc) -> Unit,
-    onDeleteClick: (BarcodeDoc) -> Unit// Лямбда-функция для обработки клика
+    onDeleteClick: (BarcodeDoc) -> Unit
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp),
-        // Используем ElevatedCard для красивой тени (Material 3)
         elevation = CardDefaults.elevatedCardElevation(2.dp)
     ) {
         Row(
@@ -31,11 +30,11 @@ fun BarcodeDocItem(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            // --- Секция Номер и Статус ---
+
             Column(
-                modifier = Modifier.weight(1f) // Занимает большую часть ширины
+                modifier = Modifier.weight(1f)
             ) {
-                // Номер документа
+
                 Text(
                     text = document.barcodeDocId.toString(),
                     style = MaterialTheme.typography.titleMedium,
@@ -44,22 +43,14 @@ fun BarcodeDocItem(
 
                 Spacer(modifier = Modifier.height(4.dp))
 
-                // Статус документа
                 Text(
                     text = "Статус: ${document.status}",
                     style = MaterialTheme.typography.bodySmall,
-                    // Добавим цвет в зависимости от статуса для красоты
-//                    color = when (document.status) {
-//                        "Завершен" -> Color(0xFF4CAF50) // Зеленый
-//                        "Отклонен" -> Color(0xFFF44336) // Красный
-//                        else -> MaterialTheme.colorScheme.secondary // Другие статусы
-//                    }
                 )
             }
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            // --- Секция Кнопка Редактировать ---
             IconButton(
                 onClick = { onEditClick(document) },
                 enabled = true,
@@ -72,7 +63,6 @@ fun BarcodeDocItem(
                 )
             }
 
-            // 2. Кнопка Удалить <-- НОВЫЙ ЭЛЕМЕНТ
             IconButton(
                 onClick = { onDeleteClick(document) },
                 modifier = Modifier.size(48.dp)

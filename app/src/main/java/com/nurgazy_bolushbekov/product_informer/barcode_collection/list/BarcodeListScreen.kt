@@ -2,6 +2,8 @@ package com.nurgazy_bolushbekov.product_informer.barcode_collection.list
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,13 +31,16 @@ fun BarcodeListScreen(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = "Barcode collection list")
-        barcodeDocs.forEach { barcodeDoc ->
-            BarcodeDocItem(
-                document = barcodeDoc,
-                onEditClick = {navController.navigate(ScreenNavItem.BarcodeDetail.route+"?barcodeDocId=${barcodeDoc.barcodeDocId}")},
-                onDeleteClick = { }
-            )
+        LazyColumn(
+            modifier = Modifier.weight(1f)
+        ) {
+            items(barcodeDocs){ barcodeDoc ->
+                BarcodeDocItem(
+                    document = barcodeDoc,
+                    onEditClick = {navController.navigate(ScreenNavItem.BarcodeDetail.route+"?barcodeDocId=${barcodeDoc.barcodeDocId}")},
+                    onDeleteClick = { }
+                )
+            }
         }
 
         Button(onClick = {
