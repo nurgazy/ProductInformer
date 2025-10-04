@@ -98,4 +98,10 @@ class BarcodeDetailVM @Inject constructor(
             }
         }
     }
+
+    fun removeItemFromList(item: BarcodeDocDetail) {
+        val updatedList = _barcodeList.value.toMutableList()
+        updatedList.remove(item)
+        _barcodeList.value = updatedList
+    }
 }

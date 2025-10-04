@@ -97,7 +97,12 @@ fun BarcodeDetailScreen(
             contentPadding = PaddingValues(bottom = 16.dp)
         ) {
             items(barcodeList) { item ->
-                BarcodeDetailListItem(item = item)
+                BarcodeDetailListItem(
+                    item = item,
+                    onDeleteClick = { itemForDelete ->
+                        vm.removeItemFromList(itemForDelete)
+                    }
+                )
             }
         }
 
