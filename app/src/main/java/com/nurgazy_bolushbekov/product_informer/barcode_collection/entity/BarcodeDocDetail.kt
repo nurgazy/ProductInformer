@@ -2,11 +2,13 @@ package com.nurgazy_bolushbekov.product_informer.barcode_collection.entity
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
 @Entity(
     tableName = "barcodeDetails",
     foreignKeys = [ForeignKey(entity = BarcodeDoc::class, parentColumns = ["barcodeDocId"], childColumns = ["barcodeDocId"], onDelete = ForeignKey.CASCADE)],
+    indices = [Index(value = ["barcodeDocId"])]
 )
 data class BarcodeDocDetail(
     @PrimaryKey(autoGenerate = true)

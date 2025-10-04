@@ -4,9 +4,7 @@ import android.app.Activity
 import android.content.Intent
 import android.util.Log
 import androidx.activity.compose.BackHandler
-import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -33,6 +31,8 @@ import androidx.navigation.NavHostController
 import com.nurgazy_bolushbekov.product_informer.ScannerActivity
 import com.nurgazy_bolushbekov.product_informer.product.SharedVM
 import com.nurgazy_bolushbekov.product_informer.utils.ScreenNavItem
+
+private const val BARCODE_RESULT_KEY = "BARCODE_RESULT"
 
 @Composable
 fun BarcodeDetailScreen(
@@ -64,26 +64,22 @@ fun BarcodeDetailScreen(
 
     // 1. РЕГИСТРАЦИЯ LAUNCHER
     val scannerLauncher = rememberLauncherForActivityResult(
-        // Используем базовый контракт для запуска Activity и получения результата
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
-        // 2. CALLBACK: Обработка результата
         if (result.resultCode == Activity.RESULT_OK) {
-
-            // Извлекаем штрихкод по ключу, который мы согласовали в ScannerActivity
-            val scannedBarcode = result.data?.getStringExtra("BARCODE_RESULT")
+            val scannedBarcode = result.data?.getStringExtra(BARCODE_RESULT_KEY)
 
             if (scannedBarcode != null) {
-                // 3. Вызов функции-обработчика, переданной из ViewModel
                 Log.d("ProductInformer", "Scanned barcode: $scannedBarcode")
                 Log.d("ProductInformer", "barcodeDoc: $barcodeDoc")
                 vm.refreshProduct(scannedBarcode)
             }
         } else {
-            // Сканирование отменено
-            println("Сканирование отменено.")
+            Log.d("ProductInformer", "Сканирование отменено.")
         }
     }
+
+    Log.d("ProductInformer", "barcodeList: $barcodeList")
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -125,28 +121,4 @@ fun BarcodeDetailScreen(
         }
     }
 
-}
-
-@Composable
-fun scannerLauncher(): ManagedActivityResultLauncher<Intent, ActivityResult> {
-    val scannerLauncher = rememberLauncherForActivityResult(
-        // Используем базовый контракт для запуска Activity и получения результата
-        contract = ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        // 2. CALLBACK: Обработка результата
-        if (result.resultCode == Activity.RESULT_OK) {
-
-            // Извлекаем штрихкод по ключу, который мы согласовали в ScannerActivity
-            val scannedBarcode = result.data?.getStringExtra("BARCODE_RESULT")
-
-            if (scannedBarcode != null) {
-                // 3. Вызов функции-обработчика, переданной из ViewModel
-            }
-        } else {
-            // Сканирование отменено
-            println("Сканирование отменено.")
-        }
-    }
-
-    return scannerLauncher
 }

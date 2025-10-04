@@ -6,12 +6,12 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import com.nurgazy_bolushbekov.product_informer.barcode_scanner.BarcodeAnalyzer
@@ -24,9 +24,18 @@ class ScannerActivity : ComponentActivity() {
     private lateinit var previewView: PreviewView
 
     companion object {
-        private const val CAMERA_REQUEST_CODE = 100
         private const val BARCODE_RESULT_KEY = "BARCODE_RESULT"
     }
+
+    private val requestPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
+            if (isGranted) {
+                startCamera()
+            } else {
+                setResult(RESULT_CANCELED)
+                finish()
+            }
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,11 +52,7 @@ class ScannerActivity : ComponentActivity() {
         if (allPermissionsGranted()) {
             startCamera()
         } else {
-            ActivityCompat.requestPermissions(
-                this,
-                arrayOf(Manifest.permission.CAMERA),
-                CAMERA_REQUEST_CODE
-            )
+            requestPermissionLauncher.launch(Manifest.permission.CAMERA)
         }
     }
 
@@ -55,20 +60,6 @@ class ScannerActivity : ComponentActivity() {
         this, Manifest.permission.CAMERA
     ) == PackageManager.PERMISSION_GRANTED
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == CAMERA_REQUEST_CODE && allPermissionsGranted()) {
-            startCamera()
-        } else if (requestCode == CAMERA_REQUEST_CODE) {
-            // Если разрешение не дано, возвращаемся назад
-            setResult(RESULT_CANCELED)
-            finish()
-        }
-    }
 
     // --- Инициализация CameraX и ML Kit ---
     private fun startCamera() {
@@ -86,22 +77,20 @@ class ScannerActivity : ComponentActivity() {
 
             // Настройка ImageAnalysis (поток для ML Kit)
             val imageAnalysis = ImageAnalysis.Builder()
-                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST) // Анализировать только последний кадр
+                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .build()
                 .also {
                     it.setAnalyzer(cameraExecutor, BarcodeAnalyzer(::onBarcodeScanned))
                 }
 
-            // Выбор камеры (задняя)
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
 
             try {
-                // Отвязываем все привязки перед новой привязкой
                 cameraProvider.unbindAll()
 
                 // Привязываем варианты использования к жизненному циклу
                 cameraProvider.bindToLifecycle(
-                    this as LifecycleOwner, // Activity является владельцем жизненного цикла
+                    this as LifecycleOwner,
                     cameraSelector,
                     preview,
                     imageAnalysis
@@ -115,7 +104,6 @@ class ScannerActivity : ComponentActivity() {
 
     // --- Обработка результата и возврат в Compose ---
     private fun onBarcodeScanned(barcode: String) {
-        // Останавливаем обработку после успешного сканирования, чтобы избежать повторов
         cameraExecutor.shutdown()
 
         val resultIntent = Intent().apply {
@@ -128,8 +116,9 @@ class ScannerActivity : ComponentActivity() {
     // --- Завершение ---
     override fun onDestroy() {
         super.onDestroy()
-        // Обязательно закрываем Executor
-        cameraExecutor.shutdown()
+        if (!cameraExecutor.isShutdown) {
+            cameraExecutor.shutdown()
+        }
     }
 }
 

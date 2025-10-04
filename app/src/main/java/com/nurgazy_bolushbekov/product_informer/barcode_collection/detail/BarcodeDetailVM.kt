@@ -30,7 +30,6 @@ class BarcodeDetailVM @Inject constructor(
     val barcodeList: StateFlow<List<BarcodeDocDetail>> = _barcodeList.asStateFlow()
 
     private val _productResponse = MutableStateFlow<ResultFetchData<ProductResponse>?>(null)
-    val productResponse: StateFlow<ResultFetchData<ProductResponse>?> = _productResponse.asStateFlow()
 
     fun setBarcodeDoc(barcodeDocId: Long){
         if (barcodeDocId == 0.toLong()) return
@@ -86,6 +85,7 @@ class BarcodeDetailVM @Inject constructor(
             when(val result = productRepository.refreshProduct(barcode, false)){
                 is ResultFetchData.Success -> {
                     _productResponse.value = result
+                    Log.d("ProductInformer", "result.data : ${result.data}")
                     addToBarcodeList(result.data)
                 }
                 is ResultFetchData.Error -> {
@@ -93,6 +93,7 @@ class BarcodeDetailVM @Inject constructor(
                     Log.d("ProductInformer", result.exception.message.toString())
                 }
                 ResultFetchData.Loading ->{
+                    Log.d("ProductInformer", "Loading data")
                 }
             }
         }
