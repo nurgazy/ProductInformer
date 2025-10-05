@@ -31,6 +31,51 @@ class BarcodeDetailVM @Inject constructor(
 
     private val _productResponse = MutableStateFlow<ResultFetchData<ProductResponse>?>(null)
 
+    private val _curBarcodeData = MutableStateFlow<BarcodeDocDetail?>(null)
+    val curBarcodeData: StateFlow<BarcodeDocDetail?> = _curBarcodeData.asStateFlow()
+
+    fun refreshProduct(barcode: String){
+        viewModelScope.launch {
+            if (barcode.isEmpty()) {
+                Log.d("ProductInformer", "Штрихкод не может быть пустым")
+                return@launch
+            }
+
+            _productResponse.value = ResultFetchData.Loading
+            when(val result = productRepository.refreshProduct(barcode, false)){
+                is ResultFetchData.Success -> {
+                    _productResponse.value = result
+
+                    _curBarcodeData.value = getBarcodeDocDetail(result.data)
+                    if (_curBarcodeData.value != null)
+                        addToBarcodeList(_curBarcodeData.value!!)
+                }
+                is ResultFetchData.Error -> {
+                    _productResponse.value = result
+                }
+                ResultFetchData.Loading ->{
+                    Log.d("ProductInformer", "Loading data")
+                }
+            }
+        }
+    }
+
+    private fun getBarcodeDocDetail(productData: ProductResponse?): BarcodeDocDetail?{
+        if (productData == null) return null
+
+        val productSpecName = if (productData.productSpecificResponses == null) "" else productData.productSpecificResponses!![0].name
+        val productSpecUuid1C = if (productData.productSpecificResponses == null) "" else productData.productSpecificResponses!![0].uuid1C
+
+        val barcodeDocDetail = BarcodeDocDetail(
+            barcode = productData.barcode,
+            productName = productData.name,
+            productUuid1C = productData.uuid1C,
+            productSpecName = productSpecName,
+            productSpecUuid1C = productSpecUuid1C
+        )
+        return barcodeDocDetail
+    }
+
     fun setBarcodeDoc(barcodeDocId: Long){
         if (barcodeDocId == 0.toLong()) return
         viewModelScope.launch {
@@ -58,48 +103,13 @@ class BarcodeDetailVM @Inject constructor(
         }
     }
 
-    fun addToBarcodeList(productData: ProductResponse?){
-        if(productData == null) return
-
+    private fun addToBarcodeList(item: BarcodeDocDetail){
         val currentBarcodeList = _barcodeList.value
-        val barcodeDocDetail = BarcodeDocDetail(
-            barcode = productData.barcode,
-            productName = productData.name,
-            productUuid1C = productData.uuid1C,
-            productSpecName = productData.productSpecificResponses!![0].name,
-            productSpecUuid1C = productData.productSpecificResponses!![0].uuid1C
-        )
-
-        val updatedBarcodeList = currentBarcodeList.plus(barcodeDocDetail)
+        val updatedBarcodeList = currentBarcodeList.plus(item)
         _barcodeList.value = updatedBarcodeList
     }
 
-    fun refreshProduct(barcode: String){
-        viewModelScope.launch {
-            if (barcode.isEmpty()) {
-                Log.d("ProductInformer", "Штрихкод не может быть пустым")
-                return@launch
-            }
-
-            _productResponse.value = ResultFetchData.Loading
-            when(val result = productRepository.refreshProduct(barcode, false)){
-                is ResultFetchData.Success -> {
-                    _productResponse.value = result
-                    Log.d("ProductInformer", "result.data : ${result.data}")
-                    addToBarcodeList(result.data)
-                }
-                is ResultFetchData.Error -> {
-                    _productResponse.value = result
-                    Log.d("ProductInformer", result.exception.message.toString())
-                }
-                ResultFetchData.Loading ->{
-                    Log.d("ProductInformer", "Loading data")
-                }
-            }
-        }
-    }
-
-    fun removeItemFromList(item: BarcodeDocDetail) {
+    fun removeFromBarcodeList(item: BarcodeDocDetail) {
         val updatedList = _barcodeList.value.toMutableList()
         updatedList.remove(item)
         _barcodeList.value = updatedList

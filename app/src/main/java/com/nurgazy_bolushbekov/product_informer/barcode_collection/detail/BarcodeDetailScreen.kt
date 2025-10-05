@@ -22,6 +22,9 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -43,18 +46,19 @@ fun BarcodeDetailScreen(
 ) {
     val barcodeDoc by vm.curBarcodeDoc.collectAsState()
     val barcodeList by vm.barcodeList.collectAsState()
-    val productData by sharedVM.productData.collectAsState()
+    var barcodeToProcess by remember { mutableStateOf<String?>(null) }
+    val curBarcodeData by vm.curBarcodeData.collectAsState()
 
     LaunchedEffect(Unit) {
         vm.setBarcodeDoc(barcodeDocId)
-        vm.addToBarcodeList(productData)
+
     }
 
-    DisposableEffect(Unit) {
-        onDispose {
-            sharedVM.resetProductData()
-        }
-    }
+//    DisposableEffect(Unit) {
+//        onDispose {
+//            sharedVM.resetProductData()
+//        }
+//    }
 
     BackHandler {
         navController.popBackStack(ScreenNavItem.BarcodeList.route, inclusive = false)
@@ -70,16 +74,12 @@ fun BarcodeDetailScreen(
             val scannedBarcode = result.data?.getStringExtra(BARCODE_RESULT_KEY)
 
             if (scannedBarcode != null) {
-                Log.d("ProductInformer", "Scanned barcode: $scannedBarcode")
-                Log.d("ProductInformer", "barcodeDoc: $barcodeDoc")
                 vm.refreshProduct(scannedBarcode)
             }
         } else {
             Log.d("ProductInformer", "Сканирование отменено.")
         }
     }
-
-    Log.d("ProductInformer", "barcodeList: $barcodeList")
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -100,7 +100,7 @@ fun BarcodeDetailScreen(
                 BarcodeDetailListItem(
                     item = item,
                     onDeleteClick = { itemForDelete ->
-                        vm.removeItemFromList(itemForDelete)
+                        vm.removeFromBarcodeList(itemForDelete)
                     }
                 )
             }
@@ -124,6 +124,19 @@ fun BarcodeDetailScreen(
                 Text("Сканировать")
             }
         }
+    }
+
+    if (barcodeToProcess != null) {
+        QuantityInputDialog(
+            barcode = barcodeToProcess!!,
+            onQuantityConfirmed = { quantity ->
+//                vm.refreshProduct(barcodeToProcess!!, quantity)
+                barcodeToProcess = null
+            },
+            onDismiss = {
+                barcodeToProcess = null
+            }
+        )
     }
 
 }
