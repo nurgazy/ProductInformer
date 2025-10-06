@@ -109,12 +109,28 @@ class BarcodeDetailVM @Inject constructor(
     }
 
     fun addToBarcodeList(quantity: Int=1){
-        if (_curBarcodeData.value == null) return
-        val itemToUpdate = _curBarcodeData.value!!.copy(quantity = quantity)
-        val currentBarcodeList = _barcodeList.value
-        val updatedBarcodeList = currentBarcodeList.plus(itemToUpdate)
-        _barcodeList.value = updatedBarcodeList
-        _curBarcodeData.value = itemToUpdate
+        val newItem = _curBarcodeData.value?: return
+
+        val curBarcodeList = _barcodeList.value.toMutableList()
+        val existIndex = curBarcodeList.indexOfFirst {
+            it.barcode == newItem.barcode &&
+            it.productUuid1C == newItem.productUuid1C &&
+            it.productSpecUuid1C == newItem.productSpecUuid1C
+        }
+
+        if (existIndex != -1){
+            val existItem = curBarcodeList[existIndex]
+            val updateItem = existItem.copy(quantity = quantity)
+            curBarcodeList[existIndex] = updateItem
+            _curBarcodeData.value = updateItem
+        }else{
+            val itemToAdd = _curBarcodeData.value!!.copy(quantity = quantity)
+            curBarcodeList.add(itemToAdd)
+            _curBarcodeData.value = itemToAdd
+        }
+
+        _barcodeList.value = curBarcodeList.toList()
+        _curBarcodeData.value = null
     }
 
     fun removeFromBarcodeList(item: BarcodeDocDetail) {
@@ -129,5 +145,6 @@ class BarcodeDetailVM @Inject constructor(
 
     fun resetShowQuantityInputDialog(){
         _showQuantityInputDialog.value = false
+        _curBarcodeData.value = null
     }
 }
