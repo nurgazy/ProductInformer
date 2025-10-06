@@ -38,7 +38,7 @@ fun BarcodeListScreen(
                 BarcodeDocItem(
                     document = barcodeDoc,
                     onEditClick = {navController.navigate(ScreenNavItem.BarcodeDetail.route+"?barcodeDocId=${barcodeDoc.barcodeDocId}")},
-                    onDeleteClick = { }
+                    onDeleteClick = { vm.onDeleteDoc(barcodeDoc) }
                 )
             }
         }

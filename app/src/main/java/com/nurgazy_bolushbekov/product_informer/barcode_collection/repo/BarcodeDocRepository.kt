@@ -14,6 +14,10 @@ class BarcodeDocRepository @Inject constructor(
         return barcodeDocDao.insertBarcode(barcodeDoc)
     }
 
+    suspend fun deleteBarcodeDoc(barcodeDoc: BarcodeDoc){
+        return barcodeDocDao.deleteBarcodeDoc(barcodeDoc)
+    }
+
     fun getBarcodeDocs(): Flow<List<BarcodeDoc>> {
         return barcodeDocDao.getAllBarcodeDocs()
     }

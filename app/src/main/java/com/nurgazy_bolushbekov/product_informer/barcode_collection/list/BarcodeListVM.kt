@@ -1,6 +1,5 @@
 package com.nurgazy_bolushbekov.product_informer.barcode_collection.list
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nurgazy_bolushbekov.product_informer.barcode_collection.entity.BarcodeDoc
@@ -25,6 +24,12 @@ class BarcodeListVM @Inject constructor(
             barcodeDocRepository.getBarcodeDocs().collect{
                 _barcodeDocList.value = it
             }
+        }
+    }
+
+    fun onDeleteDoc(barcodeDoc: BarcodeDoc){
+        viewModelScope.launch {
+            barcodeDocRepository.deleteBarcodeDoc(barcodeDoc)
         }
     }
 }
