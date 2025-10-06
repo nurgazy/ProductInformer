@@ -16,27 +16,25 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import com.nurgazy_bolushbekov.product_informer.ScannerActivity
-import com.nurgazy_bolushbekov.product_informer.product.SharedVM
+import com.nurgazy_bolushbekov.product_informer.barcode_scanner.ScannerActivity
 import com.nurgazy_bolushbekov.product_informer.utils.ScreenNavItem
 
 private const val BARCODE_RESULT_KEY = "BARCODE_RESULT"
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BarcodeDetailScreen(
     navController: NavHostController,
@@ -78,10 +76,13 @@ fun BarcodeDetailScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
-        if (barcodeDoc == null)
-            Text(text = "Документ (Новый)")
-        else
-            Text(text = "Документ №${barcodeDoc!!.barcodeDocId}")
+        Text(
+            text = if (barcodeDoc == null)
+                "Новый документ"
+            else
+                "Документ №${barcodeDoc!!.barcodeDocId}",
+            style = MaterialTheme.typography.titleLarge
+        )
 
         LazyColumn(
             modifier = Modifier

@@ -1,4 +1,4 @@
-package com.nurgazy_bolushbekov.product_informer
+package com.nurgazy_bolushbekov.product_informer.barcode_scanner
 
 import android.Manifest
 import android.content.Intent
@@ -14,7 +14,6 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
-import com.nurgazy_bolushbekov.product_informer.barcode_scanner.BarcodeAnalyzer
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -63,7 +62,7 @@ class ScannerActivity : ComponentActivity() {
 
     // --- Инициализация CameraX и ML Kit ---
     private fun startCamera() {
-        val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
+        val cameraProviderFuture = ProcessCameraProvider.Companion.getInstance(this)
 
         cameraProviderFuture.addListener({
             val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
@@ -121,4 +120,3 @@ class ScannerActivity : ComponentActivity() {
         }
     }
 }
-

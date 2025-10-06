@@ -48,14 +48,11 @@ class BarcodeDetailVM @Inject constructor(
             when(val result = productRepository.refreshProduct(barcode, false)){
                 is ResultFetchData.Success -> {
                     _productResponse.value = result
-                    Log.d("ProductInformer", "resul: ${result.data}")
                     _curBarcodeData.value = getBarcodeDocDetail(result.data)
-                    Log.d("ProductInformer", "_curBarcodeData: ${_curBarcodeData.value}")
                     setShowQuantityInputDialog()
                 }
                 is ResultFetchData.Error -> {
                     _productResponse.value = result
-                    Log.d("ProductInformer", "error: $result")
                     resetShowQuantityInputDialog()
                 }
                 ResultFetchData.Loading ->{
