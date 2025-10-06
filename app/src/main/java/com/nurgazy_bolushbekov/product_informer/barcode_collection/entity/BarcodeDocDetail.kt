@@ -18,5 +18,6 @@ data class BarcodeDocDetail(
     val productSpecName: String,
     val productUuid1C: String,
     val productSpecUuid1C: String,
-    val barcodeDocId: Long=0
+    val barcodeDocId: Long=0,
+    val quantity: Int = 0
 )

@@ -40,25 +40,18 @@ private const val BARCODE_RESULT_KEY = "BARCODE_RESULT"
 @Composable
 fun BarcodeDetailScreen(
     navController: NavHostController,
-    sharedVM: SharedVM,
     vm: BarcodeDetailVM = hiltViewModel(),
     barcodeDocId: Long
 ) {
     val barcodeDoc by vm.curBarcodeDoc.collectAsState()
     val barcodeList by vm.barcodeList.collectAsState()
-    var barcodeToProcess by remember { mutableStateOf<String?>(null) }
     val curBarcodeData by vm.curBarcodeData.collectAsState()
+    val showQuantityInputDialog by vm.showQuantityInputDialog.collectAsState()
 
     LaunchedEffect(Unit) {
         vm.setBarcodeDoc(barcodeDocId)
 
     }
-
-//    DisposableEffect(Unit) {
-//        onDispose {
-//            sharedVM.resetProductData()
-//        }
-//    }
 
     BackHandler {
         navController.popBackStack(ScreenNavItem.BarcodeList.route, inclusive = false)
@@ -72,7 +65,6 @@ fun BarcodeDetailScreen(
     ) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
             val scannedBarcode = result.data?.getStringExtra(BARCODE_RESULT_KEY)
-
             if (scannedBarcode != null) {
                 vm.refreshProduct(scannedBarcode)
             }
@@ -126,15 +118,15 @@ fun BarcodeDetailScreen(
         }
     }
 
-    if (barcodeToProcess != null) {
+    if (showQuantityInputDialog) {
         QuantityInputDialog(
-            barcode = barcodeToProcess!!,
+            barcode = curBarcodeData!!.barcode,
             onQuantityConfirmed = { quantity ->
-//                vm.refreshProduct(barcodeToProcess!!, quantity)
-                barcodeToProcess = null
+                vm.addToBarcodeList(quantity)
+                vm.resetShowQuantityInputDialog()
             },
             onDismiss = {
-                barcodeToProcess = null
+                vm.resetShowQuantityInputDialog()
             }
         )
     }

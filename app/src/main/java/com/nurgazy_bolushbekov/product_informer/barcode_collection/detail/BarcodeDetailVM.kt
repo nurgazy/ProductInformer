@@ -34,6 +34,9 @@ class BarcodeDetailVM @Inject constructor(
     private val _curBarcodeData = MutableStateFlow<BarcodeDocDetail?>(null)
     val curBarcodeData: StateFlow<BarcodeDocDetail?> = _curBarcodeData.asStateFlow()
 
+    private val _showQuantityInputDialog = MutableStateFlow<Boolean>(false)
+    val showQuantityInputDialog: StateFlow<Boolean> = _showQuantityInputDialog.asStateFlow()
+
     fun refreshProduct(barcode: String){
         viewModelScope.launch {
             if (barcode.isEmpty()) {
@@ -45,13 +48,15 @@ class BarcodeDetailVM @Inject constructor(
             when(val result = productRepository.refreshProduct(barcode, false)){
                 is ResultFetchData.Success -> {
                     _productResponse.value = result
-
+                    Log.d("ProductInformer", "resul: ${result.data}")
                     _curBarcodeData.value = getBarcodeDocDetail(result.data)
-                    if (_curBarcodeData.value != null)
-                        addToBarcodeList(_curBarcodeData.value!!)
+                    Log.d("ProductInformer", "_curBarcodeData: ${_curBarcodeData.value}")
+                    setShowQuantityInputDialog()
                 }
                 is ResultFetchData.Error -> {
                     _productResponse.value = result
+                    Log.d("ProductInformer", "error: $result")
+                    resetShowQuantityInputDialog()
                 }
                 ResultFetchData.Loading ->{
                     Log.d("ProductInformer", "Loading data")
@@ -103,15 +108,26 @@ class BarcodeDetailVM @Inject constructor(
         }
     }
 
-    private fun addToBarcodeList(item: BarcodeDocDetail){
+    fun addToBarcodeList(quantity: Int=1){
+        if (_curBarcodeData.value == null) return
+        val itemToUpdate = _curBarcodeData.value!!.copy(quantity = quantity)
         val currentBarcodeList = _barcodeList.value
-        val updatedBarcodeList = currentBarcodeList.plus(item)
+        val updatedBarcodeList = currentBarcodeList.plus(itemToUpdate)
         _barcodeList.value = updatedBarcodeList
+        _curBarcodeData.value = itemToUpdate
     }
 
     fun removeFromBarcodeList(item: BarcodeDocDetail) {
         val updatedList = _barcodeList.value.toMutableList()
         updatedList.remove(item)
         _barcodeList.value = updatedList
+    }
+
+    fun setShowQuantityInputDialog(){
+        _showQuantityInputDialog.value = true
+    }
+
+    fun resetShowQuantityInputDialog(){
+        _showQuantityInputDialog.value = false
     }
 }

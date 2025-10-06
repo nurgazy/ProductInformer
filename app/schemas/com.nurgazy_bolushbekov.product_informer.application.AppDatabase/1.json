@@ -1,0 +1,124 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "00171dd7298a8bd04ba1e99b0df0adce",
+    "entities": [
+      {
+        "tableName": "barcode",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`barcodeDocId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `status` TEXT NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "barcodeDocId",
+            "columnName": "barcodeDocId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "status",
+            "columnName": "status",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "barcodeDocId"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "barcodeDetails",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`barcodeDetailId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `barcode` TEXT NOT NULL, `productName` TEXT NOT NULL, `productSpecName` TEXT NOT NULL, `productUuid1C` TEXT NOT NULL, `productSpecUuid1C` TEXT NOT NULL, `barcodeDocId` INTEGER NOT NULL, `quantity` INTEGER NOT NULL, FOREIGN KEY(`barcodeDocId`) REFERENCES `barcode`(`barcodeDocId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "barcodeDetailId",
+            "columnName": "barcodeDetailId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "barcode",
+            "columnName": "barcode",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "productName",
+            "columnName": "productName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "productSpecName",
+            "columnName": "productSpecName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "productUuid1C",
+            "columnName": "productUuid1C",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "productSpecUuid1C",
+            "columnName": "productSpecUuid1C",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "barcodeDocId",
+            "columnName": "barcodeDocId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "quantity",
+            "columnName": "quantity",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "barcodeDetailId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_barcodeDetails_barcodeDocId",
+            "unique": false,
+            "columnNames": [
+              "barcodeDocId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_barcodeDetails_barcodeDocId` ON `${TABLE_NAME}` (`barcodeDocId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "barcode",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "barcodeDocId"
+            ],
+            "referencedColumns": [
+              "barcodeDocId"
+            ]
+          }
+        ]
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '00171dd7298a8bd04ba1e99b0df0adce')"
+    ]
+  }
+}

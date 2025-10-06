@@ -99,7 +99,7 @@ fun MainScreen(paddingValues: PaddingValues, navController: NavHostController){
             )
         ) { backStackEntry ->
             val barcodeDocId = backStackEntry.arguments?.getLong("barcodeDocId")?: 0
-            BarcodeDetailScreen(navController, sharedVM = sharedVM, barcodeDocId = barcodeDocId)
+            BarcodeDetailScreen(navController, barcodeDocId = barcodeDocId)
         }
     }
 }
