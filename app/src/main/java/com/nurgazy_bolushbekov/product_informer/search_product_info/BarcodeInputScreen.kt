@@ -1,5 +1,6 @@
 package com.nurgazy_bolushbekov.product_informer.search_product_info
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -44,6 +45,8 @@ fun SearchProductInfoScreen(
     vm: BarcodeInputViewModel = hiltViewModel(),
     sharedVM: SharedVM
 ){
+    BackHandler(enabled = true) {  }
+
     val onSetProductSharedVM: (productData: ProductResponse?) -> Unit = sharedVM::onSetProductData
     LaunchedEffect(Unit) {
         vm.setPreviousRoute(sharedVM.previousRoute.value)

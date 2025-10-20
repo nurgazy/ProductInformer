@@ -64,8 +64,7 @@ enum class SettingScreenTab(val title: String) {
 @Composable
 fun SettingScreen(navController: NavController, vm: SettingViewModel = hiltViewModel()){
 
-    BackHandler {
-        navController.popBackStack(ScreenNavItem.SearchProductInfo.route, false)
+    BackHandler(enabled = true) {
     }
 
     val tabs = SettingScreenTab.entries.toTypedArray()
