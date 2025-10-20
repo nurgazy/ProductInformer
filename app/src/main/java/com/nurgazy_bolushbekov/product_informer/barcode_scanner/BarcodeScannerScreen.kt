@@ -33,12 +33,12 @@ import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
 import com.nurgazy_bolushbekov.product_informer.data_classes.ProductResponse
 import com.nurgazy_bolushbekov.product_informer.search_product_info.ProductInformationContent
-import com.nurgazy_bolushbekov.product_informer.search_product_info.SearchProductInfoViewModel
+import com.nurgazy_bolushbekov.product_informer.search_product_info.BarcodeInputViewModel
 import java.util.concurrent.Executors
 
 @Composable
 fun BarcodeScannerScreen(
-    vm: SearchProductInfoViewModel,
+    vm: BarcodeInputViewModel,
     navController: NavController,
     onSetProductSharedVM: (productData: ProductResponse?) -> Unit
 ){

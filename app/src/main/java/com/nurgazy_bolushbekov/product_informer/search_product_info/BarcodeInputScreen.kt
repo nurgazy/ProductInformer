@@ -41,7 +41,7 @@ import com.nurgazy_bolushbekov.product_informer.utils.ScreenNavItem
 @Composable
 fun SearchProductInfoScreen(
     navController: NavController,
-    vm: SearchProductInfoViewModel = hiltViewModel(),
+    vm: BarcodeInputViewModel = hiltViewModel(),
     sharedVM: SharedVM
 ){
     val onSetProductSharedVM: (productData: ProductResponse?) -> Unit = sharedVM::onSetProductData
@@ -53,7 +53,7 @@ fun SearchProductInfoScreen(
 
 @Composable
 fun ProductInformationContent(
-    vm: SearchProductInfoViewModel = hiltViewModel(),
+    vm: BarcodeInputViewModel = hiltViewModel(),
     isScannerVisible: MutableState<Boolean>,
     navController: NavController,
     onSetProductSharedVM: (productData: ProductResponse?) -> Unit

@@ -14,7 +14,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class SearchProductInfoViewModel @Inject constructor(
+class BarcodeInputViewModel @Inject constructor(
     dataStoreRepository: DataStoreRepository,
     private val productRepository: ProductRepository
 ): ViewModel() {
