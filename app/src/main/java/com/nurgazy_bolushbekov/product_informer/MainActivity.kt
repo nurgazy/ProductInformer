@@ -115,7 +115,7 @@ fun SideNavigationMenu() {
     var selectedItem by rememberSaveable { mutableStateOf(ScreenNavItem.Settings.route) }
 
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = currentBackStackEntry?.destination?.route
+    val currentRoute = currentBackStackEntry?.destination?.route?.substringBefore("?")
 
     var currentScreenTitle by rememberSaveable { mutableStateOf("") }
     LaunchedEffect(currentRoute) {

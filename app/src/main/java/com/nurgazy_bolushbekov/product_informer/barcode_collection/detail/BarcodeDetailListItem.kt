@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
@@ -24,6 +25,7 @@ import com.nurgazy_bolushbekov.product_informer.barcode_collection.entity.Barcod
 
 @Composable
 fun BarcodeDetailListItem(
+    itemNumber: Int,
     item: BarcodeDocDetail,
     onDeleteClick: (item: BarcodeDocDetail) -> Unit
 ) {
@@ -42,6 +44,13 @@ fun BarcodeDetailListItem(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+
+            Text(
+                text = "$itemNumber.",
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.width(32.dp) // Выделим место для номера
+            )
+
             Column(
                 modifier = Modifier.weight(1f)
             ) {
