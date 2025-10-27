@@ -1,4 +1,4 @@
-package com.nurgazy_bolushbekov.product_informer.search_product_info
+package com.nurgazy_bolushbekov.product_informer.barcode_input
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateContentSize
@@ -40,7 +40,7 @@ import com.nurgazy_bolushbekov.product_informer.utils.ResultFetchData
 import com.nurgazy_bolushbekov.product_informer.utils.ScreenNavItem
 
 @Composable
-fun SearchProductInfoScreen(
+fun BarcodeInputScreen(
     navController: NavController,
     vm: BarcodeInputViewModel = hiltViewModel(),
     sharedVM: SharedVM

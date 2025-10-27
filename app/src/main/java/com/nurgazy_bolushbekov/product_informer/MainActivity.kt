@@ -53,7 +53,7 @@ import com.nurgazy_bolushbekov.product_informer.barcode_collection.detail.Barcod
 import com.nurgazy_bolushbekov.product_informer.barcode_collection.list.BarcodeListScreen
 import com.nurgazy_bolushbekov.product_informer.product.SharedVM
 import com.nurgazy_bolushbekov.product_informer.product.product_detail.ProductDetailScreen
-import com.nurgazy_bolushbekov.product_informer.search_product_info.SearchProductInfoScreen
+import com.nurgazy_bolushbekov.product_informer.barcode_input.BarcodeInputScreen
 import com.nurgazy_bolushbekov.product_informer.settings.SettingScreen
 import com.nurgazy_bolushbekov.product_informer.utils.ScreenNavItem
 import dagger.hilt.android.AndroidEntryPoint
@@ -81,7 +81,7 @@ fun MainScreen(paddingValues: PaddingValues, navController: NavHostController){
     ) {
         composable(ScreenNavItem.Settings.route) { SettingScreen(navController) }
         composable(ScreenNavItem.SearchProductInfo.route) {
-            SearchProductInfoScreen(navController, sharedVM = sharedVM)
+            BarcodeInputScreen(navController, sharedVM = sharedVM)
         }
         composable(route = ScreenNavItem.ProductDetail.route) {
             ProductDetailScreen(navController, sharedVM = sharedVM)

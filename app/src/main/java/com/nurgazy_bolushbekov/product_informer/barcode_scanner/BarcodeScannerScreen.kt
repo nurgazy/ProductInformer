@@ -32,8 +32,8 @@ import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
 import com.nurgazy_bolushbekov.product_informer.data_classes.ProductResponse
-import com.nurgazy_bolushbekov.product_informer.search_product_info.ProductInformationContent
-import com.nurgazy_bolushbekov.product_informer.search_product_info.BarcodeInputViewModel
+import com.nurgazy_bolushbekov.product_informer.barcode_input.ProductInformationContent
+import com.nurgazy_bolushbekov.product_informer.barcode_input.BarcodeInputViewModel
 import java.util.concurrent.Executors
 
 @Composable

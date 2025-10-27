@@ -1,4 +1,4 @@
-package com.nurgazy_bolushbekov.product_informer.search_product_info
+package com.nurgazy_bolushbekov.product_informer.barcode_input
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
