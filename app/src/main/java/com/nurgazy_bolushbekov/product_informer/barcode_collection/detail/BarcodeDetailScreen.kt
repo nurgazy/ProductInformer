@@ -13,11 +13,19 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Save
+import androidx.compose.material.icons.filled.ViewAgenda
 import androidx.compose.material3.Button
+import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -81,7 +89,8 @@ fun BarcodeDetailScreen(
                 "Новый документ"
             else
                 "Документ №${barcodeDoc!!.barcodeDocId}",
-            style = MaterialTheme.typography.titleLarge
+            style = MaterialTheme.typography.headlineMedium, // Использована более крупная типографика
+            modifier = Modifier.padding(bottom = 16.dp)
         )
 
         LazyColumn(
@@ -106,15 +115,24 @@ fun BarcodeDetailScreen(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            Button(onClick = {
-                vm.saveCurBarcodeDoc()
-            }) {
+            ElevatedButton(
+                onClick = { vm.saveCurBarcodeDoc() },
+                modifier = Modifier.weight(1f) // Равномерное распределение
+            ) {
+                Icon(Icons.Filled.Save, contentDescription = "Сохранить")
+                Spacer(Modifier.width(8.dp))
                 Text("Сохранить")
             }
-            Button(onClick = {
-                val intent = Intent(context, ScannerActivity::class.java)
-                scannerLauncher.launch(intent)
-            }) {
+
+            OutlinedButton(
+                onClick = {
+                    val intent = Intent(context, ScannerActivity::class.java)
+                    scannerLauncher.launch(intent)
+                },
+                modifier = Modifier.weight(1f) // Равномерное распределение
+            ) {
+                Icon(Icons.Filled.ViewAgenda, contentDescription = "Сканировать")
+                Spacer(Modifier.width(8.dp))
                 Text("Сканировать")
             }
         }
