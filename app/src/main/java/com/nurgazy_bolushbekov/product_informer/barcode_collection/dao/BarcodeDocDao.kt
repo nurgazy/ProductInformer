@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
+import androidx.room.Update
 import com.nurgazy_bolushbekov.product_informer.barcode_collection.entity.BarcodeDoc
 import com.nurgazy_bolushbekov.product_informer.barcode_collection.entity.BarcodeDocDetail
 import com.nurgazy_bolushbekov.product_informer.barcode_collection.entity.BarcodeWithDetails
@@ -19,6 +20,9 @@ interface BarcodeDocDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertBarcodeDetails(barcodeDocDetails: List<BarcodeDocDetail>)
+
+    @Update
+    suspend fun updateBarcode(barcodeDoc: BarcodeDoc)
 
     @Delete
     suspend fun deleteBarcodeDoc(doc: BarcodeDoc)

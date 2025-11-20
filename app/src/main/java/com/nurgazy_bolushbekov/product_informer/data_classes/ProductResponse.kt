@@ -26,17 +26,4 @@ data class ProductResponse(
     var savedImagePath: String? = null,
 
     var productSpecificResponses: List<ProductSpecificResponse>? = null
-) : Parcelable, java.io.Serializable {
-    fun toProduct(): Product {
-        return Product(
-            productName = name,
-            barcode = barcode,
-            article = article,
-            manufacturer = manufacturer,
-            brand = brand,
-            productCategory = productCategory,
-            productUuid1C = uuid1C,
-            savedImagePath = savedImagePath
-        )
-    }
-}
+) : Parcelable, java.io.Serializable

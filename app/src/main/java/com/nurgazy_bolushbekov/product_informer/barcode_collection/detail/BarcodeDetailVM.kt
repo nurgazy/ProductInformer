@@ -3,8 +3,11 @@ package com.nurgazy_bolushbekov.product_informer.barcode_collection.detail
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.nurgazy_bolushbekov.product_informer.application.DataStoreRepository
+import com.nurgazy_bolushbekov.product_informer.barcode_collection.data_serialization.BarcodeDocumentUpload
 import com.nurgazy_bolushbekov.product_informer.barcode_collection.entity.BarcodeDoc
 import com.nurgazy_bolushbekov.product_informer.barcode_collection.entity.BarcodeDocDetail
+import com.nurgazy_bolushbekov.product_informer.barcode_collection.entity.toBarcodeDocumentItem
 import com.nurgazy_bolushbekov.product_informer.barcode_collection.repo.BarcodeDocRepository
 import com.nurgazy_bolushbekov.product_informer.data_classes.ProductResponse
 import com.nurgazy_bolushbekov.product_informer.product.repo.ProductRepository
@@ -20,7 +23,8 @@ import javax.inject.Inject
 @HiltViewModel
 class BarcodeDetailVM @Inject constructor(
     private val barcodeDocRepository: BarcodeDocRepository,
-    private val productRepository: ProductRepository
+    private val productRepository: ProductRepository,
+    dataStoreRepository: DataStoreRepository
 ): ViewModel() {
 
     private val _curBarcodeDoc = MutableStateFlow<BarcodeDoc?>(null)
@@ -36,6 +40,11 @@ class BarcodeDetailVM @Inject constructor(
 
     private val _showQuantityInputDialog = MutableStateFlow<Boolean>(false)
     val showQuantityInputDialog: StateFlow<Boolean> = _showQuantityInputDialog.asStateFlow()
+
+    private val _uploadStatusMessage = MutableStateFlow<String?>(null)
+    val uploadStatusMessage: StateFlow<String?> = _uploadStatusMessage.asStateFlow()
+
+    private val _userName = dataStoreRepository.userName.asStateFlow()
 
     fun refreshProduct(barcode: String){
         viewModelScope.launch {
@@ -143,5 +152,48 @@ class BarcodeDetailVM @Inject constructor(
     fun resetShowQuantityInputDialog(){
         _showQuantityInputDialog.value = false
         _curBarcodeData.value = null
+    }
+
+    fun uploadTo1C() {
+        val doc = curBarcodeDoc.value
+        val items = barcodeList.value
+
+        if (doc == null || items.isEmpty()) {
+            // TODO: Показать сообщение пользователю, что нечего выгружать
+            Log.d("ProductInformer", "Документ не найден или список пуст.")
+            return
+        }
+
+        val documentItemsForUpload = items.map { it.toBarcodeDocumentItem() }
+
+        val dataFor1C = BarcodeDocumentUpload(
+            internalId = doc.barcodeDocId,
+            uuid1C = doc.uuid1C,
+            userName = _userName.value,
+            items = documentItemsForUpload
+        )
+
+        viewModelScope.launch {
+
+            when (val result = barcodeDocRepository.uploadDocumentTo1C(dataFor1C)) {
+                is ResultFetchData.Success -> {
+                    barcodeDocRepository.updateBarcodeDocStatus(doc, BarcodeStatus.UPLOADED)
+                    _curBarcodeDoc.value = doc.copy(status = BarcodeStatus.UPLOADED)
+                    _uploadStatusMessage.value = "Успех: Документ №${doc.barcodeDocId} выгружен!"
+                }
+                is ResultFetchData.Error -> {
+                    _uploadStatusMessage.value = "Ошибка выгрузки: ${result.exception.message}"
+                    Log.d("ProductInformer", "Ошибка выгрузки", result.exception)
+                }
+
+                ResultFetchData.Loading -> {
+                }
+            }
+        }
+
+    }
+
+    fun clearUploadStatusMessage() {
+        _uploadStatusMessage.value = null
     }
 }

@@ -1,6 +1,7 @@
 package com.nurgazy_bolushbekov.product_informer.barcode_collection.list
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,13 +21,18 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.room.util.TableInfo
 import com.nurgazy_bolushbekov.product_informer.barcode_collection.entity.BarcodeDoc
 import com.nurgazy_bolushbekov.product_informer.utils.BarcodeStatus
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun BarcodeDocItem(
@@ -39,6 +45,12 @@ fun BarcodeDocItem(
     docStatus = when(document.status){
         BarcodeStatus.ACTIVE -> "Активный"
         BarcodeStatus.COMPLETED -> "Завершен"
+        BarcodeStatus.UPLOADED -> "Выгружен"
+    }
+
+    val formattedTime = remember(document.creationTimestamp) {
+        val formatter = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
+        formatter.format(Date(document.creationTimestamp))
     }
 
     Card(
@@ -55,21 +67,29 @@ fun BarcodeDocItem(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
 
-            Row(
+            Column(
                 modifier = Modifier.weight(1f)
             ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "${document.barcodeDocId}. ",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = "Статус: $docStatus",
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                    text = "${document.barcodeDocId}. ",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.primary
-                )
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                Text(
-                    text = "Статус: $docStatus",
-                    style = MaterialTheme.typography.titleMedium,
+                    text = "Дата: $formattedTime",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
