@@ -159,7 +159,6 @@ class BarcodeDetailVM @Inject constructor(
         val items = barcodeList.value
 
         if (doc == null || items.isEmpty()) {
-            // TODO: Показать сообщение пользователю, что нечего выгружать
             Log.d("ProductInformer", "Документ не найден или список пуст.")
             return
         }

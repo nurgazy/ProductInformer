@@ -12,6 +12,7 @@ data class BarcodeDocumentUpload(
 
 @Serializable
 data class BarcodeDocumentItem(
+    val name: String,
     val barcode: String,
     val productUuid1C: String,
     val productSpecUuid1C: String,

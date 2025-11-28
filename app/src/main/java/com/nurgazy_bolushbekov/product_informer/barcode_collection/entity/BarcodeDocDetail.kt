@@ -25,6 +25,7 @@ data class BarcodeDocDetail(
 
 fun BarcodeDocDetail.toBarcodeDocumentItem(): BarcodeDocumentItem{
     return BarcodeDocumentItem(
+        name = "${this.productName}; ${this.productSpecName}",
         barcode = this.barcode,
         productUuid1C = this.productUuid1C,
         productSpecUuid1C = this.productSpecUuid1C,
