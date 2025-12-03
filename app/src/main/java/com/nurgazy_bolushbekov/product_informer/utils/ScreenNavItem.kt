@@ -15,5 +15,5 @@ sealed class ScreenNavItem(val route: String, val title: String, val icon: Image
     data object SearchProductInfo : ScreenNavItem("SearchProductInfo","Поиск товара", Icons.Filled.Search)
     data object ProductDetail: ScreenNavItem("ProductDetail","Детали товара", Icons.Filled.Info)
     data object BarcodeList: ScreenNavItem("BarcodeList","Сбор штрихкодов", Icons.Filled.ShoppingCart)
-    data object BarcodeDetail: ScreenNavItem("BarcodeDetail","Данные штрихкодов", Icons.Filled.List)
+    data object BarcodeDetail: ScreenNavItem("BarcodeDetail","Данные документа", Icons.Filled.List)
 }

@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.nurgazy_bolushbekov.product_informer.barcode_scanner.ScannerActivity
+import com.nurgazy_bolushbekov.product_informer.utils.BarcodeStatus
 import com.nurgazy_bolushbekov.product_informer.utils.ScreenNavItem
 
 private const val BARCODE_RESULT_KEY = "BARCODE_RESULT"
@@ -69,6 +70,8 @@ fun BarcodeDetailScreen(
     }
 
     val context = LocalContext.current
+
+    val isUploaded = barcodeDoc?.status == BarcodeStatus.UPLOADED
 
     // 1. РЕГИСТРАЦИЯ LAUNCHER
     val scannerLauncher = rememberLauncherForActivityResult(
@@ -108,7 +111,8 @@ fun BarcodeDetailScreen(
                     itemNumber = index + 1,
                     item = item,
                     onDeleteClick = { itemForDelete ->
-                        vm.removeFromBarcodeList(itemForDelete)
+                        if (!isUploaded)
+                            vm.removeFromBarcodeList(itemForDelete)
                     }
                 )
             }
@@ -122,7 +126,8 @@ fun BarcodeDetailScreen(
         ) {
             ElevatedButton(
                 onClick = { vm.saveCurBarcodeDoc() },
-                modifier = Modifier.weight(1f) // Равномерное распределение
+                modifier = Modifier.weight(1f),
+                enabled = !isUploaded
             ) {
                 Icon(Icons.Filled.Save, contentDescription = "Сохранить")
                 Spacer(Modifier.width(8.dp))
@@ -134,7 +139,8 @@ fun BarcodeDetailScreen(
                     val intent = Intent(context, ScannerActivity::class.java)
                     scannerLauncher.launch(intent)
                 },
-                modifier = Modifier.weight(1f) // Равномерное распределение
+                modifier = Modifier.weight(1f),
+                enabled = !isUploaded
             ) {
                 Icon(Icons.Filled.ViewAgenda, contentDescription = "Сканировать")
                 Spacer(Modifier.width(8.dp))
@@ -148,7 +154,8 @@ fun BarcodeDetailScreen(
             onClick = {
                 vm.uploadTo1C()
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            enabled = !isUploaded
         ) {
             Icon(Icons.Filled.Upload, contentDescription = "Выгрузить в 1С")
             Spacer(Modifier.width(8.dp))
