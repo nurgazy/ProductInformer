@@ -15,8 +15,11 @@ import com.nurgazy_bolushbekov.product_informer.utils.BarcodeStatus
 import com.nurgazy_bolushbekov.product_informer.utils.ResultFetchData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -45,6 +48,31 @@ class BarcodeDetailVM @Inject constructor(
     val uploadStatusMessage: StateFlow<String?> = _uploadStatusMessage.asStateFlow()
 
     private val _userName = dataStoreRepository.userName.asStateFlow()
+
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
+
+    val filteredBarcodeList: StateFlow<List<BarcodeDocDetail>> =
+        _searchQuery
+            .combine(_barcodeList) { query, list ->
+                if (query.isBlank()) {
+                    list
+                } else {
+                    list.filter { item ->
+                        item.barcode.contains(query, ignoreCase = true) ||
+                                item.productName.contains(query, ignoreCase = true)
+                    }
+                }
+            }
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.Eagerly,
+                initialValue = emptyList()
+            )
+
+    fun onSearchQueryChanged(query: String) {
+        _searchQuery.value = query
+    }
 
     fun refreshProduct(barcode: String){
         viewModelScope.launch {

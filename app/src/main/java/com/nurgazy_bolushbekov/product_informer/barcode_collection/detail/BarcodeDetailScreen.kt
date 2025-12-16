@@ -20,6 +20,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Save
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Upload
 import androidx.compose.material.icons.filled.ViewAgenda
 import androidx.compose.material3.AlertDialog
@@ -30,6 +31,7 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -59,6 +61,9 @@ fun BarcodeDetailScreen(
     val curBarcodeData by vm.curBarcodeData.collectAsState()
     val showQuantityInputDialog by vm.showQuantityInputDialog.collectAsState()
     val uploadStatusMessage by vm.uploadStatusMessage.collectAsState()
+
+    val filteredBarcodeList by vm.filteredBarcodeList.collectAsState()
+    val searchQuery by vm.searchQuery.collectAsState()
 
     LaunchedEffect(Unit) {
         vm.setBarcodeDoc(barcodeDocId)
@@ -101,12 +106,24 @@ fun BarcodeDetailScreen(
             modifier = Modifier.padding(bottom = 16.dp)
         )
 
+        OutlinedTextField(
+            value = searchQuery,
+            onValueChange = vm::onSearchQueryChanged,
+            label = { Text("Поиск штрихкода или товара") },
+            leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
+            singleLine = true,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 8.dp)
+        )
+
         LazyColumn(
             modifier = Modifier
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .weight(1f),
             contentPadding = PaddingValues(bottom = 16.dp)
         ) {
-            itemsIndexed(barcodeList) { index, item ->
+            itemsIndexed(filteredBarcodeList) { index, item ->
                 BarcodeDetailListItem(
                     itemNumber = index + 1,
                     item = item,
