@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "00171dd7298a8bd04ba1e99b0df0adce",
+    "identityHash": "d166f2d1c99622cbfc623950357df04c",
     "entities": [
       {
         "tableName": "barcode",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`barcodeDocId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `status` TEXT NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`barcodeDocId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `status` TEXT NOT NULL, `uuid1C` TEXT NOT NULL, `creationTimestamp` INTEGER NOT NULL)",
         "fields": [
           {
             "fieldPath": "barcodeDocId",
@@ -18,6 +18,18 @@
             "fieldPath": "status",
             "columnName": "status",
             "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "uuid1C",
+            "columnName": "uuid1C",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "creationTimestamp",
+            "columnName": "creationTimestamp",
+            "affinity": "INTEGER",
             "notNull": true
           }
         ],
@@ -118,7 +130,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '00171dd7298a8bd04ba1e99b0df0adce')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'd166f2d1c99622cbfc623950357df04c')"
     ]
   }
 }
