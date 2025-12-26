@@ -130,7 +130,6 @@ class DataStoreRepository @Inject constructor(
         changeBaseUrl()
         applicationScope.launch {
             saveProtocol(protocol.value.name)
-            savePort(if (protocol.value == Protocol.HTTP) 80 else 443)
         }
     }
 

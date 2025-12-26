@@ -56,7 +56,6 @@ class SettingViewModel @Inject constructor(
     }
 
     private fun initData() {
-        changePort(if (protocol.value == Protocol.HTTP) 80 else 443)
         validateForm()
     }
 
@@ -64,7 +63,6 @@ class SettingViewModel @Inject constructor(
     //Change form data
     fun onChangeProtocol(value: String){
         dataStoreRepository.changeProtocol(value)
-        changePort(if (protocol.value == Protocol.HTTP) 80 else 443)
     }
 
     fun onChangeServer(value: String){
@@ -135,24 +133,18 @@ class SettingViewModel @Inject constructor(
     private fun saveSettingsData(){
         viewModelScope.launch {
             dataStoreRepository.saveProtocol(protocol.value.name)
-        }
-        viewModelScope.launch {
+
             dataStoreRepository.saveServerUrl(server.value)
-        }
-        viewModelScope.launch {
+
             dataStoreRepository.savePort(port.value)
-        }
-        viewModelScope.launch {
+
             dataStoreRepository.savePublicationName(publicationName.value)
-        }
-        viewModelScope.launch {
+
             dataStoreRepository.saveUserName(userName.value)
-        }
-        viewModelScope.launch {
+
             val (encryptedPassword, iv) = CryptoManager.encrypt(password.value)
             dataStoreRepository.saveEncryptedPassword(encryptedPassword, iv)
-        }
-        viewModelScope.launch {
+
             dataStoreRepository.saveIsFullSpecifications(isFullSpecifications.value)
         }
     }

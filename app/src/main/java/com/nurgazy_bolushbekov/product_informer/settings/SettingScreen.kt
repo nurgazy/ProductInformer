@@ -24,11 +24,14 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
+import androidx.compose.material3.TabRowDefaults
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -77,7 +80,16 @@ fun SettingScreen(navController: NavController, vm: SettingViewModel = hiltViewM
             .fillMaxSize()
             .verticalScroll(scrollState)
     ) {
-        TabRow(selectedTabIndex = pagerState.currentPage) {
+        TabRow(selectedTabIndex = pagerState.currentPage,
+                indicator = { tabPositions ->
+                    if (pagerState.currentPage < tabPositions.size) {
+                        TabRowDefaults.SecondaryIndicator(
+                            Modifier.tabIndicatorOffset(tabPositions[pagerState.currentPage]),
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+        ) {
             tabs.forEachIndexed{ index, tab ->
                 Tab(
                     selected = pagerState.currentPage == index,
@@ -86,12 +98,24 @@ fun SettingScreen(navController: NavController, vm: SettingViewModel = hiltViewM
                             pagerState.animateScrollToPage(index)
                         }
                     },
-                    text = { Text(tab.title) }
+                    text = {
+                        Text(
+                            text = tab.title,
+                            style = if (pagerState.currentPage == index)
+                                MaterialTheme.typography.titleSmall
+                            else
+                                MaterialTheme.typography.bodyMedium
+                        )
+                    }
                 )
             }
         }
+
         HorizontalPager(
-            state = pagerState
+            state = pagerState,
+            modifier = Modifier.fillMaxWidth(),
+            beyondViewportPageCount = 1,
+            verticalAlignment = Alignment.Top
         ) { page ->
             when (page) {
                 0 -> GeneralTab(vm = vm)
