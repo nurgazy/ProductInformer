@@ -268,8 +268,7 @@ private fun PortRow(vm: SettingViewModel) {
                 .padding(5.dp)
                 .weight(2f),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            singleLine = true,
-            readOnly = true
+            singleLine = true
         )
     }
 }

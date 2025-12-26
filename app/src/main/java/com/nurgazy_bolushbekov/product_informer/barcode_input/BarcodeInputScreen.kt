@@ -7,17 +7,27 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -28,9 +38,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.nurgazy_bolushbekov.product_informer.barcode_scanner.BarcodeScannerScreen
@@ -93,44 +106,60 @@ fun ProductInformationContent(
         TextField(
             value = barcodeText,
             onValueChange = { vm.onChangeBarcode(it) },
+            placeholder = { Text("Введите штрихкод", color = Color.Gray) },
             singleLine = true,
             modifier = Modifier
-                .padding(5.dp),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            shape = RoundedCornerShape(12.dp),
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = Color(0xFFF2F2F7),
+                unfocusedContainerColor = Color(0xFFF2F2F7),
+                disabledContainerColor = Color(0xFFF2F2F7),
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent,
+            ),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
         )
         Row(
-            Modifier
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 24.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ){
             Button(
                 onClick = {
-                    if (serverUrl.isEmpty()){
-                        navController.navigate(ScreenNavItem.ProductDetail.route)
-                    }else {
-                        isScannerVisible.value = true
-                    }
+                    if (serverUrl.isEmpty()) navController.navigate(ScreenNavItem.ProductDetail.route)
+                    else isScannerVisible.value = true
                 },
                 modifier = Modifier
-                    .padding(5.dp)
                     .weight(1f)
+                    .height(56.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF007AFF))
             ) {
-                Text("Сканировать")
+                Icon(
+                    painter = painterResource(id = android.R.drawable.ic_menu_camera), // Замените на иконку сканера
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(Modifier.width(8.dp))
+                Text("Сканировать", fontSize = 16.sp)
             }
             Button(
                 onClick = {
-                    if (serverUrl.isEmpty()){
-                        navController.navigate(ScreenNavItem.ProductDetail.route)
-                    }else {
-                        vm.refreshProduct()
-                    }
+                    if (serverUrl.isEmpty()) navController.navigate(ScreenNavItem.ProductDetail.route)
+                    else vm.refreshProduct()
                 },
                 modifier = Modifier
-                    .padding(5.dp)
                     .weight(1f)
+                    .height(56.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF34C759))
             ) {
-                Text("Найти")
+                Icon(Icons.Default.Search, contentDescription = null)
+                Spacer(Modifier.width(8.dp))
+                Text("Найти", fontSize = 16.sp)
             }
         }
 
