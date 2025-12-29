@@ -7,6 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -24,6 +25,7 @@ import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDrawerState
@@ -55,6 +57,7 @@ import com.nurgazy_bolushbekov.product_informer.product.SharedVM
 import com.nurgazy_bolushbekov.product_informer.product.product_detail.ProductDetailScreen
 import com.nurgazy_bolushbekov.product_informer.barcode_input.BarcodeInputScreen
 import com.nurgazy_bolushbekov.product_informer.settings.SettingScreen
+import com.nurgazy_bolushbekov.product_informer.ui.theme.ProductInformerTheme
 import com.nurgazy_bolushbekov.product_informer.utils.ScreenNavItem
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -64,7 +67,14 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            SideNavigationMenu()
+            ProductInformerTheme(dynamicColor = false) {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    SideNavigationMenu()
+                }
+            }
         }
     }
 }
