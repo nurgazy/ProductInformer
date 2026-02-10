@@ -119,88 +119,32 @@ class DataStoreRepository @Inject constructor(
         return decrypted
     }
 
-    suspend fun saveProtocol(protocol: String) {
-        dataStore.edit { preferences ->
-            preferences[PROTOCOL_KEY] = protocol
-        }
-    }
-
     fun changeProtocol(value: String){
         protocol.value = if (value.isBlank()) Protocol.HTTP else Protocol.valueOf(value)
         changeBaseUrl()
-        applicationScope.launch {
-            saveProtocol(protocol.value.name)
-        }
-    }
-
-    suspend fun saveServerUrl(serverUrl: String) {
-        dataStore.edit { preferences ->
-            preferences[SERVER_URL_KEY] = serverUrl
-        }
     }
 
     fun changeServerUrl(value: String){
         serverUrl.value = value
         changeBaseUrl()
-        applicationScope.launch {
-            saveServerUrl(serverUrl.value)
-        }
-    }
-
-    suspend fun savePort(port: Int) {
-        dataStore.edit { preferences ->
-            preferences[PORT_KEY] = port.toString()
-        }
     }
 
     fun changePort(value: Int){
         port.value = value
         changeBaseUrl()
-        applicationScope.launch {
-            savePort(port.value)
-        }
-    }
-
-    suspend fun savePublicationName(publicationName: String) {
-        dataStore.edit { preferences ->
-            preferences[PUBLICATION_NAME_KEY] = publicationName
-        }
     }
 
     fun changePublicationName(value: String){
         publicationName.value = value
         changeBaseUrl()
-        applicationScope.launch {
-            savePublicationName(publicationName.value)
-        }
-    }
-
-    suspend fun saveUserName(userName: String) {
-        dataStore.edit { preferences ->
-            preferences[USER_NAME_KEY] = userName
-        }
     }
 
     fun changeUserName(value: String){
         userName.value = value
-        applicationScope.launch {
-            saveUserName(userName.value)
-        }
-    }
-
-    suspend fun saveEncryptedPassword(encryptedPassword: String, encryptedIv: String) {
-        dataStore.edit { preferences ->
-            preferences[ENCRYPTED_PASSWORD_KEY] = encryptedPassword
-            preferences[ENCRYPTED_IV_KEY] = encryptedIv
-        }
     }
 
     fun changePassword(value: String){
         password.value = value
-        val (encryptedPassword, iv) = CryptoManager.encrypt(password.value)
-        applicationScope.launch {
-            saveEncryptedPassword(encryptedPassword, iv)
-        }
     }
 
     suspend fun saveIsFullSpecifications(isAllSpecifications: Boolean) {
@@ -219,6 +163,27 @@ class DataStoreRepository @Inject constructor(
     private fun changeBaseUrl(){
         baseUrl.value =
             "${protocol.value.name}://${serverUrl.value}:${port.value}/${publicationName.value}/"
+    }
+
+    suspend fun saveAllSettings(
+        protocol: String,
+        serverUrl: String,
+        port: Int,
+        publicationName: String,
+        userName: String,
+        encryptedPassword: Pair<String, String>,
+        isFullSpecs: Boolean
+    ) {
+        dataStore.edit{ preferences ->
+            preferences[PROTOCOL_KEY] = protocol
+            preferences[SERVER_URL_KEY] = serverUrl
+            preferences[PORT_KEY] = port.toString()
+            preferences[PUBLICATION_NAME_KEY] = publicationName
+            preferences[USER_NAME_KEY] = userName
+            preferences[ENCRYPTED_PASSWORD_KEY] = encryptedPassword.first
+            preferences[ENCRYPTED_IV_KEY] = encryptedPassword.second
+            preferences[IS_ALL_SPECIFICATIONS_KEY] = isFullSpecs.toString()
+        }
     }
 
 }

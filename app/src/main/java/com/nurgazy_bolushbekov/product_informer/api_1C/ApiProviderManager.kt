@@ -15,7 +15,7 @@ import javax.inject.Singleton
 @Singleton
 class ApiProviderManager @Inject constructor(
     private val dataStoreRepository: DataStoreRepository,
-    private val applicationScope: CoroutineScope
+    applicationScope: CoroutineScope
 ) {
     private val _apiService = MutableStateFlow<Api1C?>(null)
     val apiService: StateFlow<Api1C?> = _apiService.asStateFlow()
@@ -23,8 +23,12 @@ class ApiProviderManager @Inject constructor(
     init {
         applicationScope.launch {
             dataStoreRepository.networkSettingsFlow.collect { networkSettings ->
-                if (networkSettings.userName.isNotBlank() && networkSettings.password.isNotBlank() && networkSettings.baseUrl.isNotBlank()) {
-                    _apiService.value = create(networkSettings.userName, networkSettings.password, networkSettings.baseUrl)
+                val url = networkSettings.baseUrl
+                val user = networkSettings.userName
+                val pass = networkSettings.password
+
+                if (url.isNotBlank() && user.isNotBlank()) {
+                    _apiService.value = create(user, pass, url)
                 } else {
                     _apiService.value = null
                 }
@@ -33,18 +37,17 @@ class ApiProviderManager @Inject constructor(
     }
 
     fun create(userName: String, password: String, baseUrl: String): Api1C {
+        val formattedUrl = if (baseUrl.endsWith("/")) baseUrl else "$baseUrl/"
 
         val okHttpClient = OkHttpClient.Builder()
             .addInterceptor(BasicAuthInterceptor(userName, password))
             .build()
 
-        val instance: Retrofit by lazy {
-            Retrofit.Builder()
-                .baseUrl(baseUrl)
-                .client(okHttpClient)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build()
-        }
-        return instance.create(Api1C::class.java)
+        return Retrofit.Builder()
+            .baseUrl(formattedUrl) // Use the formatted URL
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(Api1C::class.java)
     }
 }

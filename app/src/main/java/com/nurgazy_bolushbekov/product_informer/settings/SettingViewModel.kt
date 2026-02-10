@@ -132,20 +132,23 @@ class SettingViewModel @Inject constructor(
 
     private fun saveSettingsData(){
         viewModelScope.launch {
-            dataStoreRepository.saveProtocol(protocol.value.name)
+            try {
+                val encryptedResult = CryptoManager.encrypt(password.value)
 
-            dataStoreRepository.saveServerUrl(server.value)
+                dataStoreRepository.saveAllSettings(
+                    protocol = protocol.value.name,
+                    serverUrl = server.value,
+                    port = port.value,
+                    publicationName = publicationName.value,
+                    userName = userName.value,
+                    encryptedPassword = encryptedResult,
+                    isFullSpecs = isFullSpecifications.value
+                )
 
-            dataStoreRepository.savePort(port.value)
-
-            dataStoreRepository.savePublicationName(publicationName.value)
-
-            dataStoreRepository.saveUserName(userName.value)
-
-            val (encryptedPassword, iv) = CryptoManager.encrypt(password.value)
-            dataStoreRepository.saveEncryptedPassword(encryptedPassword, iv)
-
-            dataStoreRepository.saveIsFullSpecifications(isFullSpecifications.value)
+            } catch (e: Exception) {
+                _alertText.value = "Ошибка сохранения: ${e.message}"
+                openAlertDialog()
+            }
         }
     }
 
@@ -227,7 +230,10 @@ class SettingViewModel @Inject constructor(
     private fun checkPing() {
         viewModelScope.launch {
             _pingResult.value = ResultFetchData.Loading
-            when(val result = settingRepository.ping()){
+
+            val currentUrl = "${protocol.value.name}://${server.value}:${port.value}/${publicationName.value}/"
+
+            when(val result = settingRepository.ping(userName.value, password.value, currentUrl)){
                 is ResultFetchData.Error -> {
                     _pingResult.value = result
                     _alertText.value = result.exception.message.toString()
