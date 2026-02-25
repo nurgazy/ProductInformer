@@ -22,6 +22,9 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 @HiltViewModel
 class BarcodeDetailVM @Inject constructor(
@@ -193,10 +196,16 @@ class BarcodeDetailVM @Inject constructor(
 
         val documentItemsForUpload = items.map { it.toBarcodeDocumentItem() }
 
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+            .withZone(ZoneId.systemDefault()) // Используем часовой пояс системы
+
+        val dateString = formatter.format(Instant.ofEpochMilli(doc.creationTimestamp))
+
         val dataFor1C = BarcodeDocumentUpload(
             internalId = doc.barcodeDocId,
             uuid1C = doc.uuid1C,
             userName = _userName.value,
+            docDate = dateString,
             items = documentItemsForUpload
         )
 
