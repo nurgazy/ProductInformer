@@ -135,8 +135,6 @@ fun BarcodeDetailScreen(
             }
         }
 
-        Spacer(modifier = Modifier.weight(1f))
-
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly

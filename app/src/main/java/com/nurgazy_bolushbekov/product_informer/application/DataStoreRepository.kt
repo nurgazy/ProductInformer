@@ -155,9 +155,6 @@ class DataStoreRepository @Inject constructor(
 
     fun changeIsFullSpecifications(value: Boolean){
         isFullSpecifications.value = value
-        applicationScope.launch {
-            saveIsFullSpecifications(isFullSpecifications.value)
-        }
     }
 
     private fun changeBaseUrl(){
