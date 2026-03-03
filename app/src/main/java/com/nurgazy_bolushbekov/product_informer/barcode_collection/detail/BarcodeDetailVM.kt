@@ -157,11 +157,11 @@ class BarcodeDetailVM @Inject constructor(
 
         if (existIndex != -1){
             val existItem = curBarcodeList[existIndex]
-            val updateItem = existItem.copy(quantity = quantity)
+            val updateItem = existItem.copy(quantity = existItem.quantity + quantity)
             curBarcodeList[existIndex] = updateItem
             _curBarcodeData.value = updateItem
         }else{
-            val itemToAdd = _curBarcodeData.value!!.copy(quantity = quantity)
+            val itemToAdd = newItem.copy(quantity = quantity)
             curBarcodeList.add(itemToAdd)
             _curBarcodeData.value = itemToAdd
         }
