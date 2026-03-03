@@ -1,5 +1,6 @@
 package com.nurgazy_bolushbekov.product_informer.barcode_scanner
 
+import ScannerOverlay
 import android.Manifest
 import android.content.pm.PackageManager
 import android.util.Log
@@ -173,6 +174,8 @@ fun BarcodeScannerContent(
             modifier = Modifier.fillMaxSize()
         )
 
+        ScannerOverlay()
+
     }
 }
 
@@ -182,30 +185,45 @@ fun processImageProxy(
     imageProxy: ImageProxy,
     onBarcodeDetected: (Barcode?) -> Unit
 ) {
-    val inputImage = imageProxy.image
-    if (inputImage != null) {
-        val image = InputImage.fromMediaImage(
-            inputImage,
-            imageProxy.imageInfo.rotationDegrees
-        )
+    val inputImage = imageProxy.image ?: return
+    val image = InputImage.fromMediaImage(inputImage, imageProxy.imageInfo.rotationDegrees)
 
-        barcodeScanner.process(image)
-            .addOnSuccessListener { barcodes ->
-                barcodes.firstOrNull()?.let {
-                    onBarcodeDetected(barcodes.first()) // Обрабатываем первый найденный штрихкод
-                }
-            }
-            .addOnFailureListener { e ->
-                Log.d("ProductInformer", "Barcode scanning failed", e)
+    barcodeScanner.process(image)
+        .addOnSuccessListener { barcodes ->
+            if (barcodes.isEmpty()) {
                 onBarcodeDetected(null)
+                return@addOnSuccessListener
             }
-            .addOnCompleteListener {
-                imageProxy.close()
+
+            // Логика фильтрации: берем штрихкод, только если он в центре кадра
+            val detectedBarcode = barcodes.firstOrNull { barcode ->
+                val boundingBox = barcode.boundingBox ?: return@firstOrNull false
+
+                // Размеры входящего кадра (с учетом поворота)
+                val width = if (imageProxy.imageInfo.rotationDegrees % 180 == 0) imageProxy.width else imageProxy.height
+                val height = if (imageProxy.imageInfo.rotationDegrees % 180 == 0) imageProxy.height else imageProxy.width
+
+                // Определяем "виртуальную" центральную область (например, центральные 60%)
+                val centerX = width / 2
+                val centerY = height / 2
+                val boxWidth = width * 0.6f
+                val boxHeight = height * 0.4f
+
+                val roi = android.graphics.Rect(
+                    (centerX - boxWidth / 2).toInt(),
+                    (centerY - boxHeight / 2).toInt(),
+                    (centerX + boxWidth / 2).toInt(),
+                    (centerY + boxHeight / 2).toInt()
+                )
+
+                // Проверяем, пересекается ли штрихкод с центральной областью
+                roi.contains(boundingBox.centerX(), boundingBox.centerY())
             }
-    } else {
-        imageProxy.close()
-        onBarcodeDetected(null)
-    }
+
+            onBarcodeDetected(detectedBarcode)
+        }
+        .addOnFailureListener { onBarcodeDetected(null) }
+        .addOnCompleteListener { imageProxy.close() }
 }
 
 @Composable

@@ -13,7 +13,11 @@ class BarcodeAnalyzer(private val listener: (String) -> Unit) : ImageAnalysis.An
 
     // Опции: Сканируем только EAN_13 и QR_CODE для скорости
     private val options = BarcodeScannerOptions.Builder()
-        .setBarcodeFormats(Barcode.FORMAT_ALL_FORMATS)
+        .setBarcodeFormats(
+            Barcode.FORMAT_EAN_13,
+            Barcode.FORMAT_EAN_8,
+            Barcode.FORMAT_QR_CODE
+        )
         .build()
 
     private val scanner = BarcodeScanning.getClient(options)
@@ -29,11 +33,16 @@ class BarcodeAnalyzer(private val listener: (String) -> Unit) : ImageAnalysis.An
 
             scanner.process(image)
                 .addOnSuccessListener { barcodes ->
-                    if (barcodes.isNotEmpty()) {
-                        // Получили первый штрихкод и отправляем его
-                        val rawValue = barcodes.first().rawValue
-                        if (rawValue != null) {
-                            listener(rawValue) // <--- Вызов метода onBarcodeScanned в Activity!
+                    for (barcode in barcodes) {
+                        val boundingBox = barcode.boundingBox ?: continue
+
+                        // Проверяем, находится ли штрихкод в рамке
+                        if (isInsideScannerFrame(boundingBox, imageProxy)) {
+                            val rawValue = barcode.rawValue
+                            if (rawValue != null) {
+                                listener(rawValue)
+                                break // Берем первый подходящий и выходим
+                            }
                         }
                     }
                 }
@@ -47,5 +56,29 @@ class BarcodeAnalyzer(private val listener: (String) -> Unit) : ImageAnalysis.An
         } else {
             imageProxy.close()
         }
+    }
+
+    private fun isInsideScannerFrame(boundingBox: android.graphics.Rect, imageProxy: ImageProxy): Boolean {
+        // Получаем размеры кадра с учетом поворота
+        val isRotated = imageProxy.imageInfo.rotationDegrees == 90 || imageProxy.imageInfo.rotationDegrees == 270
+        val width = if (isRotated) imageProxy.height else imageProxy.width
+        val height = if (isRotated) imageProxy.width else imageProxy.height
+
+        // Определяем "активное окно" в процентах (должно совпадать с визуальной рамкой)
+        // В вашем ScannerOverlay рамка занимает 30% высоты по центру и всю ширину
+        val horizontalMargin = width * 0.05f // небольшие отступы по бокам (5%)
+        val verticalMargin = height * 0.35f   // (100% - 30% рамки) / 2 = 35% сверху и снизу
+
+        val frameLeft = horizontalMargin
+        val frameRight = width - horizontalMargin
+        val frameTop = verticalMargin
+        val frameBottom = height - verticalMargin
+
+        // Проверяем, входит ли центр штрихкода в эти границы
+        val barcodeCenterX = boundingBox.centerX().toFloat()
+        val barcodeCenterY = boundingBox.centerY().toFloat()
+
+        return barcodeCenterX in frameLeft..frameRight &&
+                barcodeCenterY in frameTop..frameBottom
     }
 }

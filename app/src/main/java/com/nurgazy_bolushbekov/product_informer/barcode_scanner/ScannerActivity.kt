@@ -1,5 +1,6 @@
 package com.nurgazy_bolushbekov.product_informer.barcode_scanner
 
+import ScannerOverlay
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -12,6 +13,7 @@ import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
+import androidx.compose.ui.platform.ComposeView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import java.util.concurrent.ExecutorService
@@ -38,26 +40,42 @@ class ScannerActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        // Создаем Executor для асинхронной обработки кадров
         cameraExecutor = Executors.newSingleThreadExecutor()
 
-        // Создаем и добавляем PreviewView, который будет отображать Compose
-        previewView = PreviewView(this)
-
-        // Устанавливаем Compose UI
-        setContentView(previewView)
-
-        if (allPermissionsGranted()) {
-            startCamera()
-        } else {
-            requestPermissionLauncher.launch(Manifest.permission.CAMERA)
+        // 1. Создаем корневой контейнер (FrameLayout идеально подходит для наложения слоев)
+        val rootLayout = android.widget.FrameLayout(this).apply {
+            layoutParams = android.view.ViewGroup.LayoutParams(
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT
+            )
         }
-    }
 
-    private fun allPermissionsGranted() = ContextCompat.checkSelfPermission(
-        this, Manifest.permission.CAMERA
-    ) == PackageManager.PERMISSION_GRANTED
+        // 2. Инициализируем PreviewView (слой с камерой)
+        previewView = PreviewView(this).apply {
+            layoutParams = android.view.ViewGroup.LayoutParams(
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT
+            )
+        }
+        rootLayout.addView(previewView) // Добавляем камеру первым слоем
+
+        // 3. Создаем ComposeView для рамки (верхний слой)
+        val composeView = ComposeView(this).apply {
+            layoutParams = android.view.ViewGroup.LayoutParams(
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT
+            )
+            setContent {
+                ScannerOverlay() // Рисуем рамку поверх
+            }
+        }
+        rootLayout.addView(composeView) // Добавляем рамку вторым слоем
+
+        // 4. Устанавливаем собранный пирог как контент Activity
+        setContentView(rootLayout)
+
+        requestPermissionLauncher.launch(Manifest.permission.CAMERA)
+    }
 
 
     // --- Инициализация CameraX и ML Kit ---
