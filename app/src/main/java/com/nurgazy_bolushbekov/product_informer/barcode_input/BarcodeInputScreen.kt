@@ -1,6 +1,10 @@
 package com.nurgazy_bolushbekov.product_informer.barcode_input
 
+import android.app.Activity
+import android.content.Intent
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -30,7 +34,6 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -39,6 +42,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
@@ -46,7 +50,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.nurgazy_bolushbekov.product_informer.barcode_scanner.BarcodeScannerScreen
+import com.nurgazy_bolushbekov.product_informer.barcode_scanner.ScannerActivity
 import com.nurgazy_bolushbekov.product_informer.data_classes.ProductResponse
 import com.nurgazy_bolushbekov.product_informer.product.SharedVM
 import com.nurgazy_bolushbekov.product_informer.utils.ResultFetchData
@@ -58,43 +62,69 @@ fun BarcodeInputScreen(
     vm: BarcodeInputViewModel = hiltViewModel(),
     sharedVM: SharedVM
 ){
+    val context = LocalContext.current
+    val barcodeText by vm.barcode.collectAsState()
+    val productResponse by vm.productResponse.collectAsState()
+    val navigateDetailScreen by vm.navigateDetailScreen.collectAsState()
+    val alertText by vm.alertText.collectAsState()
+    val showDialog by vm.showDialog.collectAsState()
+
+    val scannerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val scannedBarcode = result.data?.getStringExtra("BARCODE_RESULT")
+            if (scannedBarcode != null) {
+                vm.onChangeBarcode(scannedBarcode)
+                vm.refreshProduct() // Автоматический поиск после сканирования
+            }
+        }
+    }
+
     BackHandler(enabled = true) {  }
 
     val onSetProductSharedVM: (productData: ProductResponse?) -> Unit = sharedVM::onSetProductData
     LaunchedEffect(Unit) {
         vm.setPreviousRoute(sharedVM.previousRoute.value)
     }
-    BarcodeScannerScreen(vm, navController, onSetProductSharedVM)
+
+    LaunchedEffect(navigateDetailScreen) {
+        if (navigateDetailScreen) {
+            val product = (productResponse as? ResultFetchData.Success)?.data
+            if (product != null) {
+                onSetProductSharedVM(product)
+                val route = vm.prevRoute.value ?: ScreenNavItem.ProductDetail.route
+                navController.navigate(route)
+                vm.resetNavigationDetailScreen()
+                vm.resetPreviousRoute()
+            }
+        }
+    }
+
+    ProductInformationContent(
+        barcodeText = barcodeText,
+        productResponse = productResponse,
+        onSearchClick = { vm.refreshProduct() },
+        onScanClick = {
+            val intent = Intent(context, ScannerActivity::class.java)
+            scannerLauncher.launch(intent)
+        },
+        showDialog = showDialog,
+        alertText = alertText,
+        vm = vm
+    )
 }
 
 @Composable
 fun ProductInformationContent(
-    vm: BarcodeInputViewModel = hiltViewModel(),
-    isScannerVisible: MutableState<Boolean>,
-    navController: NavController,
-    onSetProductSharedVM: (productData: ProductResponse?) -> Unit
+    barcodeText: String,
+    productResponse: ResultFetchData<ProductResponse>?,
+    onSearchClick: () -> Unit,
+    onScanClick: () -> Unit, // Новый параметр
+    showDialog: Boolean,
+    alertText: String,
+    vm: BarcodeInputViewModel
 ) {
-
-    val barcodeText by vm.barcode.collectAsState()
-    val navigateDetailScreen by vm.navigateDetailScreen.collectAsState()
-    val showDialog by vm.showDialog.collectAsState()
-    val alertText by vm.alertText.collectAsState()
-    val serverUrl by vm.serverUrl.collectAsState()
-    val productResponse by vm.productResponse.collectAsState()
-    val prevRoute by vm.prevRoute.collectAsState()
-
-    LaunchedEffect(navigateDetailScreen) {
-        if (navigateDetailScreen) {
-            val product = (productResponse as ResultFetchData.Success).data
-            onSetProductSharedVM(product)
-            if (prevRoute != null)
-                navController.navigate(prevRoute!!)
-            else
-                navController.navigate(ScreenNavItem.ProductDetail.route)
-            vm.resetNavigationDetailScreen()
-            vm.resetPreviousRoute()
-        }
-    }
 
     Column(
         modifier = Modifier
@@ -128,13 +158,8 @@ fun ProductInformationContent(
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ){
             Button(
-                onClick = {
-                    if (serverUrl.isEmpty()) navController.navigate(ScreenNavItem.ProductDetail.route)
-                    else isScannerVisible.value = true
-                },
-                modifier = Modifier
-                    .weight(1f)
-                    .height(56.dp),
+                onClick = onScanClick, // Вызываем запуск активити
+                modifier = Modifier.weight(1f).height(56.dp),
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF007AFF))
             ) {
@@ -147,13 +172,8 @@ fun ProductInformationContent(
                 Text("Сканировать", fontSize = 16.sp)
             }
             Button(
-                onClick = {
-                    if (serverUrl.isEmpty()) navController.navigate(ScreenNavItem.ProductDetail.route)
-                    else vm.refreshProduct()
-                },
-                modifier = Modifier
-                    .weight(1f)
-                    .height(56.dp),
+                onClick = onSearchClick,
+                modifier = Modifier.weight(1f).height(56.dp),
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF34C759))
             ) {

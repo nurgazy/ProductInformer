@@ -1,4 +1,3 @@
-// Добавьте эти импорты в BarcodeScannerScreen.kt
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
