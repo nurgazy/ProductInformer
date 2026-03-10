@@ -57,17 +57,16 @@ fun BarcodeDetailScreen(
     barcodeDocId: Long
 ) {
     val barcodeDoc by vm.curBarcodeDoc.collectAsState()
-    val barcodeList by vm.barcodeList.collectAsState()
     val curBarcodeData by vm.curBarcodeData.collectAsState()
     val showQuantityInputDialog by vm.showQuantityInputDialog.collectAsState()
     val uploadStatusMessage by vm.uploadStatusMessage.collectAsState()
 
     val filteredBarcodeList by vm.filteredBarcodeList.collectAsState()
     val searchQuery by vm.searchQuery.collectAsState()
+    val triggerScanner by vm.triggerScanner.collectAsState()
 
     LaunchedEffect(Unit) {
         vm.setBarcodeDoc(barcodeDocId)
-
     }
 
     BackHandler {
@@ -89,6 +88,14 @@ fun BarcodeDetailScreen(
             }
         } else {
             Log.d("ProductInformer", "Сканирование отменено.")
+        }
+    }
+
+    LaunchedEffect(triggerScanner) {
+        if (triggerScanner) {
+            val intent = Intent(context, ScannerActivity::class.java)
+            scannerLauncher.launch(intent)
+            vm.resetScannerTrigger()
         }
     }
 

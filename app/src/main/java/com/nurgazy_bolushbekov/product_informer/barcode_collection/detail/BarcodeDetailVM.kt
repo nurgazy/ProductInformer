@@ -55,6 +55,13 @@ class BarcodeDetailVM @Inject constructor(
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
+    val isCyclicScanning: StateFlow<Boolean> = dataStoreRepository.isCyclicScanning.asStateFlow()
+
+    private val _triggerScanner = MutableStateFlow(false)
+    val triggerScanner: StateFlow<Boolean> = _triggerScanner.asStateFlow()
+
+    fun resetScannerTrigger() { _triggerScanner.value = false }
+
     val filteredBarcodeList: StateFlow<List<BarcodeDocDetail>> =
         _searchQuery
             .combine(_barcodeList) { query, list ->
@@ -89,7 +96,11 @@ class BarcodeDetailVM @Inject constructor(
                 is ResultFetchData.Success -> {
                     _productResponse.value = result
                     _curBarcodeData.value = getBarcodeDocDetail(result.data)
-                    setShowQuantityInputDialog()
+                    if(isCyclicScanning.value){
+                        addToBarcodeList(quantity = 1)
+                        _triggerScanner.value = true
+                    }else
+                        setShowQuantityInputDialog()
                 }
                 is ResultFetchData.Error -> {
                     _productResponse.value = result
