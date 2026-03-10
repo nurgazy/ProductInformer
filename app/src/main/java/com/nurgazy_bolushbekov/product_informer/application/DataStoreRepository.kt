@@ -30,6 +30,7 @@ class DataStoreRepository @Inject constructor(
         private val ENCRYPTED_PASSWORD_KEY = stringPreferencesKey("encrypted_password")
         private val ENCRYPTED_IV_KEY = stringPreferencesKey("encrypted_iv")
         private val IS_ALL_SPECIFICATIONS_KEY = stringPreferencesKey("is_all_specifications")
+        private val IS_CYCLIC_SCANNING_KEY = stringPreferencesKey("is_continuous_scanning")
     }
 
     val protocol = MutableStateFlow(Protocol.HTTP)
@@ -40,6 +41,7 @@ class DataStoreRepository @Inject constructor(
     val password = MutableStateFlow("")
     val isFullSpecifications = MutableStateFlow(false)
     val baseUrl = MutableStateFlow("")
+    val isCyclicScanning = MutableStateFlow(false)
 
     val networkSettingsFlow = dataStore.data.map { preferences ->
 
@@ -51,6 +53,7 @@ class DataStoreRepository @Inject constructor(
         val port = preferences[PORT_KEY]?: "0"
         val publicationName = preferences[PUBLICATION_NAME_KEY]?: ""
         val isFullSpecifications = preferences[IS_ALL_SPECIFICATIONS_KEY]?: "false"
+        val isCyclicScanning = preferences[IS_CYCLIC_SCANNING_KEY]?: "false"
 
         val baseUrl = "${protocol}://${serverUrl}:${port}/${publicationName}/"
 
@@ -62,7 +65,8 @@ class DataStoreRepository @Inject constructor(
             isFullSpecification = isFullSpecifications.toBoolean(),
             baseUrl = baseUrl,
             userName = userName?:"",
-            password = password
+            password = password,
+            isCyclicScanning = isCyclicScanning.toBoolean()
         )
     }
 
@@ -104,6 +108,11 @@ class DataStoreRepository @Inject constructor(
         applicationScope.launch {
             dataStore.data.map { preferences -> preferences[IS_ALL_SPECIFICATIONS_KEY] ?: "false" }.
             collect { value -> isFullSpecifications.value = value.toBoolean() }
+        }
+
+        applicationScope.launch {
+            dataStore.data.map { preferences -> preferences[IS_CYCLIC_SCANNING_KEY] ?: "false" }.
+            collect { value -> isCyclicScanning.value = value.toBoolean() }
         }
     }
 
@@ -147,10 +156,8 @@ class DataStoreRepository @Inject constructor(
         password.value = value
     }
 
-    suspend fun saveIsFullSpecifications(isAllSpecifications: Boolean) {
-        dataStore.edit { preferences ->
-            preferences[IS_ALL_SPECIFICATIONS_KEY] = isAllSpecifications.toString()
-        }
+    fun changeIsCyclicScanning(value: Boolean) {
+        isCyclicScanning.value = value
     }
 
     fun changeIsFullSpecifications(value: Boolean){
@@ -169,7 +176,8 @@ class DataStoreRepository @Inject constructor(
         publicationName: String,
         userName: String,
         encryptedPassword: Pair<String, String>,
-        isFullSpecs: Boolean
+        isFullSpecs: Boolean,
+        isCyclicScanning: Boolean
     ) {
         dataStore.edit{ preferences ->
             preferences[PROTOCOL_KEY] = protocol
@@ -180,6 +188,7 @@ class DataStoreRepository @Inject constructor(
             preferences[ENCRYPTED_PASSWORD_KEY] = encryptedPassword.first
             preferences[ENCRYPTED_IV_KEY] = encryptedPassword.second
             preferences[IS_ALL_SPECIFICATIONS_KEY] = isFullSpecs.toString()
+            preferences[IS_CYCLIC_SCANNING_KEY] = isCyclicScanning.toString()
         }
     }
 

@@ -155,6 +155,7 @@ fun GeneralTab(vm: SettingViewModel){
 fun AdditionalTab(vm: SettingViewModel){
 
     val isFullSpecifications by vm.isFullSpecifications.collectAsState()
+    val isCyclicScanning by vm.isCyclicScanning.collectAsState()
 
     Column(
         modifier = Modifier
@@ -172,6 +173,18 @@ fun AdditionalTab(vm: SettingViewModel){
             Text(
                 text = "Получать остатки и цены по всем характеристикам склада",
             )
+        }
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(5.dp)
+        ) {
+            Switch(
+                checked = isCyclicScanning,
+                onCheckedChange = { vm.onChangeIsCyclicScanning(it) }
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Text(text = "Циклическое сканирование")
         }
     }
 

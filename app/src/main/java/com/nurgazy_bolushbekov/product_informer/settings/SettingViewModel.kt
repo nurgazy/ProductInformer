@@ -27,6 +27,7 @@ class SettingViewModel @Inject constructor(
     val userName: StateFlow<String> = dataStoreRepository.userName.asStateFlow()
     val password: StateFlow<String> = dataStoreRepository.password.asStateFlow()
     val isFullSpecifications: StateFlow<Boolean> = dataStoreRepository.isFullSpecifications.asStateFlow()
+    val isCyclicScanning: StateFlow<Boolean> = dataStoreRepository.isCyclicScanning.asStateFlow()
 
     private val _protocolError = MutableStateFlow<String?>(null)
     private val _serverError = MutableStateFlow<String?>(null)
@@ -106,6 +107,10 @@ class SettingViewModel @Inject constructor(
         dataStoreRepository.changeIsFullSpecifications(value)
     }
 
+    fun onChangeIsCyclicScanning(value: Boolean) {
+        dataStoreRepository.changeIsCyclicScanning(value)
+    }
+
 
     // Handling of button presses
     fun onCheckBtnPress(){
@@ -142,7 +147,8 @@ class SettingViewModel @Inject constructor(
                     publicationName = publicationName.value,
                     userName = userName.value,
                     encryptedPassword = encryptedResult,
-                    isFullSpecs = isFullSpecifications.value
+                    isFullSpecs = isFullSpecifications.value,
+                    isCyclicScanning = isCyclicScanning.value
                 )
 
             } catch (e: Exception) {
