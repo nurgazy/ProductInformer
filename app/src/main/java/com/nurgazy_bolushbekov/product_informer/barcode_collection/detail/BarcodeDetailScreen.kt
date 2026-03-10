@@ -105,11 +105,8 @@ fun BarcodeDetailScreen(
     ) {
 
         Text(
-            text = if (barcodeDoc == null)
-                "Новый документ"
-            else
-                "Документ №${barcodeDoc!!.barcodeDocId}",
-            style = MaterialTheme.typography.headlineMedium, // Использована более крупная типографика
+            text = barcodeDoc?.let { "Документ №${it.barcodeDocId}" } ?: "Новый документ",
+            style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier.padding(bottom = 16.dp)
         )
 

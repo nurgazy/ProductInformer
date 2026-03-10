@@ -141,7 +141,7 @@ fun SideNavigationMenu() {
 
     ModalNavigationDrawer(
         drawerState = drawerState,
-        gesturesEnabled = true, // Разрешить открытие/закрытие жестами
+        gesturesEnabled = true,
         drawerContent = {
             ModalDrawerSheet {
                 DrawerItem(
@@ -159,14 +159,17 @@ fun SideNavigationMenu() {
         content = {
             Scaffold(
                 topBar = {
-                    TopAppBar(
-                        title = { Text(currentScreenTitle) },
-                        navigationIcon = {
-                            IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                                Icon(Icons.Filled.Menu, contentDescription = "Открыть меню")
+                    val isDetailScreen = currentRoute?.startsWith("BarcodeDetail") == true
+                    if (!isDetailScreen) {
+                        TopAppBar(
+                            title = { Text(currentScreenTitle) },
+                            navigationIcon = {
+                                IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                                    Icon(Icons.Filled.Menu, contentDescription = "Открыть меню")
+                                }
                             }
-                        }
-                    )
+                        )
+                    }
                 },
                 content = { paddingValues ->
                     MainScreen(paddingValues, navController)
@@ -233,9 +236,7 @@ fun BottomNavigationBar(navController: NavController) {
                 selected = currentRoute == screen.route,
                 onClick = {
                     navController.navigate(screen.route) {
-                        // Избегаем создания нескольких экземпляров одного и того же экрана
                         launchSingleTop = true
-                        // Сохраняем и восстанавливаем состояние, чтобы пользователь не терял местоположение при переключении
                         restoreState = true
                     }
                 }
