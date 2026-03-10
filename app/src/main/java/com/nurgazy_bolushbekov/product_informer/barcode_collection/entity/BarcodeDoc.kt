@@ -14,4 +14,5 @@ data class BarcodeDoc(
     val status: BarcodeStatus,
     val uuid1C: String = UUID.randomUUID().toString(),
     val creationTimestamp: Long = System.currentTimeMillis(),
+    val comment: String? = ""
 )

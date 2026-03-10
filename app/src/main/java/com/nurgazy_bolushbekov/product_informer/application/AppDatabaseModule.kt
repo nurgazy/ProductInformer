@@ -21,7 +21,9 @@ object AppDatabaseModule {
             context.applicationContext,
             AppDatabase::class.java,
             "product_informer_db"
-        ).build()
+        )
+            .addMigrations(MIGRATION_1_2)
+            .build()
     }
 
     @Provides

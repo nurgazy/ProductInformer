@@ -60,6 +60,9 @@ class BarcodeDetailVM @Inject constructor(
     private val _triggerScanner = MutableStateFlow(false)
     val triggerScanner: StateFlow<Boolean> = _triggerScanner.asStateFlow()
 
+    private val _comment = MutableStateFlow("")
+    val comment: StateFlow<String> = _comment.asStateFlow()
+
     fun resetScannerTrigger() { _triggerScanner.value = false }
 
     val filteredBarcodeList: StateFlow<List<BarcodeDocDetail>> =
@@ -135,6 +138,7 @@ class BarcodeDetailVM @Inject constructor(
             barcodeDocRepository.getBarcodeDocWithDetailsById(barcodeDocId).collect{
                 _curBarcodeDoc.value = it.barcodeDoc
                 _barcodeList.value = it.details
+                _comment.value = _curBarcodeDoc.value?.comment!!
             }
         }
     }
@@ -143,12 +147,14 @@ class BarcodeDetailVM @Inject constructor(
         if(_curBarcodeDoc.value == null){
             val newBarcodeDoc = BarcodeDoc(
                 status = BarcodeStatus.ACTIVE,
+                comment = _comment.value
             )
 
             viewModelScope.launch {
                 barcodeDocRepository.saveBarcodeDocWithDetails(newBarcodeDoc, _barcodeList.value)
             }
         }else{
+            _curBarcodeDoc.value = _curBarcodeDoc.value!!.copy(comment = _comment.value)
             viewModelScope.launch {
                 barcodeDocRepository.saveBarcodeDocWithDetails(_curBarcodeDoc.value!!, _barcodeList.value)
             }
@@ -242,5 +248,9 @@ class BarcodeDetailVM @Inject constructor(
 
     fun clearUploadStatusMessage() {
         _uploadStatusMessage.value = null
+    }
+
+    fun onCommentChange(newComment: String) {
+        _comment.value = newComment
     }
 }

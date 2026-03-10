@@ -6,7 +6,7 @@ import com.nurgazy_bolushbekov.product_informer.barcode_collection.dao.BarcodeDo
 import com.nurgazy_bolushbekov.product_informer.barcode_collection.entity.BarcodeDoc
 import com.nurgazy_bolushbekov.product_informer.barcode_collection.entity.BarcodeDocDetail
 
-@Database(entities = [BarcodeDoc::class, BarcodeDocDetail::class], version = 1, exportSchema = true)
+@Database(entities = [BarcodeDoc::class, BarcodeDocDetail::class], version = 2, exportSchema = true)
 abstract class AppDatabase:RoomDatabase() {
     abstract fun barcodeDocDao(): BarcodeDocDao
 }
