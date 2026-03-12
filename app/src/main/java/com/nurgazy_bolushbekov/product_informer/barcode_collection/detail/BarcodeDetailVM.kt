@@ -223,6 +223,7 @@ class BarcodeDetailVM @Inject constructor(
             uuid1C = doc.uuid1C,
             userName = _userName.value,
             docDate = dateString,
+            comment = doc.comment?: "",
             items = documentItemsForUpload
         )
 

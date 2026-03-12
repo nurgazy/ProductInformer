@@ -8,6 +8,7 @@ data class BarcodeDocumentUpload(
     val uuid1C: String,
     val userName: String,
     val docDate : String,
+    val comment: String = "",
     val items: List<BarcodeDocumentItem>
 )
 
