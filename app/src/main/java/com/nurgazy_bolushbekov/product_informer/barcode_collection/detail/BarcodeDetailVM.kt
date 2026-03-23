@@ -10,6 +10,7 @@ import com.nurgazy_bolushbekov.product_informer.barcode_collection.entity.Barcod
 import com.nurgazy_bolushbekov.product_informer.barcode_collection.entity.toBarcodeDocumentItem
 import com.nurgazy_bolushbekov.product_informer.barcode_collection.repo.BarcodeDocRepository
 import com.nurgazy_bolushbekov.product_informer.data_classes.ProductResponse
+import com.nurgazy_bolushbekov.product_informer.data_classes.ProductSpecificResponse
 import com.nurgazy_bolushbekov.product_informer.product.repo.ProductRepository
 import com.nurgazy_bolushbekov.product_informer.utils.BarcodeStatus
 import com.nurgazy_bolushbekov.product_informer.utils.ResultFetchData
@@ -63,6 +64,14 @@ class BarcodeDetailVM @Inject constructor(
     private val _comment = MutableStateFlow("")
     val comment: StateFlow<String> = _comment.asStateFlow()
 
+    private val _availableSpecs = MutableStateFlow<List<ProductSpecificResponse>>(emptyList())
+    val availableSpecs: StateFlow<List<ProductSpecificResponse>> = _availableSpecs.asStateFlow()
+
+    private val _showSpecSelectionDialog = MutableStateFlow(false)
+    val showSpecSelectionDialog: StateFlow<Boolean> = _showSpecSelectionDialog.asStateFlow()
+
+    private var pendingProductData: ProductResponse? = null
+
     fun resetScannerTrigger() { _triggerScanner.value = false }
 
     val filteredBarcodeList: StateFlow<List<BarcodeDocDetail>> =
@@ -98,12 +107,18 @@ class BarcodeDetailVM @Inject constructor(
             when(val result = productRepository.refreshProduct(barcode, false)){
                 is ResultFetchData.Success -> {
                     _productResponse.value = result
-                    _curBarcodeData.value = getBarcodeDocDetail(result.data)
-                    if(isCyclicScanning.value){
-                        addToBarcodeList(quantity = 1)
-                        _triggerScanner.value = true
-                    }else
-                        setShowQuantityInputDialog()
+
+                    val productData = result.data
+                    val specs = productData.productSpecificResponses ?: emptyList()
+
+                    if (specs.size > 1) {
+                        pendingProductData = productData
+                        _availableSpecs.value = specs
+                        _showSpecSelectionDialog.value = true
+                    } else {
+                        processProductWithSpec(productData, specs.getOrNull(0))
+                    }
+
                 }
                 is ResultFetchData.Error -> {
                     _productResponse.value = result
@@ -114,22 +129,6 @@ class BarcodeDetailVM @Inject constructor(
                 }
             }
         }
-    }
-
-    private fun getBarcodeDocDetail(productData: ProductResponse?): BarcodeDocDetail?{
-        if (productData == null) return null
-
-        val productSpecName = if (productData.productSpecificResponses == null) "" else productData.productSpecificResponses!![0].name
-        val productSpecUuid1C = if (productData.productSpecificResponses == null) "" else productData.productSpecificResponses!![0].uuid1C
-
-        val barcodeDocDetail = BarcodeDocDetail(
-            barcode = productData.barcode,
-            productName = productData.name,
-            productUuid1C = productData.uuid1C,
-            productSpecName = productSpecName,
-            productSpecUuid1C = productSpecUuid1C
-        )
-        return barcodeDocDetail
     }
 
     fun setBarcodeDoc(barcodeDocId: Long){
@@ -253,5 +252,40 @@ class BarcodeDetailVM @Inject constructor(
 
     fun onCommentChange(newComment: String) {
         _comment.value = newComment
+    }
+
+    fun onSpecSelected(spec: ProductSpecificResponse) {
+        _showSpecSelectionDialog.value = false
+        processProductWithSpec(pendingProductData, spec)
+        pendingProductData = null
+    }
+
+    fun dismissSpecSelection() {
+        _showSpecSelectionDialog.value = false
+        pendingProductData = null
+    }
+
+    private fun processProductWithSpec(
+        productData: ProductResponse?,
+        spec: ProductSpecificResponse?
+    ) {
+        if (productData == null) return
+
+        val detail = BarcodeDocDetail(
+            barcode = productData.barcode,
+            productName = productData.name,
+            productUuid1C = productData.uuid1C,
+            productSpecName = spec?.name ?: "",
+            productSpecUuid1C = spec?.uuid1C ?: ""
+        )
+
+        _curBarcodeData.value = detail
+
+        if (isCyclicScanning.value) {
+            addToBarcodeList(quantity = 1)
+            _triggerScanner.value = true
+        } else {
+            setShowQuantityInputDialog()
+        }
     }
 }

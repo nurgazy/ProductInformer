@@ -35,6 +35,9 @@ fun BarcodeListTab(vm: BarcodeDetailVM) {
     val searchQuery by vm.searchQuery.collectAsState()
     val isUploaded = barcodeDoc?.status == BarcodeStatus.UPLOADED
 
+    val showSpecSelectionDialog by vm.showSpecSelectionDialog.collectAsState()
+    val availableSpecs by vm.availableSpecs.collectAsState()
+
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -110,6 +113,14 @@ fun BarcodeListTab(vm: BarcodeDetailVM) {
             onDismiss = {
                 vm.resetShowQuantityInputDialog()
             }
+        )
+    }
+
+    if (showSpecSelectionDialog) {
+        SpecSelectionDialog(
+            specs = availableSpecs,
+            onSpecSelected = { spec -> vm.onSpecSelected(spec) },
+            onDismiss = { vm.dismissSpecSelection() }
         )
     }
 }
