@@ -18,3 +18,4 @@ local.properties
 *.iws
 /app/build/
 /app/release/
+/key_store/
