@@ -31,6 +31,7 @@ class DataStoreRepository @Inject constructor(
         private val ENCRYPTED_IV_KEY = stringPreferencesKey("encrypted_iv")
         private val IS_ALL_SPECIFICATIONS_KEY = stringPreferencesKey("is_all_specifications")
         private val IS_CYCLIC_SCANNING_KEY = stringPreferencesKey("is_continuous_scanning")
+        private val LAST_UPDATE_CHECK_KEY = stringPreferencesKey("last_update_check")
     }
 
     val protocol = MutableStateFlow(Protocol.HTTP)
@@ -189,6 +190,20 @@ class DataStoreRepository @Inject constructor(
             preferences[ENCRYPTED_IV_KEY] = encryptedPassword.second
             preferences[IS_ALL_SPECIFICATIONS_KEY] = isFullSpecs.toString()
             preferences[IS_CYCLIC_SCANNING_KEY] = isCyclicScanning.toString()
+        }
+    }
+
+    suspend fun shouldCheckUpdate(): Boolean {
+        val prefs = dataStore.data.first()
+        val lastCheck = prefs[LAST_UPDATE_CHECK_KEY]?.toLong() ?: 0L
+        val currentTime = System.currentTimeMillis()
+
+        return (currentTime - lastCheck) > 24 * 60 * 60 * 1000
+    }
+
+    suspend fun markUpdateChecked() {
+        dataStore.edit { preferences ->
+            preferences[LAST_UPDATE_CHECK_KEY] = System.currentTimeMillis().toString()
         }
     }
 

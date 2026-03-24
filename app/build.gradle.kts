@@ -131,4 +131,5 @@ dependencies {
     implementation(libs.androidx.material.icons.extended)
 
     implementation(libs.androidx.constraintlayout)
+    implementation(libs.app.update.ktx)
 }

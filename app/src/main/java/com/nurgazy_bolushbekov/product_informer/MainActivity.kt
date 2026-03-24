@@ -43,6 +43,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -51,6 +52,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.google.android.play.core.appupdate.AppUpdateManager
+import com.google.android.play.core.appupdate.AppUpdateManagerFactory
+import com.google.android.play.core.appupdate.AppUpdateOptions
+import com.google.android.play.core.install.model.AppUpdateType
+import com.google.android.play.core.install.model.UpdateAvailability
+import com.nurgazy_bolushbekov.product_informer.application.DataStoreRepository
 import com.nurgazy_bolushbekov.product_informer.barcode_collection.detail.BarcodeDetailScreen
 import com.nurgazy_bolushbekov.product_informer.barcode_collection.list.BarcodeListScreen
 import com.nurgazy_bolushbekov.product_informer.product.SharedVM
@@ -61,11 +68,23 @@ import com.nurgazy_bolushbekov.product_informer.ui.theme.ProductInformerTheme
 import com.nurgazy_bolushbekov.product_informer.utils.ScreenNavItem
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    private lateinit var appUpdateManager: AppUpdateManager
+    @Inject
+    lateinit var dataStoreRepository: DataStoreRepository
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        appUpdateManager = AppUpdateManagerFactory.create(this)
+        lifecycleScope.launch {
+            checkForUpdates()
+        }
+
         setContent {
             ProductInformerTheme(dynamicColor = false) {
                 Surface(
@@ -74,6 +93,49 @@ class MainActivity : ComponentActivity() {
                 ) {
                     SideNavigationMenu()
                 }
+            }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        appUpdateManager.appUpdateInfo.addOnSuccessListener { appUpdateInfo ->
+            if (appUpdateInfo.updateAvailability() ==
+                UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS
+            ) {
+                // Если обновление уже начато, продолжаем его в принудительном режиме
+                appUpdateManager.startUpdateFlow(
+                    appUpdateInfo,
+                    this,
+                    AppUpdateOptions.defaultOptions(AppUpdateType.IMMEDIATE)
+                )
+            }
+        }
+    }
+
+    private suspend fun checkForUpdates() {
+
+        // Если проверка уже была в последние 24 часа — ничего не делаем
+        if (!dataStoreRepository.shouldCheckUpdate()) return
+
+        val appUpdateManager = AppUpdateManagerFactory.create(this)
+        val appUpdateInfoTask = appUpdateManager.appUpdateInfo
+
+        appUpdateInfoTask.addOnSuccessListener { appUpdateInfo ->
+            if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE
+                && appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE)
+            ) {
+                // Если обновление есть, запускаем стандартный диалог Google Play
+                appUpdateManager.startUpdateFlow(
+                    appUpdateInfo,
+                    this,
+                    AppUpdateOptions.defaultOptions(AppUpdateType.IMMEDIATE)
+                )
+            }
+
+            lifecycleScope.launch {
+                dataStoreRepository.markUpdateChecked()
             }
         }
     }
