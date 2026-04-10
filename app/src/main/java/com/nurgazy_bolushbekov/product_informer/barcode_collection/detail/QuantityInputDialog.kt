@@ -1,13 +1,18 @@
 package com.nurgazy_bolushbekov.product_informer.barcode_collection.detail
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -29,20 +34,48 @@ fun QuantityInputDialog(
                 Text(text = "Штрихкод: $barcode", style = MaterialTheme.typography.titleSmall)
                 Spacer(modifier = Modifier.height(16.dp))
 
-                OutlinedTextField(
-                    value = quantityText,
-                    onValueChange = { newValue ->
-                        // Разрешаем только цифры
-                        if (newValue.all { it.isDigit() }) {
-                            quantityText = newValue.trimStart('0')
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    IconButton(
+                        onClick = {
+                            val current = quantityText.toIntOrNull() ?: 1
+                            if (current > 1) {
+                                quantityText = (current - 1).toString()
+                                isError = false
+                            }
+                        }
+                    ) {
+                        Icon(Icons.Default.Remove, contentDescription = "Уменьшить")
+                    }
+
+                    OutlinedTextField(
+                        value = quantityText,
+                        onValueChange = { newValue ->
+                            if (newValue.all { it.isDigit() }) {
+                                quantityText = newValue.trimStart('0')
+                                isError = false
+                            }
+                        },
+                        label = { Text("Количество") },
+                        isError = isError,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.weight(1f),
+                        singleLine = true
+                    )
+
+                    IconButton(
+                        onClick = {
+                            val current = quantityText.toIntOrNull() ?: 0
+                            quantityText = (current + 1).toString()
                             isError = false
                         }
-                    },
-                    label = { Text("Количество") },
-                    isError = isError,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    modifier = Modifier.fillMaxWidth()
-                )
+                    ) {
+                        Icon(Icons.Default.Add, contentDescription = "Увеличить")
+                    }
+                }
+
                 if (isError) {
                     Text(
                         text = "Введите корректное число больше 0.",
