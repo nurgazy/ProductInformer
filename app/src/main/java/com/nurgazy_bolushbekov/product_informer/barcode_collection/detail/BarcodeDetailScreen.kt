@@ -224,7 +224,7 @@ fun BarcodeDetailScreen(
                 TextButton(
                     onClick = {
                         if (manualBarcode.isNotBlank()) {
-                            vm.refreshProduct(manualBarcode)
+                            vm.refreshProduct(manualBarcode, isManual = true)
                             showManualInputDialog = false
                         }
                     }

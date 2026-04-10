@@ -71,6 +71,7 @@ class BarcodeDetailVM @Inject constructor(
     val showSpecSelectionDialog: StateFlow<Boolean> = _showSpecSelectionDialog.asStateFlow()
 
     private var pendingProductData: ProductResponse? = null
+    private var isManualInputProcess: Boolean = false
 
     fun resetScannerTrigger() { _triggerScanner.value = false }
 
@@ -97,6 +98,8 @@ class BarcodeDetailVM @Inject constructor(
     }
 
     fun refreshProduct(barcode: String, isManual: Boolean = false){
+        isManualInputProcess = isManual
+
         viewModelScope.launch {
             if (barcode.isEmpty()) {
                 Log.d("ProductInformer", "Штрихкод не может быть пустым")
@@ -256,8 +259,9 @@ class BarcodeDetailVM @Inject constructor(
 
     fun onSpecSelected(spec: ProductSpecificResponse) {
         _showSpecSelectionDialog.value = false
-        processProductWithSpec(pendingProductData, spec, false)
+        processProductWithSpec(pendingProductData, spec, isManualInputProcess)
         pendingProductData = null
+        isManualInputProcess = false
     }
 
     fun dismissSpecSelection() {
