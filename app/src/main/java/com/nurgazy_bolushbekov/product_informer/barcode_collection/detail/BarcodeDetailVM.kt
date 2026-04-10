@@ -96,7 +96,7 @@ class BarcodeDetailVM @Inject constructor(
         _searchQuery.value = query
     }
 
-    fun refreshProduct(barcode: String){
+    fun refreshProduct(barcode: String, isManual: Boolean = false){
         viewModelScope.launch {
             if (barcode.isEmpty()) {
                 Log.d("ProductInformer", "Штрихкод не может быть пустым")
@@ -116,7 +116,7 @@ class BarcodeDetailVM @Inject constructor(
                         _availableSpecs.value = specs
                         _showSpecSelectionDialog.value = true
                     } else {
-                        processProductWithSpec(productData, specs.getOrNull(0))
+                        processProductWithSpec(productData, specs.getOrNull(0), isManual)
                     }
 
                 }
@@ -256,7 +256,7 @@ class BarcodeDetailVM @Inject constructor(
 
     fun onSpecSelected(spec: ProductSpecificResponse) {
         _showSpecSelectionDialog.value = false
-        processProductWithSpec(pendingProductData, spec)
+        processProductWithSpec(pendingProductData, spec, false)
         pendingProductData = null
     }
 
@@ -267,7 +267,8 @@ class BarcodeDetailVM @Inject constructor(
 
     private fun processProductWithSpec(
         productData: ProductResponse?,
-        spec: ProductSpecificResponse?
+        spec: ProductSpecificResponse?,
+        isManual: Boolean
     ) {
         if (productData == null) return
 
@@ -281,7 +282,7 @@ class BarcodeDetailVM @Inject constructor(
 
         _curBarcodeData.value = detail
 
-        if (isCyclicScanning.value) {
+        if (isCyclicScanning.value && !isManual) {
             addToBarcodeList(quantity = 1)
             _triggerScanner.value = true
         } else {
