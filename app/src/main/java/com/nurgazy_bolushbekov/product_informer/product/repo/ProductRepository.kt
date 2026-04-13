@@ -3,6 +3,10 @@ package com.nurgazy_bolushbekov.product_informer.product.repo
 import android.graphics.Bitmap
 import com.nurgazy_bolushbekov.product_informer.api_1C.ApiProviderManager
 import com.nurgazy_bolushbekov.product_informer.data_classes.ProductResponse
+import com.nurgazy_bolushbekov.product_informer.product.dao.ProductDao
+import com.nurgazy_bolushbekov.product_informer.product.entity.Product
+import com.nurgazy_bolushbekov.product_informer.product.entity.ProductSpecification
+import com.nurgazy_bolushbekov.product_informer.product.entity.ProductWithSpecifications
 import com.nurgazy_bolushbekov.product_informer.product.image.ImageRepositoryImpl
 import com.nurgazy_bolushbekov.product_informer.utils.ResultFetchData
 import kotlinx.coroutines.Dispatchers
@@ -18,6 +22,7 @@ import javax.inject.Inject
 class ProductRepository @Inject constructor(
     private val apiProviderManager: ApiProviderManager,
     private val imageRepository: ImageRepositoryImpl,
+    private val productDao: ProductDao
 ) {
 
     suspend fun refreshProduct(barcode: String, fullSpecifications: Boolean?): ResultFetchData<ProductResponse> {
@@ -65,6 +70,20 @@ class ProductRepository @Inject constructor(
             } catch (e: Exception){
                 return@withContext ResultFetchData.Error(e)
             }
+        }
+    }
+
+    suspend fun saveProductWithSpecs(product: Product, specs: List<ProductSpecification>) {
+        withContext(Dispatchers.IO) {
+            val productId = productDao.insertProduct(product)
+            val specsToInsert = specs.map { it.copy(productId = productId) }
+            productDao.insertSpecifications(specsToInsert)
+        }
+    }
+
+    suspend fun getProductFromDb(barcode: String): ProductWithSpecifications? {
+        return withContext(Dispatchers.IO) {
+            productDao.getProductBySpecBarcode(barcode)
         }
     }
 

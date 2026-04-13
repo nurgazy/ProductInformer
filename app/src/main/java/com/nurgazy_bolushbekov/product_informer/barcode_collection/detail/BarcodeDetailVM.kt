@@ -11,6 +11,9 @@ import com.nurgazy_bolushbekov.product_informer.barcode_collection.entity.toBarc
 import com.nurgazy_bolushbekov.product_informer.barcode_collection.repo.BarcodeDocRepository
 import com.nurgazy_bolushbekov.product_informer.data_classes.ProductResponse
 import com.nurgazy_bolushbekov.product_informer.data_classes.ProductSpecificResponse
+import com.nurgazy_bolushbekov.product_informer.product.entity.Product
+import com.nurgazy_bolushbekov.product_informer.product.entity.ProductSpecification
+import com.nurgazy_bolushbekov.product_informer.product.entity.ProductWithSpecifications
 import com.nurgazy_bolushbekov.product_informer.product.repo.ProductRepository
 import com.nurgazy_bolushbekov.product_informer.utils.BarcodeStatus
 import com.nurgazy_bolushbekov.product_informer.utils.ResultFetchData
@@ -107,29 +110,15 @@ class BarcodeDetailVM @Inject constructor(
             }
 
             _productResponse.value = ResultFetchData.Loading
-            when(val result = productRepository.refreshProduct(barcode, false)){
-                is ResultFetchData.Success -> {
-                    _productResponse.value = result
+            val localProduct = productRepository.getProductFromDb(barcode)
 
-                    val productData = result.data
-                    val specs = productData.productSpecificResponses ?: emptyList()
-
-                    if (specs.size > 1) {
-                        pendingProductData = productData
-                        _availableSpecs.value = specs
-                        _showSpecSelectionDialog.value = true
-                    } else {
-                        processProductWithSpec(productData, specs.getOrNull(0), isManual)
-                    }
-
-                }
-                is ResultFetchData.Error -> {
-                    _productResponse.value = result
-                    resetShowQuantityInputDialog()
-                }
-                ResultFetchData.Loading ->{
-                    Log.d("ProductInformer", "Loading data")
-                }
+            if (localProduct != null) {
+                // Если нашли в БД, обрабатываем локальные данные
+                val productResponse = mapToResponse(localProduct)
+                handleProductSuccess(productResponse, isManual)
+            } else {
+                // 2. Если в БД нет, идем в сеть
+                fetchProductFromNetwork(barcode, isManual)
             }
         }
     }
@@ -292,5 +281,74 @@ class BarcodeDetailVM @Inject constructor(
         } else {
             setShowQuantityInputDialog()
         }
+    }
+
+    private suspend fun saveProductLocally(productResponse: ProductResponse) {
+
+        val product = Product(
+            productName = productResponse.name,
+            barcode = productResponse.barcode,
+            article = productResponse.article,
+            manufacturer = productResponse.manufacturer,
+            brand = productResponse.brand,
+            productCategory = productResponse.productCategory,
+            productUuid1C = productResponse.uuid1C,
+            savedImagePath = null
+        )
+
+        val specifications = productResponse.productSpecificResponses?.map { specRes ->
+            ProductSpecification(
+                name = specRes.name,
+                uuid1C = specRes.uuid1C,
+                specificationBarcode = specRes.barcode
+            )
+        } ?: emptyList()
+
+        productRepository.saveProductWithSpecs(product, specifications)
+    }
+
+    private suspend fun fetchProductFromNetwork(barcode: String, isManual: Boolean) {
+        when (val result = productRepository.refreshProduct(barcode, false)) {
+            is ResultFetchData.Success -> {
+                val productData = result.data
+                saveProductLocally(productData) // Сохраняем для будущего использования
+                handleProductSuccess(productData, isManual)
+                _productResponse.value = result
+            }
+            is ResultFetchData.Error -> {
+                _productResponse.value = result
+            }
+            else -> {}
+        }
+    }
+
+    private fun handleProductSuccess(productData: ProductResponse, isManual: Boolean) {
+        val specs = productData.productSpecificResponses ?: emptyList()
+        if (specs.size > 1) {
+            pendingProductData = productData
+            _availableSpecs.value = specs
+            _showSpecSelectionDialog.value = true
+        } else {
+            processProductWithSpec(productData, specs.getOrNull(0), isManual)
+        }
+    }
+
+    private fun mapToResponse(local: ProductWithSpecifications): ProductResponse {
+        return ProductResponse(
+            name = local.product.productName,
+            barcode = local.product.barcode,
+            article = local.product.article,
+            manufacturer = local.product.manufacturer,
+            brand = local.product.brand,
+            productCategory = local.product.productCategory,
+            uuid1C = local.product.productUuid1C,
+            productSpecificResponses = local.specifications.map { spec ->
+                ProductSpecificResponse(
+                    name = spec.name,
+                    uuid1C = spec.uuid1C,
+                    barcode = spec.specificationBarcode
+                )
+            }
+        )
     }
 }
