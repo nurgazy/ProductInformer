@@ -25,10 +25,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import javax.inject.Inject
 
 @HiltViewModel
 class BarcodeDetailVM @Inject constructor(
@@ -113,11 +113,9 @@ class BarcodeDetailVM @Inject constructor(
             val localProduct = productRepository.getProductFromDb(barcode)
 
             if (localProduct != null) {
-                // Если нашли в БД, обрабатываем локальные данные
                 val productResponse = mapToResponse(localProduct)
                 handleProductSuccess(productResponse, isManual)
             } else {
-                // 2. Если в БД нет, идем в сеть
                 fetchProductFromNetwork(barcode, isManual)
             }
         }
@@ -296,7 +294,9 @@ class BarcodeDetailVM @Inject constructor(
             savedImagePath = null
         )
 
-        val specifications = productResponse.productSpecificResponses?.map { specRes ->
+        val specifications = productResponse.productSpecificResponses
+            ?.filter { specRes -> specRes.uuid1C.isNotBlank() }
+            ?.map { specRes ->
             ProductSpecification(
                 name = specRes.name,
                 uuid1C = specRes.uuid1C,

@@ -83,7 +83,7 @@ class ProductRepository @Inject constructor(
 
     suspend fun getProductFromDb(barcode: String): ProductWithSpecifications? {
         return withContext(Dispatchers.IO) {
-            productDao.getProductBySpecBarcode(barcode)
+            productDao.getProductBySpecBarcode(barcode) ?: productDao.getProductByBarcode(barcode)
         }
     }
 
