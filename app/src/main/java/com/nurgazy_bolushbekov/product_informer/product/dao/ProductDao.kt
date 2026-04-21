@@ -4,6 +4,7 @@ import androidx.room.*
 import com.nurgazy_bolushbekov.product_informer.product.entity.Product
 import com.nurgazy_bolushbekov.product_informer.product.entity.ProductSpecification
 import com.nurgazy_bolushbekov.product_informer.product.entity.ProductWithSpecifications
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ProductDao {
@@ -43,4 +44,7 @@ interface ProductDao {
         LIMIT 1
     """)
     suspend fun getProductBySpecBarcode(barcode: String): ProductWithSpecifications?
+
+    @Query("SELECT * FROM products ORDER BY productName ASC")
+    fun getAllProducts(): Flow<List<Product>>
 }

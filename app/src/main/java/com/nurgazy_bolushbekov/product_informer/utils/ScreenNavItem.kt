@@ -2,6 +2,7 @@ package com.nurgazy_bolushbekov.product_informer.utils
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Details
+import androidx.compose.material.icons.filled.FormatListNumbered
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.QrCodeScanner
@@ -13,6 +14,7 @@ sealed class ScreenNavItem(val route: String, val title: String, val icon: Image
     data object Settings : ScreenNavItem("Settings", "Настройки", Icons.Filled.Settings)
     data object MainMenu : ScreenNavItem("MainMenu","Главное меню", Icons.Filled.Menu)
     data object SearchProductInfo : ScreenNavItem("SearchProductInfo","Поиск товара", Icons.Filled.Search)
+    data object ProductList: ScreenNavItem("ProductList","Список товаров", Icons.Filled.FormatListNumbered)
     data object ProductDetail: ScreenNavItem("ProductDetail","Детали товара", Icons.Filled.Info)
     data object BarcodeList: ScreenNavItem("BarcodeList","Сбор штрихкодов", Icons.Filled.QrCodeScanner)
     data object BarcodeDetail: ScreenNavItem("BarcodeDetail","Данные документа", Icons.Filled.Details)

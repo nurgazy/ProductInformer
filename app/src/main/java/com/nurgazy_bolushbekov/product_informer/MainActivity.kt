@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.FormatListNumbered
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.DrawerValue
@@ -60,9 +61,10 @@ import com.google.android.play.core.install.model.UpdateAvailability
 import com.nurgazy_bolushbekov.product_informer.application.DataStoreRepository
 import com.nurgazy_bolushbekov.product_informer.barcode_collection.detail.BarcodeDetailScreen
 import com.nurgazy_bolushbekov.product_informer.barcode_collection.list.BarcodeListScreen
-import com.nurgazy_bolushbekov.product_informer.product.SharedVM
-import com.nurgazy_bolushbekov.product_informer.product.product_detail.ProductDetailScreen
 import com.nurgazy_bolushbekov.product_informer.barcode_input.BarcodeInputScreen
+import com.nurgazy_bolushbekov.product_informer.product.SharedVM
+import com.nurgazy_bolushbekov.product_informer.product.list.ProductListScreen
+import com.nurgazy_bolushbekov.product_informer.product.product_detail.ProductDetailScreen
 import com.nurgazy_bolushbekov.product_informer.settings.SettingScreen
 import com.nurgazy_bolushbekov.product_informer.ui.theme.ProductInformerTheme
 import com.nurgazy_bolushbekov.product_informer.utils.ScreenNavItem
@@ -155,6 +157,9 @@ fun MainScreen(paddingValues: PaddingValues, navController: NavHostController){
         composable(ScreenNavItem.SearchProductInfo.route) {
             BarcodeInputScreen(navController, sharedVM = sharedVM)
         }
+        composable(route = ScreenNavItem.ProductList.route) {
+            ProductListScreen(navController)
+        }
         composable(route = ScreenNavItem.ProductDetail.route) {
             ProductDetailScreen(navController, sharedVM = sharedVM)
         }
@@ -197,6 +202,7 @@ fun SideNavigationMenu() {
             ScreenNavItem.SearchProductInfo.route -> ScreenNavItem.SearchProductInfo.title
             ScreenNavItem.BarcodeList.route -> ScreenNavItem.BarcodeList.title
             ScreenNavItem.BarcodeDetail.route -> ScreenNavItem.BarcodeDetail.title
+            ScreenNavItem.ProductList.route -> ScreenNavItem.ProductList.title
             else -> ScreenNavItem.MainMenu.title
         }
     }
@@ -206,8 +212,26 @@ fun SideNavigationMenu() {
         gesturesEnabled = true,
         drawerContent = {
             ModalDrawerSheet {
+                Text(
+                    "Продукт-информер",
+                    modifier = Modifier.padding(16.dp),
+                    style = MaterialTheme.typography.titleLarge
+                )
+                Spacer(Modifier.height(8.dp))
+
                 DrawerItem(
-                    label = "Настройки",
+                    label = ScreenNavItem.ProductList.title,
+                    icon = Icons.Filled.FormatListNumbered,
+                    selected = selectedItem == ScreenNavItem.ProductList.route,
+                    onClick = {
+                        selectedItem = ScreenNavItem.ProductList.route
+                        navController.navigate(ScreenNavItem.ProductList.route)
+                        scope.launch { drawerState.close() }
+                    }
+                )
+
+                DrawerItem(
+                    label = ScreenNavItem.Settings.title,
                     icon = Icons.Filled.Settings,
                     selected = selectedItem == ScreenNavItem.Settings.route,
                     onClick = {
