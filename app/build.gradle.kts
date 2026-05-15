@@ -12,6 +12,10 @@ android {
     namespace = "com.nurgazy_bolushbekov.product_informer"
     compileSdk = 35
 
+    buildFeatures {
+        buildConfig = true
+    }
+
     defaultConfig {
         applicationId = "com.nurgazy_bolushbekov.product_informer"
         minSdk = 26
@@ -23,6 +27,8 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        buildConfigField("String", "FASTAPI_URL", "\"https://ubuntu.service.kg/\"")
     }
 
     buildTypes {

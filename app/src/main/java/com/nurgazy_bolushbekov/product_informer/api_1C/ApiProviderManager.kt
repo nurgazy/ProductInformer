@@ -1,5 +1,6 @@
 package com.nurgazy_bolushbekov.product_informer.api_1C
 
+import com.nurgazy_bolushbekov.product_informer.BuildConfig
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import com.nurgazy_bolushbekov.product_informer.application.DataStoreRepository
 import kotlinx.coroutines.CoroutineScope
@@ -60,7 +61,7 @@ class ApiProviderManager @Inject constructor(
     }
 
     private fun createFastApi(): ApiFastapi {
-        val baseUrl = "https://ubuntu.service.kg/"
+        val baseUrl = BuildConfig.FASTAPI_URL
         val formattedUrl = if (baseUrl.endsWith("/")) baseUrl else "$baseUrl/"
 
         val client = OkHttpClient.Builder().build()
