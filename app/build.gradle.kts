@@ -132,4 +132,7 @@ dependencies {
 
     implementation(libs.androidx.constraintlayout)
     implementation(libs.app.update.ktx)
+
+    implementation(libs.retrofit2.kotlinx.serialization.converter)
+    implementation(libs.kotlinx.serialization.json.v163)
 }

@@ -13,6 +13,9 @@ interface ProductDao {
     suspend fun insertProduct(product: Product): Long
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertSpecification(specification: ProductSpecification)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertSpecifications(specifications: List<ProductSpecification>)
 
     @Transaction
