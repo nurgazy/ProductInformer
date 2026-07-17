@@ -59,6 +59,22 @@ class BarcodeDocRepository @Inject constructor(
         }
     }
 
+    suspend fun uploadDocumentToFastAPI(documentUpload: BarcodeDocumentUpload): ResultFetchData<String> {
+        return try {
+            val fastApiService = apiProviderManager.fastApiService.filterNotNull().first()
+            val response = fastApiService.uploadToFastAPI(documentUpload)
+
+            if (response.isSuccessful) {
+                ResultFetchData.Success("Данные успешно сохранены на FastAPI бэкенде")
+            } else {
+                val errorBody = response.errorBody()?.string() ?: "Неизвестная ошибка сервера."
+                ResultFetchData.Error(Exception("Ошибка FastAPI: ${response.code()} - $errorBody"))
+            }
+        } catch (e: Exception) {
+            ResultFetchData.Error(Exception("Сетевая ошибка при выгрузке в FastAPI: ${e.message}"))
+        }
+    }
+
     suspend fun updateBarcodeDocStatus(doc: BarcodeDoc, newStatus: BarcodeStatus) {
         val updatedDoc = doc.copy(status = newStatus)
         barcodeDocDao.updateBarcode(updatedDoc)

@@ -203,11 +203,11 @@ class BarcodeDetailVM @Inject constructor(
         val documentItemsForUpload = items.map { it.toBarcodeDocumentItem() }
 
         val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-            .withZone(ZoneId.systemDefault()) // Используем часовой пояс системы
+            .withZone(ZoneId.systemDefault())
 
         val dateString = formatter.format(Instant.ofEpochMilli(doc.creationTimestamp))
 
-        val dataFor1C = BarcodeDocumentUpload(
+        val dataForUpload = BarcodeDocumentUpload(
             internalId = doc.barcodeDocId,
             uuid1C = doc.uuid1C,
             userName = _userName.value,
@@ -218,7 +218,7 @@ class BarcodeDetailVM @Inject constructor(
 
         viewModelScope.launch {
 
-            when (val result = barcodeDocRepository.uploadDocumentTo1C(dataFor1C)) {
+            when (val result = barcodeDocRepository.uploadDocumentTo1C(dataForUpload)) {
                 is ResultFetchData.Success -> {
                     barcodeDocRepository.updateBarcodeDocStatus(doc, BarcodeStatus.UPLOADED)
                     _curBarcodeDoc.value = doc.copy(status = BarcodeStatus.UPLOADED)
