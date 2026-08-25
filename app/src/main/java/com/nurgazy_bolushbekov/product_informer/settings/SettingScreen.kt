@@ -18,6 +18,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -148,6 +149,7 @@ fun GeneralTab(vm: SettingViewModel){
         PublicationNameRow(vm)
         UserNameRow(vm)
         PasswdRow(vm)
+        AppServerRow(vm)
     }
 }
 
@@ -536,5 +538,22 @@ private fun ShowAlertDialog(vm:SettingViewModel) {
                 }
             }
         )
+    }
+}
+
+@Composable
+private fun AppServerRow(vm: SettingViewModel) {
+    val isAppServer by vm.isAppServer.collectAsState()
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.padding(5.dp)
+    ) {
+        Checkbox(
+            checked = isAppServer,
+            onCheckedChange = { vm.onChangeIsAppServer(it) }
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(text = "Через сервер приложения")
     }
 }

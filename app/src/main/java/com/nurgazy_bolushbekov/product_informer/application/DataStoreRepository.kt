@@ -32,6 +32,7 @@ class DataStoreRepository @Inject constructor(
         private val IS_ALL_SPECIFICATIONS_KEY = stringPreferencesKey("is_all_specifications")
         private val IS_CYCLIC_SCANNING_KEY = stringPreferencesKey("is_continuous_scanning")
         private val LAST_UPDATE_CHECK_KEY = stringPreferencesKey("last_update_check")
+        private val IS_APP_SERVER_KEY = stringPreferencesKey("is_app_server")
     }
 
     val protocol = MutableStateFlow(Protocol.HTTP)
@@ -43,6 +44,7 @@ class DataStoreRepository @Inject constructor(
     val isFullSpecifications = MutableStateFlow(false)
     val baseUrl = MutableStateFlow("")
     val isCyclicScanning = MutableStateFlow(false)
+    val isAppServer = MutableStateFlow(false)
 
     val networkSettingsFlow = dataStore.data.map { preferences ->
 
@@ -115,6 +117,11 @@ class DataStoreRepository @Inject constructor(
             dataStore.data.map { preferences -> preferences[IS_CYCLIC_SCANNING_KEY] ?: "false" }.
             collect { value -> isCyclicScanning.value = value.toBoolean() }
         }
+
+        applicationScope.launch {
+            dataStore.data.map { preferences -> preferences[IS_APP_SERVER_KEY] ?: "false" }
+                .collect { value -> isAppServer.value = value.toBoolean() }
+        }
     }
 
     private suspend fun loadPassword(): String {
@@ -170,6 +177,10 @@ class DataStoreRepository @Inject constructor(
             "${protocol.value.name}://${serverUrl.value}:${port.value}/${publicationName.value}/"
     }
 
+    fun changeIsAppServer(value: Boolean) {
+        isAppServer.value = value
+    }
+
     suspend fun saveAllSettings(
         protocol: String,
         serverUrl: String,
@@ -178,7 +189,8 @@ class DataStoreRepository @Inject constructor(
         userName: String,
         encryptedPassword: Pair<String, String>,
         isFullSpecs: Boolean,
-        isCyclicScanning: Boolean
+        isCyclicScanning: Boolean,
+        isAppServer: Boolean
     ) {
         dataStore.edit{ preferences ->
             preferences[PROTOCOL_KEY] = protocol
@@ -190,6 +202,7 @@ class DataStoreRepository @Inject constructor(
             preferences[ENCRYPTED_IV_KEY] = encryptedPassword.second
             preferences[IS_ALL_SPECIFICATIONS_KEY] = isFullSpecs.toString()
             preferences[IS_CYCLIC_SCANNING_KEY] = isCyclicScanning.toString()
+            preferences[IS_APP_SERVER_KEY] = isAppServer.toString()
         }
     }
 
