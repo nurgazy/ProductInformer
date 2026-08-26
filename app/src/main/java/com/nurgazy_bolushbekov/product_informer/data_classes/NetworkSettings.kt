@@ -11,5 +11,6 @@ data class NetworkSettings(
     val baseUrl: String,
     val userName: String,
     val password: String,
-    val isCyclicScanning: Boolean
+    val isCyclicScanning: Boolean,
+    val isAppServer: Boolean
 )

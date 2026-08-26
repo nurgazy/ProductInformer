@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
@@ -33,8 +34,12 @@ class ApiProviderManager @Inject constructor(
                 val url = networkSettings.baseUrl
                 val user = networkSettings.userName
                 val pass = networkSettings.password
+                val isAppServer = networkSettings.isAppServer
 
-                if (url.isNotBlank() && user.isNotBlank()) {
+                val httpUrl = url.toHttpUrlOrNull()
+                val isValidHost = httpUrl != null && httpUrl.host.isNotBlank()
+
+                if (!isAppServer && isValidHost && user.isNotBlank()) {
                     _apiService.value = create(user, pass, url)
                 } else {
                     _apiService.value = null

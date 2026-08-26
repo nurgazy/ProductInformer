@@ -58,7 +58,14 @@ class DataStoreRepository @Inject constructor(
         val isFullSpecifications = preferences[IS_ALL_SPECIFICATIONS_KEY]?: "false"
         val isCyclicScanning = preferences[IS_CYCLIC_SCANNING_KEY]?: "false"
 
-        val baseUrl = "${protocol}://${serverUrl}:${port}/${publicationName}/"
+        val isAppServerStr = preferences[IS_APP_SERVER_KEY] ?: "false"
+        val isAppServer = isAppServerStr.toBoolean()
+
+        val baseUrl = if (!isAppServer && serverUrl.isNotBlank()) {
+            "${protocol}://${serverUrl}:${port}/${publicationName}/"
+        } else {
+            ""
+        }
 
         NetworkSettings(
             protocol = Protocol.valueOf(protocol),
@@ -69,7 +76,8 @@ class DataStoreRepository @Inject constructor(
             baseUrl = baseUrl,
             userName = userName?:"",
             password = password,
-            isCyclicScanning = isCyclicScanning.toBoolean()
+            isCyclicScanning = isCyclicScanning.toBoolean(),
+            isAppServer = isAppServer
         )
     }
 

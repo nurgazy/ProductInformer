@@ -122,7 +122,9 @@ class SettingViewModel @Inject constructor(
         handleAlertData()
         if (_isFormValid.value){
             closeAlertDialog()
-            checkPing()
+            if (!isAppServer.value) {
+                saveSettingsData()
+            }
         }else{
             openAlertDialog()
         }
@@ -133,7 +135,9 @@ class SettingViewModel @Inject constructor(
         handleAlertData()
         if (_isFormValid.value){
             closeAlertDialog()
-            saveSettingsData()
+            if (!isAppServer.value) {
+                saveSettingsData()
+            }
         }else{
             openAlertDialog()
         }
@@ -166,12 +170,21 @@ class SettingViewModel @Inject constructor(
 
     //Validate form data
     private fun validateForm() {
-        validateServer()
-        validatePort()
-        validatePublicationName()
-        validateUserName()
-        validatePasswd()
-        changeFormValid()
+        if (isAppServer.value) {
+            _serverError.value = null
+            _portError.value = null
+            _publicationNameError.value = null
+            _userNameError.value = null
+            _passwordError.value = null
+            _isFormValid.value = true
+        } else {
+            validateServer()
+            validatePort()
+            validatePublicationName()
+            validateUserName()
+            validatePasswd()
+            changeFormValid()
+        }
     }
 
     private fun validateServer() {
@@ -197,8 +210,12 @@ class SettingViewModel @Inject constructor(
 
     //Handling of alert dialog
     private fun changeFormValid(){
-        _isFormValid.value = (_serverError.value == null && _protocolError.value == null && _portError.value == null
-                && _publicationNameError.value == null && _userNameError.value == null && _passwordError.value == null)
+        if (isAppServer.value) {
+            _isFormValid.value = true
+        } else {
+            _isFormValid.value = (_serverError.value == null && _protocolError.value == null && _portError.value == null
+                    && _publicationNameError.value == null && _userNameError.value == null && _passwordError.value == null)
+        }
     }
 
     private fun handleAlertData() {
