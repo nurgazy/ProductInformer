@@ -123,6 +123,7 @@ class SettingViewModel @Inject constructor(
         if (_isFormValid.value){
             closeAlertDialog()
             if (!isAppServer.value) {
+                checkPing()
                 saveSettingsData()
             }
         }else{
