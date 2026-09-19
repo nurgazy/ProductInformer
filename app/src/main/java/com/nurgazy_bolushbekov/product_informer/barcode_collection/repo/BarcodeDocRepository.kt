@@ -65,13 +65,13 @@ class BarcodeDocRepository @Inject constructor(
             val response = fastApiService.uploadToFastAPI(documentUpload)
 
             if (response.isSuccessful) {
-                ResultFetchData.Success("Данные успешно сохранены на FastAPI бэкенде")
+                ResultFetchData.Success("Данные успешно сохранены")
             } else {
                 val errorBody = response.errorBody()?.string() ?: "Неизвестная ошибка сервера."
-                ResultFetchData.Error(Exception("Ошибка FastAPI: ${response.code()} - $errorBody"))
+                ResultFetchData.Error(Exception("Ошибка: ${response.code()} - $errorBody"))
             }
         } catch (e: Exception) {
-            ResultFetchData.Error(Exception("Сетевая ошибка при выгрузке в FastAPI: ${e.message}"))
+            ResultFetchData.Error(Exception("Сетевая ошибка при выгрузке: ${e.message}"))
         }
     }
 

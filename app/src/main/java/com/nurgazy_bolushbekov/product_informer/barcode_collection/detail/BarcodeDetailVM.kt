@@ -76,6 +76,8 @@ class BarcodeDetailVM @Inject constructor(
     private var pendingProductData: ProductResponse? = null
     private var isManualInputProcess: Boolean = false
 
+    val isAppServer: StateFlow<Boolean> = dataStoreRepository.isAppServer.asStateFlow()
+
     fun resetScannerTrigger() { _triggerScanner.value = false }
 
     val filteredBarcodeList: StateFlow<List<BarcodeDocDetail>> =
@@ -116,7 +118,14 @@ class BarcodeDetailVM @Inject constructor(
                 val productResponse = mapToResponse(localProduct)
                 handleProductSuccess(productResponse, isManual)
             } else {
-                fetchProductFromNetwork(barcode, isManual)
+                if (isAppServer.value) {
+                    Log.d("ProductInformer", "Товар не найден в локальной БД (Режим сервера приложения)")
+                    _productResponse.value = ResultFetchData.Error(
+                        Exception("Товар с таким штрихкодом не найден в локальной базе данных")
+                    )
+                } else {
+                    fetchProductFromNetwork(barcode, isManual)
+                }
             }
         }
     }
@@ -191,7 +200,7 @@ class BarcodeDetailVM @Inject constructor(
         _curBarcodeData.value = null
     }
 
-    fun uploadTo1C() {
+    fun uploadData() {
         val doc = curBarcodeDoc.value
         val items = barcodeList.value
 
@@ -218,11 +227,17 @@ class BarcodeDetailVM @Inject constructor(
 
         viewModelScope.launch {
 
-            when (val result = barcodeDocRepository.uploadDocumentTo1C(dataForUpload)) {
+            val result = if (isAppServer.value) {
+                barcodeDocRepository.uploadDocumentToFastAPI(dataForUpload)
+            } else {
+                barcodeDocRepository.uploadDocumentTo1C(dataForUpload)
+            }
+
+            when (result) {
                 is ResultFetchData.Success -> {
                     barcodeDocRepository.updateBarcodeDocStatus(doc, BarcodeStatus.UPLOADED)
                     _curBarcodeDoc.value = doc.copy(status = BarcodeStatus.UPLOADED)
-                    _uploadStatusMessage.value = "Успех: Документ №${doc.barcodeDocId} выгружен!"
+                    _uploadStatusMessage.value = "Успех: Документ №${doc.barcodeDocId} выгружен"
                 }
                 is ResultFetchData.Error -> {
                     _uploadStatusMessage.value = "Ошибка выгрузки: ${result.exception.message}"

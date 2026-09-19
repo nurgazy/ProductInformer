@@ -163,7 +163,7 @@ fun BarcodeDetailScreen(
                 }
 
                 FilledTonalButton(
-                    onClick = { vm.uploadTo1C() },
+                    onClick = { vm.uploadData() },
                     modifier = Modifier.fillMaxWidth(),
                     enabled = !isUploaded
                 ) {
