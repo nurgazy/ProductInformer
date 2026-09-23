@@ -9,7 +9,7 @@ import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
 
 // --- Класс-анализатор для ML Kit ---
-class BarcodeAnalyzer(private val listener: (String) -> Unit) : ImageAnalysis.Analyzer {
+class BarcodeAnalyzer(private val isSquare: Boolean = false, private val listener: (String) -> Unit) : ImageAnalysis.Analyzer {
 
     // Опции: Сканируем только EAN_13 и QR_CODE для скорости
     private val options = BarcodeScannerOptions.Builder()
@@ -64,15 +64,28 @@ class BarcodeAnalyzer(private val listener: (String) -> Unit) : ImageAnalysis.An
         val width = if (isRotated) imageProxy.height else imageProxy.width
         val height = if (isRotated) imageProxy.width else imageProxy.height
 
-        // Определяем "активное окно" в процентах (должно совпадать с визуальной рамкой)
-        // В вашем ScannerOverlay рамка занимает 30% высоты по центру и всю ширину
-        val horizontalMargin = width * 0.05f // небольшие отступы по бокам (5%)
-        val verticalMargin = height * 0.35f   // (100% - 30% рамки) / 2 = 35% сверху и снизу
+        val frameLeft: Float
+        val frameRight: Float
+        val frameTop: Float
+        val frameBottom: Float
 
-        val frameLeft = horizontalMargin
-        val frameRight = width - horizontalMargin
-        val frameTop = verticalMargin
-        val frameBottom = height - verticalMargin
+        if (isSquare) {
+            val sizeDim = minOf(width, height) * 0.7f
+            frameLeft = (width - sizeDim) / 2
+            frameRight = frameLeft + sizeDim
+            frameTop = (height - sizeDim) / 2
+            frameBottom = frameTop + sizeDim
+        } else {
+            // Определяем "активное окно" в процентах (должно совпадать с визуальной рамкой)
+            // В вашем ScannerOverlay рамка занимает 30% высоты по центру и всю ширину
+            val horizontalMargin = width * 0.05f // небольшие отступы по бокам (5%)
+            val verticalMargin = height * 0.35f   // (100% - 30% рамки) / 2 = 35% сверху и снизу
+
+            frameLeft = horizontalMargin
+            frameRight = width - horizontalMargin
+            frameTop = verticalMargin
+            frameBottom = height - verticalMargin
+        }
 
         // Проверяем, входит ли центр штрихкода в эти границы
         val barcodeCenterX = boundingBox.centerX().toFloat()

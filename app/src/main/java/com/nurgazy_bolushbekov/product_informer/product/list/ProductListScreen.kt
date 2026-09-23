@@ -64,7 +64,9 @@ fun ProductListScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    val intent = Intent(context, ScannerActivity::class.java)
+                    val intent = Intent(context, ScannerActivity::class.java).apply {
+                        putExtra("IS_SQUARE_SCANNER", true)
+                    }
                     scannerLauncher.launch(intent)
                 },
                 containerColor = MaterialTheme.colorScheme.primaryContainer,

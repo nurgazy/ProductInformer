@@ -23,6 +23,7 @@ class ScannerActivity : ComponentActivity() {
 
     private lateinit var cameraExecutor: ExecutorService
     private lateinit var previewView: PreviewView
+    private var isSquare: Boolean = false
 
     companion object {
         private const val BARCODE_RESULT_KEY = "BARCODE_RESULT"
@@ -40,6 +41,7 @@ class ScannerActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        isSquare = intent.getBooleanExtra("IS_SQUARE_SCANNER", false)
         cameraExecutor = Executors.newSingleThreadExecutor()
 
         // 1. Создаем корневой контейнер (FrameLayout идеально подходит для наложения слоев)
@@ -66,7 +68,7 @@ class ScannerActivity : ComponentActivity() {
                 android.view.ViewGroup.LayoutParams.MATCH_PARENT
             )
             setContent {
-                ScannerOverlay() // Рисуем рамку поверх
+                ScannerOverlay(isSquare = isSquare) // Рисуем рамку поверх
             }
         }
         rootLayout.addView(composeView) // Добавляем рамку вторым слоем
@@ -97,7 +99,7 @@ class ScannerActivity : ComponentActivity() {
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .build()
                 .also {
-                    it.setAnalyzer(cameraExecutor, BarcodeAnalyzer(::onBarcodeScanned))
+                    it.setAnalyzer(cameraExecutor, BarcodeAnalyzer(isSquare = isSquare, listener = ::onBarcodeScanned))
                 }
 
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
