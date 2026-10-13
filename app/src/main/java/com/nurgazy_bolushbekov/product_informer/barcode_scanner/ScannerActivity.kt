@@ -1,6 +1,5 @@
 package com.nurgazy_bolushbekov.product_informer.barcode_scanner
 
-import ScannerOverlay
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -14,6 +13,9 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import java.util.concurrent.ExecutorService
@@ -24,6 +26,9 @@ class ScannerActivity : ComponentActivity() {
     private lateinit var cameraExecutor: ExecutorService
     private lateinit var previewView: PreviewView
     private var isSquare: Boolean = false
+
+    // Добавляем состояние для хранения последнего распознанного штрихкода
+    private var scannedBarcode by mutableStateOf<String?>(null)
 
     companion object {
         private const val BARCODE_RESULT_KEY = "BARCODE_RESULT"
@@ -68,7 +73,13 @@ class ScannerActivity : ComponentActivity() {
                 android.view.ViewGroup.LayoutParams.MATCH_PARENT
             )
             setContent {
-                ScannerOverlay(isSquare = isSquare) // Рисуем рамку поверх
+                ScannerOverlay(
+                    isSquare = isSquare,
+                    scannedBarcode = scannedBarcode,
+                    onBarcodeConfirmed = { barcode ->
+                        confirmBarcode(barcode)
+                    }
+                ) // Рисуем рамку поверх
             }
         }
         rootLayout.addView(composeView) // Добавляем рамку вторым слоем
@@ -122,8 +133,15 @@ class ScannerActivity : ComponentActivity() {
     }
 
     // --- Обработка результата и возврат в Compose ---
-    private fun onBarcodeScanned(barcode: String) {
-        cameraExecutor.shutdown()
+    private fun onBarcodeScanned(barcode: String?) {
+        // Обновляем текущий видимый штрихкод
+        scannedBarcode = barcode
+    }
+
+    private fun confirmBarcode(barcode: String) {
+        if (!cameraExecutor.isShutdown) {
+            cameraExecutor.shutdown()
+        }
 
         val resultIntent = Intent().apply {
             putExtra(BARCODE_RESULT_KEY, barcode)

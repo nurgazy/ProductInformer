@@ -9,7 +9,7 @@ import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
 
 // --- Класс-анализатор для ML Kit ---
-class BarcodeAnalyzer(private val isSquare: Boolean = false, private val listener: (String) -> Unit) : ImageAnalysis.Analyzer {
+class BarcodeAnalyzer(private val isSquare: Boolean = false, private val listener: (String?) -> Unit) : ImageAnalysis.Analyzer {
 
     // Опции: Сканируем только EAN_13 и QR_CODE для скорости
     private val options = BarcodeScannerOptions.Builder()
@@ -33,6 +33,7 @@ class BarcodeAnalyzer(private val isSquare: Boolean = false, private val listene
 
             scanner.process(image)
                 .addOnSuccessListener { barcodes ->
+                    var found = false
                     for (barcode in barcodes) {
                         val boundingBox = barcode.boundingBox ?: continue
 
@@ -41,9 +42,13 @@ class BarcodeAnalyzer(private val isSquare: Boolean = false, private val listene
                             val rawValue = barcode.rawValue
                             if (rawValue != null) {
                                 listener(rawValue)
+                                found = true
                                 break // Берем первый подходящий и выходим
                             }
                         }
+                    }
+                    if (!found) {
+                        listener(null) // Если в кадре нет штрихкода
                     }
                 }
                 .addOnFailureListener {
