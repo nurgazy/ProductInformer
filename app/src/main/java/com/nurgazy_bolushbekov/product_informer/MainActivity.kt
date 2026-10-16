@@ -312,9 +312,7 @@ fun BottomNavigationBar(navController: NavController) {
         return
     }
 
-    NavigationBar(
-        modifier = Modifier.height(56.dp)
-    ) {
+    NavigationBar {
         items.forEach { screen ->
             NavigationBarItem(
                 icon = { Icon(screen.icon, contentDescription = screen.title) },
