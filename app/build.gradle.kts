@@ -10,7 +10,7 @@ plugins {
 
 android {
     namespace = "com.nurgazy_bolushbekov.product_informer"
-    compileSdk = 35
+    compileSdk = 36
 
     buildFeatures {
         buildConfig = true
@@ -19,9 +19,9 @@ android {
     defaultConfig {
         applicationId = "com.nurgazy_bolushbekov.product_informer"
         minSdk = 26
-        targetSdk = 35
-        versionCode = 16
-        versionName = "1.1.2"
+        targetSdk = 36
+        versionCode = 18
+        versionName = "1.1.4"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

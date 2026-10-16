@@ -45,8 +45,20 @@
 }
 
 # 6. Жесткое сохранение ваших моделей (DTO)
-# Если ваши модели лежат в разных папках, лучше временно разрешить всё,
-# чтобы понять, в этом ли была проблема:
 -keep class **.model.** { *; }
 -keep class **.dto.** { *; }
 -keep class **.data.** { *; }
+-keep class **.data_classes.** { *; }
+-keepclassmembers class **.data_classes.** { *; }
+-keep class **.data_serialization.** { *; }
+-keepclassmembers class **.data_serialization.** { *; }
+
+# 7. kotlinx.serialization и классы с аннотацией @Serializable
+-keepclassmembers class * {
+    @kotlinx.serialization.Serializable *;
+    @kotlinx.serialization.SerialName *;
+}
+-keep class * implements kotlinx.serialization.KSerializer
+-keepclassmembers class * implements kotlinx.serialization.KSerializer {
+    public static ** Companion;
+}
