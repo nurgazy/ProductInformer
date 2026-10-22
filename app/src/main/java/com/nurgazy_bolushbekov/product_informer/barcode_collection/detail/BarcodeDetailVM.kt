@@ -119,10 +119,8 @@ class BarcodeDetailVM @Inject constructor(
                 handleProductSuccess(productResponse, isManual)
             } else {
                 if (isAppServer.value) {
-                    Log.d("ProductInformer", "Товар не найден в локальной БД (Режим сервера приложения)")
-                    _productResponse.value = ResultFetchData.Error(
-                        Exception("Товар с таким штрихкодом не найден в локальной базе данных")
-                    )
+                    Log.d("ProductInformer", "Товар не найден в локальной БД. Добавляем только штрихкод.")
+                    handleProductNotFound(barcode, isManual)
                 } else {
                     fetchProductFromNetwork(barcode, isManual)
                 }
@@ -278,12 +276,34 @@ class BarcodeDetailVM @Inject constructor(
     ) {
         if (productData == null) return
 
+        val barcodeToUse = if (productData.barcode.isNotBlank()) productData.barcode else pendingProductData?.barcode ?: ""
+        val productNameToUse = productData.name.ifBlank { "Штрихкод: $barcodeToUse" }
+
         val detail = BarcodeDocDetail(
-            barcode = productData.barcode,
-            productName = productData.name,
+            barcode = barcodeToUse,
+            productName = productNameToUse,
             productUuid1C = productData.uuid1C,
             productSpecName = spec?.name ?: "",
             productSpecUuid1C = spec?.uuid1C ?: ""
+        )
+
+        _curBarcodeData.value = detail
+
+        if (isCyclicScanning.value && !isManual) {
+            addToBarcodeList(quantity = 1)
+            _triggerScanner.value = true
+        } else {
+            setShowQuantityInputDialog()
+        }
+    }
+
+    private fun handleProductNotFound(barcode: String, isManual: Boolean) {
+        val detail = BarcodeDocDetail(
+            barcode = barcode,
+            productName = "Штрихкод: $barcode",
+            productUuid1C = "",
+            productSpecName = "",
+            productSpecUuid1C = ""
         )
 
         _curBarcodeData.value = detail
@@ -331,6 +351,8 @@ class BarcodeDetailVM @Inject constructor(
                 _productResponse.value = result
             }
             is ResultFetchData.Error -> {
+                Log.d("ProductInformer", "Ошибка или товар не найден в 1С: ${result.exception.message}")
+                handleProductNotFound(barcode, isManual)
                 _productResponse.value = result
             }
             else -> {}
