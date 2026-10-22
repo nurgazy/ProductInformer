@@ -24,6 +24,7 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
@@ -69,7 +70,7 @@ fun ProductDetailScreen(
 ) {
 
     val tabs = ProductDetailTab.entries.toTypedArray()
-    val pagerState = rememberPagerState (pageCount = { tabs.size })
+    val pagerState = rememberPagerState(pageCount = { tabs.size })
     val productData by sharedVM.productData.collectAsState()
 
     BackHandler {
@@ -106,7 +107,10 @@ fun ProductDetailScreen(
             }
         }
         Spacer(Modifier.height(16.dp))
-        PagerIndicator(pagerState = pagerState, modifier = Modifier.align(Alignment.CenterHorizontally))
+        PagerIndicator(
+            pagerState = pagerState,
+            modifier = Modifier.align(Alignment.CenterHorizontally)
+        )
     }
 }
 
@@ -141,6 +145,8 @@ fun DetailScreenContent(product: ProductResponse?) {
     if (product == null)
         return
 
+    val displayName = product.name.ifBlank { "Штрихкод: ${product.barcode}" }
+
     Column(Modifier.fillMaxWidth()) {
         //Наименование
         Row(
@@ -151,7 +157,7 @@ fun DetailScreenContent(product: ProductResponse?) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = product.name,
+                text = displayName,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center
             )
@@ -178,86 +184,123 @@ fun DetailScreenContent(product: ProductResponse?) {
         }
 
         //Артикул
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .padding(5.dp),
-        ) {
-            Text(
-                text = "Артикул",
-                textAlign = TextAlign.Start,
-                modifier = Modifier.weight(1f)
-            )
-            Text(
-                text = product.article,
-                textAlign = TextAlign.End,
-                modifier = Modifier.weight(1f)
-            )
+        if (product.article.isNotBlank()) {
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(5.dp),
+            ) {
+                Text(
+                    text = "Артикул",
+                    textAlign = TextAlign.Start,
+                    modifier = Modifier.weight(1f)
+                )
+                Text(
+                    text = product.article,
+                    textAlign = TextAlign.End,
+                    modifier = Modifier.weight(1f)
+                )
+            }
         }
 
         //Производитель
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .padding(5.dp),
-        ) {
-            Text(
-                text = "Производитель",
-                textAlign = TextAlign.Start,
-                modifier = Modifier.weight(1f)
-            )
-            Text(
-                text = product.manufacturer,
-                textAlign = TextAlign.End,
-                modifier = Modifier.weight(1f)
-            )
+        if (product.manufacturer.isNotBlank()) {
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(5.dp),
+            ) {
+                Text(
+                    text = "Производитель",
+                    textAlign = TextAlign.Start,
+                    modifier = Modifier.weight(1f)
+                )
+                Text(
+                    text = product.manufacturer,
+                    textAlign = TextAlign.End,
+                    modifier = Modifier.weight(1f)
+                )
+            }
         }
 
         //Марка
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .padding(5.dp),
-        ) {
-            Text(
-                text = "Марка",
-                textAlign = TextAlign.Start,
-                modifier = Modifier.weight(1f)
-            )
-            Text(
-                text = product.brand,
-                textAlign = TextAlign.End,
-                modifier = Modifier.weight(1f)
-            )
+        if (product.brand.isNotBlank()) {
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(5.dp),
+            ) {
+                Text(
+                    text = "Марка",
+                    textAlign = TextAlign.Start,
+                    modifier = Modifier.weight(1f)
+                )
+                Text(
+                    text = product.brand,
+                    textAlign = TextAlign.End,
+                    modifier = Modifier.weight(1f)
+                )
+            }
         }
 
         //Товарная категория
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .padding(5.dp),
-        ) {
-            Text(
-                text = "Товарная категория",
-                textAlign = TextAlign.Start,
-                modifier = Modifier.weight(1f)
-            )
-            Text(
-                text = product.productCategory,
-                textAlign = TextAlign.End,
-                modifier = Modifier.weight(1f)
-            )
+        if (product.productCategory.isNotBlank()) {
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(5.dp),
+            ) {
+                Text(
+                    text = "Товарная категория",
+                    textAlign = TextAlign.Start,
+                    modifier = Modifier.weight(1f)
+                )
+                Text(
+                    text = product.productCategory,
+                    textAlign = TextAlign.End,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
+
+        val isOutOfStockOverall = product.productSpecificResponses.isNullOrEmpty() ||
+                product.productSpecificResponses?.all { spec ->
+                    spec.balanceResponse.isNullOrEmpty() || spec.balanceResponse?.all { balance ->
+                        balance.warehouse.contains("Нет", ignoreCase = true) || (balance.inStock == 0.0 && balance.available == 0.0)
+                    } == true
+                } == true
+
+        if (isOutOfStockOverall) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp, horizontal = 5.dp)
+                    .background(Color(0xFFFFEBEE), shape = RoundedCornerShape(8.dp))
+                    .padding(12.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Товар отсутствует на складе",
+                    color = Color(0xFFD32F2F),
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.titleMedium
+                )
+            }
         }
 
         HorizontalDivider()
 
-        Column{
+        Column {
             LazyColumn(modifier = Modifier.fillMaxSize()) {
-                items(listOf(product.productSpecificResponses)){ item ->
-                    item?.forEach{ curProductSpec ->
-                        CollapsibleSpecificatonItem(title = curProductSpec.name) {
+                items(listOf(product.productSpecificResponses)) { item ->
+                    item?.forEach { curProductSpec ->
+                        val specTitle = curProductSpec.name.ifBlank { "Основная характеристика" }
+                        CollapsibleSpecificatonItem(title = specTitle) {
                             CollapsibleItem(title = "Остатки (В наличии/Доступно)") {
                                 curProductSpec.balanceResponse?.forEach { curBalance ->
+                                    val isNoStock = curBalance.warehouse.contains("Нет", ignoreCase = true) ||
+                                            (curBalance.inStock == 0.0 && curBalance.available == 0.0)
+
                                     Row(
                                         Modifier
                                             .fillMaxWidth()
@@ -266,18 +309,24 @@ fun DetailScreenContent(product: ProductResponse?) {
                                         Text(
                                             text = curBalance.warehouse,
                                             textAlign = TextAlign.Start,
-                                            modifier = Modifier.weight(1f)
+                                            modifier = Modifier.weight(1f),
+                                            color = if (isNoStock) Color(0xFFD32F2F) else Color.Unspecified,
+                                            fontWeight = if (isNoStock) FontWeight.Bold else FontWeight.Normal
                                         )
                                         Text(
-                                            text = "${curBalance.inStock} / ${curBalance.available} ${curBalance.unit}",
+                                            text = if (isNoStock && curBalance.inStock == 0.0 && curBalance.available == 0.0)
+                                                "Нет в наличии"
+                                            else
+                                                "${curBalance.inStock} / ${curBalance.available} ${curBalance.unit}",
                                             textAlign = TextAlign.End,
-                                            modifier = Modifier.weight(1f)
+                                            modifier = Modifier.weight(1f),
+                                            color = if (isNoStock) Color(0xFFD32F2F) else Color.Unspecified
                                         )
                                     }
 
-                                    if (curBalance.cellStockResponse != null){
-                                        CollapsibleItem(title = "Ячейки"){
-                                            curBalance.cellStockResponse.forEach{ curCellStock ->
+                                    if (!curBalance.cellStockResponse.isNullOrEmpty()) {
+                                        CollapsibleItem(title = "Ячейки") {
+                                            curBalance.cellStockResponse.forEach { curCellStock ->
                                                 Row(
                                                     Modifier
                                                         .fillMaxWidth()
@@ -302,28 +351,30 @@ fun DetailScreenContent(product: ProductResponse?) {
                                 }
                             }
                             Spacer(modifier = Modifier.height(8.dp))
-                            CollapsibleItem(title = "Цены") {
-                                curProductSpec.priceResponse?.forEach{ curPrice ->
-                                    Row(
-                                        Modifier
-                                            .fillMaxWidth()
-                                            .padding(5.dp),
-                                    ) {
-                                        Text(
-                                            text = curPrice.priceType,
-                                            textAlign = TextAlign.Start,
-                                            modifier = Modifier.weight(1f)
-                                        )
-                                        Text(
-                                            text = "${curPrice.price}  ${curPrice.currency}",
-                                            textAlign = TextAlign.End,
-                                            modifier = Modifier.weight(1f)
-                                        )
+                            if (!curProductSpec.priceResponse.isNullOrEmpty()) {
+                                CollapsibleItem(title = "Цены") {
+                                    curProductSpec.priceResponse.forEach { curPrice ->
+                                        Row(
+                                            Modifier
+                                                .fillMaxWidth()
+                                                .padding(5.dp),
+                                        ) {
+                                            Text(
+                                                text = curPrice.priceType,
+                                                textAlign = TextAlign.Start,
+                                                modifier = Modifier.weight(1f)
+                                            )
+                                            Text(
+                                                text = "${curPrice.price}  ${curPrice.currency}",
+                                                textAlign = TextAlign.End,
+                                                modifier = Modifier.weight(1f)
+                                            )
+                                        }
+                                        HorizontalDivider()
                                     }
-                                    HorizontalDivider()
                                 }
+                                Spacer(modifier = Modifier.height(8.dp))
                             }
-                            Spacer(modifier = Modifier.height(8.dp))
                         }
                     }
                 }
@@ -366,9 +417,11 @@ fun CollapsibleItem(
 ) {
     var isExpanded by remember { mutableStateOf(true) }
 
-    Column(modifier = Modifier
-        .fillMaxWidth()
-        .padding(start = 5.dp)) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 5.dp)
+    ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -405,9 +458,11 @@ fun CollapsibleSpecificatonItem(
 ) {
     var isExpanded by remember { mutableStateOf(true) }
 
-    Column(modifier = Modifier
-        .fillMaxWidth()
-        .padding(start = 5.dp)) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 5.dp)
+    ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()

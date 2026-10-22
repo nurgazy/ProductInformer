@@ -1,7 +1,6 @@
 package com.nurgazy_bolushbekov.product_informer.data_classes
 
 import android.os.Parcelable
-import com.nurgazy_bolushbekov.product_informer.product.entity.Product
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -10,19 +9,19 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class ProductResponse(
     @SerialName("Наименование")
-    val name: String,
+    val name: String = "",
     @SerialName("Штрихкод")
-    val barcode: String,
+    val barcode: String = "",
     @SerialName("Артикул")
-    val article: String,
+    val article: String = "",
     @SerialName("Производитель")
-    val manufacturer: String,
+    val manufacturer: String = "",
     @SerialName("Марка")
-    val brand: String,
+    val brand: String = "",
     @SerialName("ТоварнаяКатегория")
-    val productCategory: String,
+    val productCategory: String = "",
     @SerialName("ГУИД1С")
-    val uuid1C: String,
+    val uuid1C: String = "",
     var savedImagePath: String? = null,
 
     var productSpecificResponses: List<ProductSpecificResponse>? = null
